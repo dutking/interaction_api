@@ -1,0 +1,39 @@
+#completionTrigger {
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 5rem;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 2rem 0 3rem 0;
+    align-content: center;
+    justify-content: center;
+    background: #99a4ae;
+}
+
+#completionTrigger button.nav-btn {
+    display: flex;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+    min-width: 260px;
+    margin: 1rem;
+    height: 60px;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 600;
+    color: #435363;
+    border: 2px solid #435363;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.3s ease-in;
+}
+
+#completionTrigger button.nav-btn:hover {
+    background-color: #435363;
+    color: white;
+}
+
+#completionTrigger button.nav-btn:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
