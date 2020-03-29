@@ -334,26 +334,46 @@ class DictantUnit extends InteractionUnit {
         let fb = document.createElement('div')
         fb.classList.add('fb')
 
-        // creating unit button
-        let btn = document.createElement('button')
-        btn.setAttribute('type', 'button')
-        btn.className = 'btn check regular off'
-        btn.innerHTML = 'Проверить'
+        // creating unit check button
+        let checkBtn = document.createElement('button')
+        checkBtn.setAttribute('type', 'button')
+        checkBtn.className = 'btn check regular off'
+        checkBtn.innerHTML = 'Проверить'
+
+        // creating unit show answers button
+        let showAnswersBtn = document.createElement('button')
+        showAnswersBtn.setAttribute('type', 'button')
+        showAnswersBtn.className = 'btn showAnswers regular off'
+        showAnswersBtn.innerHTML = 'Показать правильные ответы'
 
         // appending children to unit container
         this.unitContainer.appendChild(header)
         this.unitContainer.appendChild(body)
         this.unitContainer.appendChild(fb)
-        this.unitContainer.appendChild(btn)
+        this.unitContainer.appendChild(checkBtn)
+        this.unitContainer.appendChild(showAnswersBtn)
 
 
         // setting event listeners
 
-        let checkBtn = this.unitContainer.querySelector('button.check')
-        checkBtn.addEventListener('click', this.check.bind(this))
+        checkBtn.addEventListener('click', this.checkAnswers.bind(this))
+
+        showAnswersBtn.addEventListener('click', this.showAnswers.bind(this))
     }
 
-    check() {}
+    checkAnswers(e) {
+        this.words.forEach(function (w) {
+            w.markAnswers()
+        })
+        e.currentTarget.classList.add('off')
+        this.unitContainer.querySelector('button.showAnswers').classList.remove('off')
+    }
+
+    showAnswers(e) {
+        this.words.forEach(function (w) {
+            w.showAnswers()
+        })
+    }
 
     /* setFb(status, position) {
         let that = this
@@ -732,26 +752,31 @@ class FillInDropDownItem {
     }
 
     markAnswers() {
+        let that = this
         let spaces = Array.from(this.htmlElement.querySelectorAll('.space'))
-        space.querySelectorAll('.space').forEach(function (s, i) {
+        spaces.forEach(function (s, i) {
             if (s.innerText === that.correctAnswers[i]) {
                 s.classList.add('correct')
             } else if (s.innerText !== that.correctAnswers[i]) {
                 s.classList.add('incorrect')
-                setTimeout(function () {
-                    s.innerText = that.correctAnswers[i]
-                    s.classList.remove('incorrect')
-                }, 2000)
             }
-            setTimeout(function () {
-                s.classList.remove('correct')
-                s.classList.remove('incorrect')
-            }, 2000)
             s.classList.add('disabled')
         })
     }
 
-    correctAnswers() {}
+    showAnswers() {
+        let that = this
+        let spaces = Array.from(this.htmlElement.querySelectorAll('.space'))
+        spaces.forEach(function (s, i) {
+            if (s.innerText === that.correctAnswers[i]) {
+                console.log('nothing to change')
+            } else if (s.innerText !== that.correctAnswers[i]) {
+                s.innerText = that.correctAnswers[i]
+            }
+            s.classList.remove('correct')
+            s.classList.remove('incorrect')
+        })
+    }
 
     setAnswer(e) {
         let that = this
@@ -774,16 +799,6 @@ class FillInDropDownItem {
                     status: 'correct',
                     index: that.wordIndex
                 }
-                if (that.parent instanceof LangExerciseUnit) {
-                    word.querySelectorAll('.space').forEach(function (s) {
-                        s.classList.add('correct')
-                        s.classList.add('disabled')
-                        setTimeout(function () {
-                            s.classList.remove('correct')
-                        }, 2000)
-                    })
-                }
-
                 that.result = true
             } else if (
                 !App.isArraysSimilar(that.userAnswer, that.correctAnswers)
@@ -794,24 +809,12 @@ class FillInDropDownItem {
                     index: that.wordIndex
                 }
                 that.result = false
-                if (that.parent instanceof LangExerciseUnit) {
-                    word.querySelectorAll('.space').forEach(function (s, i) {
-                        if (s.innerText === that.correctAnswers[i]) {
-                            s.classList.add('correct')
-                        } else if (s.innerText !== that.correctAnswers[i]) {
-                            s.classList.add('incorrect')
-                            setTimeout(function () {
-                                s.innerText = that.correctAnswers[i]
-                                s.classList.remove('incorrect')
-                            }, 2000)
-                        }
-                        setTimeout(function () {
-                            s.classList.remove('correct')
-                            s.classList.remove('incorrect')
-                        }, 2000)
-                        s.classList.add('disabled')
-                    })
-                }
+            }
+            if (that.parent instanceof LangExerciseUnit) {
+                that.markAnswers()
+                setTimeout(function () {
+                    that.showAnswers()
+                }, 2000)
             }
         }
         e.currentTarget.parentNode.classList.add('off')
