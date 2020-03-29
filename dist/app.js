@@ -278,7 +278,7 @@ class DictantUnit extends InteractionUnit {
         <div class="header">Диктант</div>
         <div class='body'>${this.createTaskBody()}</div>        
         <div class='fb'></div>
-        <button type='button' class='btn continue regular off'>Продолжить</button>
+        <button type='button' class='btn check regular off'>Проверить</button>
         `
 
         let spaces = Array.from(this.unitContainer.querySelectorAll('.space'))
@@ -291,8 +291,12 @@ class DictantUnit extends InteractionUnit {
             answer.addEventListener('click', this.setAnswer.bind(this))
         }
 
-        let continueBtn = this.unitContainer.querySelector('button.continue')
-        // continueBtn.addEventListener('click', this.initNextUnit.bind(this))
+        let checkBtn = this.unitContainer.querySelector('button.check')
+        checkBtn.addEventListener('click', this.check.bind(this))
+    }
+
+    check() {
+        console.log(this.tasksWords)
     }
 
     setAnswer(e) {
@@ -350,7 +354,7 @@ class DictantUnit extends InteractionUnit {
             that.completed = true
             setTimeout(function () {
                 that.unitContainer
-                    .querySelector('button.continue')
+                    .querySelector('button.check')
                     .classList.remove('off')
             }, 0)
         }
