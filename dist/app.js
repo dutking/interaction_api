@@ -6,11 +6,6 @@ class Interaction {
         this.id = this.interactionData.interaction_id
         this.name = this.interactionData.name
         this.interactionUnits = []
-        this.init()
-    }
-
-    init() {
-
     }
 
     get result() {
@@ -110,17 +105,17 @@ class DictantInteraction extends ScorableInteraction {
     ) {
         super(index, renderHook)
         this.insideBox = this.interactionData.inside_box
-        this.init()
         console.log('dictant interaction activated...')
+        this.init()
     }
 
-    createUnit() {
-        let unit = new DictantUnit(0, this, 'dictantUnit', db[this.index])
+    createUnit(num) {
+        let unit = new DictantUnit(num, this, 'dictantUnit', db[this.index][num])
         this.interactionUnits.push(unit)
     }
 
     init() {
-        this.createUnit()
+        this.createUnit(0)
     }
 }
 
@@ -280,15 +275,11 @@ class DictantUnit extends InteractionUnit {
         console.log('rendering dictant unit...')
         this.unitContainer = this.createUnitContainer(this.cssClasses)
         this.unitContainer.innerHTML = `
-        <div class="header">Задание ${this.index + 1} из ${this.parent.amountOfUnits}<a class='showTip'>Показать подсказку <i class="fas fa-hand-point-up"></i></a></div>
-        <div class='tip off'><p>${this.tip}</p></div>
+        <div class="header">Диктант</div>
         <div class='body'>${this.createTaskBody()}</div>        
         <div class='fb'></div>
         <button type='button' class='btn continue regular off'>Продолжить</button>
         `
-        this.unitContainer
-            .querySelector('a.showTip')
-            .addEventListener('click', this.toggleTip.bind(this))
 
         let spaces = Array.from(this.unitContainer.querySelectorAll('.space'))
         for (let space of spaces) {
@@ -301,15 +292,7 @@ class DictantUnit extends InteractionUnit {
         }
 
         let continueBtn = this.unitContainer.querySelector('button.continue')
-        continueBtn.addEventListener('click', this.initNextUnit.bind(this))
-    }
-
-    initNextUnit(e) {
-        if (this.index === this.parent.unitsToComplete - 1) {
-            new LangExeLetter(this.unitContainer, this.parent.insideBox, this.parent.score)
-        }
-        this.parent.createUnit(this.index + 1)
-        e.currentTarget.classList.add('off')
+        // continueBtn.addEventListener('click', this.initNextUnit.bind(this))
     }
 
     setAnswer(e) {
@@ -339,7 +322,7 @@ class DictantUnit extends InteractionUnit {
                     }, 2000)
                 })
                 that.score++
-                that.setFb('correct', wordNum)
+                // that.setFb('correct', wordNum)
             } else if (
                 !App.isArraysSimilar(userAnswer, currentWord.correctAnswers)
             ) {
@@ -359,7 +342,7 @@ class DictantUnit extends InteractionUnit {
                     }, 2000)
                     s.classList.add('disabled')
                 })
-                that.setFb('incorrect', wordNum)
+                // that.setFb('incorrect', wordNum)
             }
         }
 
@@ -896,7 +879,7 @@ class App {
     static init() {
         // this.configure()
         App.renderHooks = Array.from(document.querySelectorAll('.interaction'))
-        App.interaction = App.renderHooks.map(function (hook, index) {
+        App.interactions = App.renderHooks.map(function (hook, index) {
             console.log('interaction ' + hook.dataset.type)
             switch (hook.dataset.type) {
                 case 'test':

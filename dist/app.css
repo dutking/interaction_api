@@ -59,7 +59,7 @@
     overflow: hidden;
 }
 
-.interaction .langExerciseUnit .header {
+.interaction .header {
     display: flex;
     flex-direction: row;
     font-size: calc(var(--font-size) * 0.8);
@@ -100,19 +100,19 @@
     animation-play-state: running;
 }
 
-.interaction .langExerciseUnit .body {
+.interaction .body {
     margin-bottom: 2rem;
 }
 
-.interaction .langExerciseUnit .body .word {
+.interaction .body .word {
     white-space: nowrap;
 }
 
-.interaction .langExerciseUnit .body .subtask {
+.interaction .body .subtask {
     position: relative;
 }
 
-.interaction .langExerciseUnit .body .space {
+.interaction .body .space {
     display: inline-block;
     width: 2rem;
     height: 2rem;
@@ -122,9 +122,9 @@
     margin: 0 2px 0 2px;
 }
 
-.interaction .langExerciseUnit .body .space:hover {}
+.interaction .body .space:hover {}
 
-.interaction .langExerciseUnit .body .subtask .popupAnsContainer {
+.interaction .body .subtask .popupAnsContainer {
     position: absolute;
     left: 0;
     top: 2.3rem;
@@ -136,7 +136,7 @@
     z-index: 100;
 }
 
-.interaction .langExerciseUnit .body .subtask .popupAnsContainer .answer {
+.interaction .body .subtask .popupAnsContainer .answer {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -158,12 +158,12 @@
     animation-play-state: running;
 }
 
-.interaction .langExerciseUnit .body .subtask .popupAnsContainer .answer:hover {
+.interaction .body .subtask .popupAnsContainer .answer:hover {
     background-color: var(--color-primary-lightgray);
     color: white;
 }
 
-.interaction .langExerciseUnit .fb .fbUnit {
+.interaction .fb .fbUnit {
     margin-bottom: 1rem;
     transform-origin: top center;
     transform: scaleY(0);
@@ -177,7 +177,7 @@
     animation-play-state: running;
 }
 
-.interaction .langExerciseUnit .letterBox {
+.interaction .letterBox {
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 2rem;
@@ -185,16 +185,16 @@
     padding: 1rem 0 1rem 1rem;
 }
 
-.interaction .langExerciseUnit .letterBox .left h2 {
+.interaction .letterBox .left h2 {
     margin-bottom: 2rem;
 }
 
-.interaction .langExerciseUnit .letterBox .right {
+.interaction .letterBox .right {
     position: relative;
     width: 100%;
 }
 
-.interaction .langExerciseUnit .letterBox .right .letter {
+.interaction .letterBox .right .letter {
     display: flex;
     width: 100%;
     height: 100%;
@@ -206,7 +206,7 @@
     color: var(--color-secondary-indigo);
 }
 
-.interaction .langExerciseUnit .letterBox .right .img {
+.interaction .letterBox .right .img {
     position: absolute;
     top: 0;
     left: 0;
