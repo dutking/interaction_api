@@ -231,12 +231,20 @@ class InteractionUnit {
         this.parent = parent
         this.cssClasses = cssClasses
         this.dbData = dbData
-        this.completed = false
-        this.score = 0
+        this._completed = false
+        this._score = 0
         console.log('creating new interaction unit...')
     }
 
     render() {}
+
+    get completed() {
+        return this._completed
+    }
+
+    set completed(v) {
+        this._completed = v
+    }
 
     createUnitContainer(cssClasses) {
         const unitContainer = document.createElement('div')
@@ -442,138 +450,6 @@ class DictantUnit extends InteractionUnit {
     }
 }
 
-/* class FillInDropDownUnit extends InteractionUnit {
-    constructor(index, parent, cssClasses, data) {
-        super(index, parent, cssClasses, data)
-        this.text = data.text
-        this.tasksCompleted = 0
-        this.totalTasks = this.text.split(' ').filter(w => w.includes('_')).length
-        this.tasksWords = []
-    }
-
-    get result() {
-        return this.score === this.totalTasks ? true : false
-    }
-
-    render() {
-        this.unitContainer = this.createUnitContainer(this.cssClasses)
-        this.unitContainer.appendChild(this.createBody)
-        let submitBtn
-        this.unitContainer.innerHTML = `
-        <div class='body'>${this.createTaskBody()}</div>        
-        <button type='button' class='btn continue regular off'>Продолжить</button>
-        `
-
-        let spaces = Array.from(this.unitContainer.querySelectorAll('.space'))
-        for (let space of spaces) {
-            space.addEventListener('click', this.toggleItem.bind(this, 'popupAnsContainer'))
-        }
-
-        let answers = Array.from(this.unitContainer.querySelectorAll('.answer'))
-        for (let answer of answers) {
-            answer.addEventListener('click', this.setAnswer.bind(this))
-        }
-
-        let continueBtn = this.unitContainer.querySelector('button.continue')
-        // continueBtn.addEventListener('click', this.initNextUnit.bind(this))
-    }
-
-    setAnswer(e) {
-        let that = this
-        let answer = e.currentTarget
-        let space = e.currentTarget.parentNode.parentNode.querySelector('.space')
-        let word = space.parentNode.parentNode
-        let wordNum = word.dataset.word_num
-        let currentWord = that.tasksWords[wordNum]
-        let totalSpacesInWord = currentWord.spaces
-        space.innerText = answer.dataset.choice_to_insert
-
-        let userAnswer = []
-
-        for (let i = 0; i < totalSpacesInWord; i++) {
-            userAnswer.push(word.querySelector(`.space[data-space_num='${i}']`).innerText)
-        }
-
-        if (!userAnswer.includes('_')) {
-            that.tasksCompleted++
-            if (App.isArraysSimilar(userAnswer, currentWord.correctAnswers)) {
-                word.querySelectorAll('.space').forEach(function (s) {
-                    s.classList.add('correct')
-                    s.classList.add('disabled')
-                    setTimeout(function () {
-                        s.classList.remove('correct')
-                    }, 2000)
-                })
-                that.score++
-                that.setFb('correct', wordNum)
-            } else if (
-                !App.isArraysSimilar(userAnswer, currentWord.correctAnswers)
-            ) {
-                word.querySelectorAll('.space').forEach(function (s, i) {
-                    if (s.innerText === currentWord.correctAnswers[i]) {
-                        s.classList.add('correct')
-                    } else if (s.innerText !== currentWord.correctAnswers[i]) {
-                        s.classList.add('incorrect')
-                        setTimeout(function () {
-                            s.innerText = currentWord.correctAnswers[i]
-                            s.classList.remove('incorrect')
-                        }, 2000)
-                    }
-                    setTimeout(function () {
-                        s.classList.remove('correct')
-                        s.classList.remove('incorrect')
-                    }, 2000)
-                    s.classList.add('disabled')
-                })
-                that.setFb('incorrect', wordNum)
-            }
-        }
-
-        if (that.totalTasks === that.tasksCompleted) {
-            that.completed = true
-            setTimeout(function () {
-                that.unitContainer
-                    .querySelector('button.continue')
-                    .classList.remove('off')
-            }, 0)
-        }
-
-        e.currentTarget.parentNode.classList.add('off')
-    }
-
-    
-
-    toggleItem(cssClass, e) {
-        let currentItem = e.currentTarget.parentNode.querySelector(
-            `.${cssClass}`
-        )
-        if (currentItem.classList.contains('off')) {
-            currentItem.classList.remove('off')
-        } else if (!currentItem.classList.contains('off')) {
-            currentItem.classList.add('off')
-        }
-    }
-
-    createBody() {
-        let that = this
-        let splitByWords = this.text.split(' ')
-        let wordNum = 0
-        let body = document.createElement('div')
-        body.classList.add('body')
-        body.innerHTML = splitByWords.map(function (word) {
-            if (word.includes('_')) {
-                let newWord = new FillInDropDownItem(that, word, wordNum)
-                that.tasksWords.push(newWord)
-                wordNum++
-                return newWord.init()
-            } else {
-                return word
-            }
-        }).join(' ')
-        return body
-    }
-} */
-
 class LangExerciseUnit extends InteractionUnit {
     constructor(index, parent, cssClasses, dbData) {
         super(index, parent, cssClasses, dbData)
@@ -581,41 +457,96 @@ class LangExerciseUnit extends InteractionUnit {
         this.id = dbData.id
         this.tip = dbData.tip
         this.fb = dbData.fb
-        this.tasksWords = []
-        this.tasksCompleted = 0
+        this.words = []
         this.render()
     }
 
+    get score() {
+        let score = 0
+        this.words.forEach(function (w) {
+            if (w.result) {
+                score++
+            }
+        })
+        return score
+    }
+
+    get completed() {
+        return this._completed
+    }
+
+    set completed(v) {
+        let numCompleted = 0
+        this.words.forEach(function (w) {
+            if (w.completed) {
+                numCompleted++
+            }
+        })
+        this._completed = numCompleted === this.words.length ? true : false
+
+        if (this.completed === true) {
+            this.unitContainer.querySelector('button.continue').classList.remove('off')
+        }
+        this.setFb(v.status, v.index)
+    }
+
     get totalTasks() {
-        return this.tasksWords.length
+        return this.words.length
     }
 
     get result() {
         return this.score === this.totalTasks ? true : false
     }
 
+    get tasksCompleted() {
+        let numCompleted = 0
+        this.words.forEach(function (w) {
+            if (w.completed) {
+                numCompleted++
+            }
+        })
+        return numCompleted
+    }
+
     render() {
+        // creating unit container
         this.unitContainer = this.createUnitContainer(this.cssClasses)
-        this.unitContainer.innerHTML = `
-        <div class="header">Задание ${this.index + 1} из ${this.parent.amountOfUnits}<a class='showTip'>Показать подсказку <i class="fas fa-hand-point-up"></i></a></div>
-        <div class='tip off'><p>${this.tip}</p></div>
-        <div class='body'>${this.createTaskBody()}</div>        
-        <div class='fb'></div>
-        <button type='button' class='btn continue regular off'>Продолжить</button>
-        `
+
+        // creating unit header
+        let header = document.createElement('div')
+        header.classList.add('header')
+        header.innerHTML = `Задание ${this.index + 1} из ${this.parent.amountOfUnits}<a class='showTip'>Показать подсказку <i class="fas fa-hand-point-up"></i></a>`
+
+        // creating unit tip
+        let tip = document.createElement('div')
+        tip.className = 'tip off'
+        tip.innerHTML = `<p>${this.tip}</p>`
+
+        //creating unit body
+        let body = this.createBody()
+
+        // creting unit feedback
+        let fb = document.createElement('div')
+        fb.classList.add('fb')
+
+        // creating unit button
+        let btn = document.createElement('button')
+        btn.setAttribute('type', 'button')
+        btn.className = 'btn continue regular off'
+        btn.innerHTML = 'Продолжить'
+
+        // appending children to unit container
+        this.unitContainer.appendChild(header)
+        this.unitContainer.appendChild(tip)
+        this.unitContainer.appendChild(body)
+        this.unitContainer.appendChild(fb)
+        this.unitContainer.appendChild(btn)
+
+
+        // setting event listeners
         this.unitContainer
             .querySelector('a.showTip')
             .addEventListener('click', this.toggleTip.bind(this))
-
-        let spaces = Array.from(this.unitContainer.querySelectorAll('.space'))
-        for (let space of spaces) {
-            space.addEventListener('click', this.toggleItem.bind(this, 'popupAnsContainer'))
-        }
-
-        let answers = Array.from(this.unitContainer.querySelectorAll('.answer'))
-        for (let answer of answers) {
-            answer.addEventListener('click', this.setAnswer.bind(this))
-        }
 
         let continueBtn = this.unitContainer.querySelector('button.continue')
         continueBtn.addEventListener('click', this.initNextUnit.bind(this))
@@ -627,69 +558,6 @@ class LangExerciseUnit extends InteractionUnit {
         }
         this.parent.createUnit(this.index + 1)
         e.currentTarget.classList.add('off')
-    }
-
-    setAnswer(e) {
-        let that = this
-        let answer = e.currentTarget
-        let space = e.currentTarget.parentNode.parentNode.querySelector('.space')
-        let word = space.parentNode.parentNode
-        let wordNum = word.dataset.word_num
-        let currentWord = that.tasksWords[wordNum]
-        let totalSpacesInWord = currentWord.spaces
-        space.innerText = answer.dataset.choice_to_insert
-
-        let userAnswer = []
-
-        for (let i = 0; i < totalSpacesInWord; i++) {
-            userAnswer.push(word.querySelector(`.space[data-space_num='${i}']`).innerText)
-        }
-
-        if (!userAnswer.includes('_')) {
-            that.tasksCompleted++
-            if (App.isArraysSimilar(userAnswer, currentWord.correctAnswers)) {
-                word.querySelectorAll('.space').forEach(function (s) {
-                    s.classList.add('correct')
-                    s.classList.add('disabled')
-                    setTimeout(function () {
-                        s.classList.remove('correct')
-                    }, 2000)
-                })
-                that.score++
-                that.setFb('correct', wordNum)
-            } else if (
-                !App.isArraysSimilar(userAnswer, currentWord.correctAnswers)
-            ) {
-                word.querySelectorAll('.space').forEach(function (s, i) {
-                    if (s.innerText === currentWord.correctAnswers[i]) {
-                        s.classList.add('correct')
-                    } else if (s.innerText !== currentWord.correctAnswers[i]) {
-                        s.classList.add('incorrect')
-                        setTimeout(function () {
-                            s.innerText = currentWord.correctAnswers[i]
-                            s.classList.remove('incorrect')
-                        }, 2000)
-                    }
-                    setTimeout(function () {
-                        s.classList.remove('correct')
-                        s.classList.remove('incorrect')
-                    }, 2000)
-                    s.classList.add('disabled')
-                })
-                that.setFb('incorrect', wordNum)
-            }
-        }
-
-        if (that.totalTasks === that.tasksCompleted) {
-            that.completed = true
-            setTimeout(function () {
-                that.unitContainer
-                    .querySelector('button.continue')
-                    .classList.remove('off')
-            }, 0)
-        }
-
-        e.currentTarget.parentNode.classList.add('off')
     }
 
     setFb(status, position) {
@@ -730,17 +598,6 @@ class LangExerciseUnit extends InteractionUnit {
         }
     }
 
-    toggleItem(cssClass, e) {
-        let currentItem = e.currentTarget.parentNode.querySelector(
-            `.${cssClass}`
-        )
-        if (currentItem.classList.contains('off')) {
-            currentItem.classList.remove('off')
-        } else if (!currentItem.classList.contains('off')) {
-            currentItem.classList.add('off')
-        }
-    }
-
     toggleTip(e) {
         let tip = this.unitContainer.querySelector('.tip')
         if (tip.classList.contains('off')) {
@@ -754,33 +611,48 @@ class LangExerciseUnit extends InteractionUnit {
         }
     }
 
-    createTaskBody() {
+    createBody() {
         let that = this
-        let splitByWords = this.text.split(' ')
-        let wordNum = 0
-        let modifiedWords = splitByWords.map(function (word) {
+        let body = document.createElement('div')
+        body.className = 'body'
+        let separateWords = this.text.split(' ')
+        let wordIndex = 0
+        let modifiedWords = separateWords.map(function (word) {
             if (word.includes('_')) {
-                let newWord = new FillInDropDownItem(that, word, wordNum)
-                that.tasksWords.push(newWord)
-                wordNum++
-                return newWord.init()
+                let FIDDItem = new FillInDropDownItem(that, word, wordIndex)
+                that.words.push(FIDDItem)
+                wordIndex++
+                return `<span class="replace">${word}</span>`
             } else {
                 return word
             }
         })
-        return modifiedWords.join(' ')
+        body.innerHTML = modifiedWords.join(' ')
+        let replaceElements = Array.from(body.querySelectorAll('.replace'))
+        replaceElements.forEach(function (el, i) {
+            body.replaceChild(that.words[i].init(), el)
+        })
+        return body
     }
 }
 
 class FillInDropDownItem {
-    constructor(parent, word, wordNum) {
+    constructor(parent, word, wordIndex) {
         this.parent = parent
         this._word = word // 1Пр_(а*,б)глаша_(в*,г)м
-        this.wordNum = wordNum
-        this.spaces = this._word.match(/_/g).length
+        this.wordIndex = wordIndex
+        this.spacesTotal = this._word.match(/_/g).length
         this.choicesToInsert = this.getChoicesToInsert(this._word)
         this.choicesToShow = this.getChoicesToShow(this._word)
         this.correctAnswers = this.getCorrectAnwers(this._word)
+        this.userAnswer = []
+        this.completed = false
+        this.score = 0
+        this.htmlElement
+    }
+
+    get result() {
+        return this.score === this.spacesTotal ? true : false
     }
 
     get word() {
@@ -851,10 +723,13 @@ class FillInDropDownItem {
     }
 
     init() {
+        let word = document.createElement('span')
+        word.classList.add('word')
+        word.dataset.word_index = this.wordIndex
         let that = this
         let spaceNum = 0
         let letters = this.word.split('')
-        let modifiedLetters = letters.map(function (l) {
+        let modifiedText = letters.map(function (l) {
             if (l === '_') {
                 let choicesSpans = that.choicesToShow[spaceNum].map(function (c, index) {
                     return `<span class="answer box" data-correct="${c === that.correctAnswers[spaceNum] ? true : false}" data-choice_to_insert="${that.choicesToInsert[spaceNum][index]}">${that.choicesToShow[spaceNum][index]}</span>`
@@ -865,11 +740,90 @@ class FillInDropDownItem {
             } else {
                 return l
             }
+        }).join('')
+
+        word.innerHTML = modifiedText
+
+        let answers = Array.from(word.querySelectorAll('.answer'))
+        answers.forEach(function (a, i) {
+            a.addEventListener('click', that.setAnswer.bind(that))
         })
 
-        let newWord = `<span class='word' data-word_num=${this.wordNum}>${modifiedLetters.join('')}</span>`
+        let spaces = Array.from(word.querySelectorAll('.space'))
+        for (let space of spaces) {
+            space.addEventListener('click', this.toggleItem.bind(this, 'popupAnsContainer'))
+        }
+        this.htmlElement = word
+        return word
+    }
 
-        return newWord
+    toggleItem(cssClass, e) {
+        let currentItem = e.currentTarget.parentNode.querySelector(
+            `.${cssClass}`
+        )
+        if (currentItem.classList.contains('off')) {
+            currentItem.classList.remove('off')
+        } else if (!currentItem.classList.contains('off')) {
+            currentItem.classList.add('off')
+        }
+    }
+
+    setAnswer(e) {
+        let that = this
+        let answer = e.currentTarget
+        let space = e.currentTarget.parentNode.parentNode.querySelector('.space')
+        let word = space.parentNode.parentNode
+        space.innerText = answer.dataset.choice_to_insert
+
+        that.userAnswer = []
+
+        for (let i = 0; i < that.spacesTotal; i++) {
+            that.userAnswer.push(word.querySelector(`.space[data-space_num='${i}']`).innerText)
+        }
+
+        if (!that.userAnswer.includes('_')) {
+            that.completed = true
+            if (App.isArraysSimilar(that.userAnswer, that.correctAnswers)) {
+                console.log('word is correct')
+                that.parent.completed = {
+                    status: 'correct',
+                    index: that.wordIndex
+                }
+                word.querySelectorAll('.space').forEach(function (s) {
+                    s.classList.add('correct')
+                    s.classList.add('disabled')
+                    setTimeout(function () {
+                        s.classList.remove('correct')
+                    }, 2000)
+                })
+                that.score++
+            } else if (
+                !App.isArraysSimilar(that.userAnswer, that.correctAnswers)
+            ) {
+                console.log('word is incorrect')
+                that.parent.completed = {
+                    status: 'incorrect',
+                    index: that.wordIndex
+                }
+                word.querySelectorAll('.space').forEach(function (s, i) {
+                    if (s.innerText === that.correctAnswers[i]) {
+                        s.classList.add('correct')
+                    } else if (s.innerText !== that.correctAnswers[i]) {
+                        s.classList.add('incorrect')
+                        setTimeout(function () {
+                            s.innerText = that.correctAnswers[i]
+                            s.classList.remove('incorrect')
+                        }, 2000)
+                    }
+                    setTimeout(function () {
+                        s.classList.remove('correct')
+                        s.classList.remove('incorrect')
+                    }, 2000)
+                    s.classList.add('disabled')
+                })
+            }
+        }
+        e.currentTarget.parentNode.classList.add('off')
     }
 }
 
