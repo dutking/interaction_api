@@ -375,11 +375,10 @@ class DictantUnit extends InteractionUnit {
         })
     }
 
-    /* setFb(status, position) {
+    setFb(status, index) {
         let that = this
         let fb = that.unitContainer.querySelector('.fb')
         let currentFb = document.createElement('div')
-        currentFb.dataset.position = position
         currentFb.className = 'fbUnit leftBorderMarker'
         currentFb.classList.add(
             `${status === 'correct' ? 'correct' : 'incorrect'}`
@@ -390,28 +389,10 @@ class DictantUnit extends InteractionUnit {
             }">${
             status === 'correct' ? 'Вы ответили верно!' : 'Вы ответили неверно!'
         }</p>
-            <p class="fbText">${
-                status === 'correct'
-                    ? that.fb.correct
-                    : `${that.fb.incorrect}. Посмотрите верное написание.`
-            }</p>`
-        let fbUnits = fb.querySelectorAll('div')
+            <p class="fbText">${that.fbs[index]}.</p>`
 
-        if (fbUnits.length === 0) {
-            fb.appendChild(currentFb)
-        } else if (fbUnits.length > 0) {
-            fbUnits.forEach(function (u) {
-                if (Number(position) === Number(u.dataset.position) - 1) {
-                    u.before(currentFb)
-                } else if (
-                    Number(position) ===
-                    Number(u.dataset.position) + 1
-                ) {
-                    u.after(currentFb)
-                }
-            })
-        }
-    } */
+        fb.appendChild(currentFb)
+    }
 
     createBody() {
         let that = this
