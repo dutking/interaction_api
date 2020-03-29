@@ -5,6 +5,7 @@ class Interaction {
         this.interactionData = renderHook.dataset
         this.id = this.interactionData.interaction_id
         this.name = this.interactionData.name
+        this.interactionUnits = []
         this.init()
     }
 
@@ -27,21 +28,16 @@ class ScorableInteraction extends Interaction {
     constructor(index, renderHook) {
         super(index, renderHook)
         this.minScore = this.interactionData.min_score
-        this._score = 0
     }
 
     get score() {
-        /* let score = 0
+        let score = 0
         this.interactionUnits.forEach(function (u) {
             if (u.result === true) {
                 score++
             }
-        }) */
-        return this._score
-    }
-
-    set score(v) {
-        this._score = v
+        })
+        return score
     }
 
     get result() {
@@ -55,7 +51,6 @@ class IterableScorableInteraction extends ScorableInteraction {
         renderHook
     ) {
         super(index, renderHook)
-        this.interactionUnits = []
         this.isShuffle = this.interactionData.is_shuffle
         this.amountOfUnits = this.interactionData.amount_of_units === '0' ? db[this.index].length : Number(this.interactionData.amount_of_units)
         this.unitsToComplete = this.interactionData.units_to_complete === '0' ? this.amount_of_units : Number(this.interactionData.units_to_complete)
@@ -120,9 +115,8 @@ class DictantInteraction extends ScorableInteraction {
     }
 
     createUnit() {
-        console.log('creating dictant unit...')
-        let unit = new DictantUnit(num, this, 'dictantUnit', db[this.index])
-        this.interactionUnit.push(unit)
+        let unit = new DictantUnit(0, this, 'dictantUnit', db[this.index])
+        this.interactionUnits.push(unit)
     }
 
     init() {
@@ -893,57 +887,43 @@ class FillInDropDownItem {
 }
 
 class App {
-    static testMode = true
-    static configurationData = {}
-    static renderHooks = []
-    static interactions = []
-    static score = 0
+    constructor() {}
+    // static configurationData = {}
+    static renderHooks = [];
+    static interactions = [];
+    static score = 0;
 
     static init() {
         // this.configure()
-        this.renderHooks = Array.from(document.querySelectorAll('.interaction'))
-        this.renderHooks.forEach(function (hook, index) {
+        App.renderHooks = Array.from(document.querySelectorAll('.interaction'))
+        App.interaction = App.renderHooks.map(function (hook, index) {
+            console.log('interaction ' + hook.dataset.type)
             switch (hook.dataset.type) {
                 case 'test':
-                    this.interactions.push(
-                        new TestInteraction(
-                            index,
-                            hook
-                        )
+                    return new TestInteraction(
+                        index,
+                        hook
                     )
-                    break
                 case 'case':
-                    this.interactions.push(
-                        new CaseInteraction(
-                            index,
-                            hook
-                        )
+                    return new CaseInteraction(
+                        index,
+                        hook
                     )
-                    break
                 case 'langExercise':
-                    App.interactions.push(
-                        new LangExerciseInteraction(
-                            index,
-                            hook
-                        )
+                    return new LangExerciseInteraction(
+                        index,
+                        hook
                     )
-                    break
-                case 'dictant':
-                    this.interactions.push(
-                        new DictantInteraction(
-                            index,
-                            hook
-                        )
+                case 'diсtant':
+                    return new DictantInteraction(
+                        index,
+                        hook
                     )
-                    break
                 case 'video':
-                    this.interactions.push(
-                        new VideoInteraction(
-                            index,
-                            hook
-                        )
+                    return new VideoInteraction(
+                        index,
+                        hook
                     )
-                    break
             }
         })
     }
@@ -987,4 +967,4 @@ class App {
     }
 }
 
-setTimeout(App.init, 1)
+window.addEventListener('DOMContentLoaded', App.init)
