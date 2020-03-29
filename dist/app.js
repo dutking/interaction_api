@@ -40,6 +40,10 @@ class ScorableInteraction extends Interaction {
         return this._score
     }
 
+    set score(v) {
+        this._score = v
+    }
+
     get result() {
         return this.score > this.minScore === true ? true : false
     }
@@ -93,7 +97,6 @@ class LangExerciseInteraction extends IterableScorableInteraction {
     }
 
     createUnit(num) {
-        console.log('creating unit')
         if (num < this.amountOfUnits) {
             let unit = new LangExerciseUnit(num, this, 'langExerciseUnit', db[this.index][num])
             this.interactionUnits.push(unit)
@@ -102,6 +105,28 @@ class LangExerciseInteraction extends IterableScorableInteraction {
 
     init() {
         this.createUnit(0)
+    }
+}
+
+class DictantInteraction extends ScorableInteraction {
+    constructor(
+        index,
+        renderHook
+    ) {
+        super(index, renderHook)
+        this.insideBox = this.interactionData.inside_box
+        this.init()
+        console.log('dictant interaction activated...')
+    }
+
+    createUnit() {
+        console.log('creating dictant unit...')
+        let unit = new DictantUnit(num, this, 'dictantUnit', db[this.index])
+        this.interactionUnit.push(unit)
+    }
+
+    init() {
+        this.createUnit()
     }
 }
 
@@ -203,15 +228,47 @@ class CaseInteraction extends IterableScorableInteraction {
     }
 }
 
-class DictantInteraction extends ScorableInteraction {
+
+
+class VideoInteraction extends Interaction {
     constructor(index, renderHook) {
         super(index, renderHook)
-        this.insideBox = this.interactionData.inside_box
-        this.dbData = db[index]
+    }
+}
+
+class InteractionUnit {
+    constructor(index, parent, cssClasses, dbData) {
+        this.index = index
+        this.parent = parent
+        this.cssClasses = cssClasses
+        this.dbData = dbData
+        this.completed = false
+        this.score = 0
+        console.log('creating new interaction unit...')
+    }
+
+    render() {}
+
+    createUnitContainer(cssClasses) {
+        const unitContainer = document.createElement('div')
+        if (cssClasses) {
+            unitContainer.className = cssClasses
+        }
+        unitContainer.classList.add('unit')
+        this.parent.renderHook.append(unitContainer)
+        return unitContainer
+    }
+
+    get result() {
+        return this.completed
+    }
+}
+
+class DictantUnit extends InteractionUnit {
+    constructor(index, parent, cssClasses, dbData) {
+        super(index, parent, cssClasses, dbData)
         this.text = this.dbData.text
-        this.id = this.dbData.id
-        this.tips = this.dbData.tip
-        this.fbs = this.dbData.fb
+        this.fbs = this.dbData.fbs
         this.tasksWords = []
         this.tasksCompleted = 0
         this.render()
@@ -226,7 +283,7 @@ class DictantInteraction extends ScorableInteraction {
     }
 
     render() {
-        console.log('Rendering task unit...')
+        console.log('rendering dictant unit...')
         this.unitContainer = this.createUnitContainer(this.cssClasses)
         this.unitContainer.innerHTML = `
         <div class="header">Задание ${this.index + 1} из ${this.parent.amountOfUnits}<a class='showTip'>Показать подсказку <i class="fas fa-hand-point-up"></i></a></div>
@@ -404,39 +461,6 @@ class DictantInteraction extends ScorableInteraction {
     }
 }
 
-class VideoInteraction extends Interaction {
-    constructor(index, renderHook) {
-        super(index, renderHook)
-    }
-}
-
-class InteractionUnit {
-    constructor(index, parent, cssClasses, dbData) {
-        this.index = index
-        this.parent = parent
-        this.cssClasses = cssClasses
-        this.dbData = dbData
-        this.completed = false
-        this.score = 0
-    }
-
-    render() {}
-
-    createUnitContainer(cssClasses) {
-        const unitContainer = document.createElement('div')
-        if (cssClasses) {
-            unitContainer.className = cssClasses
-        }
-        unitContainer.classList.add('unit')
-        this.parent.renderHook.append(unitContainer)
-        return unitContainer
-    }
-
-    get result() {
-        return this.completed
-    }
-}
-
 /* class FillInDropDownUnit extends InteractionUnit {
     constructor(index, parent, cssClasses, data) {
         super(index, parent, cssClasses, data)
@@ -590,7 +614,6 @@ class LangExerciseUnit extends InteractionUnit {
     }
 
     render() {
-        console.log('Rendering task unit...')
         this.unitContainer = this.createUnitContainer(this.cssClasses)
         this.unitContainer.innerHTML = `
         <div class="header">Задание ${this.index + 1} из ${this.parent.amountOfUnits}<a class='showTip'>Показать подсказку <i class="fas fa-hand-point-up"></i></a></div>
@@ -777,7 +800,6 @@ class FillInDropDownItem {
         this.choicesToInsert = this.getChoicesToInsert(this._word)
         this.choicesToShow = this.getChoicesToShow(this._word)
         this.correctAnswers = this.getCorrectAnwers(this._word)
-        console.log(this.choicesToInsert, this.choicesToShow, this.correctAnswers)
     }
 
     get word() {
@@ -848,7 +870,6 @@ class FillInDropDownItem {
     }
 
     init() {
-        console.log('Building a word...')
         let that = this
         let spaceNum = 0
         let letters = this.word.split('')
