@@ -2,7 +2,9 @@ class Interaction {
     constructor(index, renderHook) {
         this.index = index
         this.renderHook = renderHook
-        this.data = renderHook.dataset
+        this.interactionData = renderHook.dataset
+        this.id = this.interactionData.interaction_id
+        this.name = this.interactionData.name
         this.init()
     }
 
@@ -24,7 +26,7 @@ class Interaction {
 class ScorableInteraction extends Interaction {
     constructor(index, renderHook) {
         super(index, renderHook)
-        this.minScore = this.data.min_score
+        this.minScore = this.interactionData.min_score
         this._score = 0
     }
 
@@ -50,9 +52,9 @@ class IterableScorableInteraction extends ScorableInteraction {
     ) {
         super(index, renderHook)
         this.interactionUnits = []
-        this.isShuffle = this.data.is_shuffle
-        this.amountOfUnits = this.data.amount_of_units === '0' ? db[this.index].length : Number(this.data.amount_of_units)
-        this.unitsToComplete = this.data.units_to_complete === '0' ? this.amount_of_units : Number(this.data.units_to_complete)
+        this.isShuffle = this.interactionData.is_shuffle
+        this.amountOfUnits = this.interactionData.amount_of_units === '0' ? db[this.index].length : Number(this.interactionData.amount_of_units)
+        this.unitsToComplete = this.interactionData.units_to_complete === '0' ? this.amount_of_units : Number(this.interactionData.units_to_complete)
     }
 
     get score() {
@@ -86,7 +88,7 @@ class LangExerciseInteraction extends IterableScorableInteraction {
         renderHook
     ) {
         super(index, renderHook)
-        this.insideBox = this.data.inside_box
+        this.insideBox = this.interactionData.inside_box
         this.init()
     }
 
@@ -204,11 +206,12 @@ class CaseInteraction extends IterableScorableInteraction {
 class DictantInteraction extends ScorableInteraction {
     constructor(index, renderHook) {
         super(index, renderHook)
-        this.data = db[index]
-        this.text = data.text
-        this.id = data.id
-        this.tips = data.tip
-        this.fbs = data.fb
+        this.insideBox = this.interactionData.inside_box
+        this.dbData = db[index]
+        this.text = this.dbData.text
+        this.id = this.dbData.id
+        this.tips = this.dbData.tip
+        this.fbs = this.dbData.fb
         this.tasksWords = []
         this.tasksCompleted = 0
         this.render()
@@ -409,11 +412,11 @@ class VideoInteraction extends Interaction {
 }
 
 class InteractionUnit {
-    constructor(index, parent, cssClasses, data) {
+    constructor(index, parent, cssClasses, dbData) {
         this.index = index
         this.parent = parent
         this.cssClasses = cssClasses
-        this.data = data
+        this.dbData = dbData
         this.completed = false
         this.score = 0
     }
@@ -568,12 +571,12 @@ class InteractionUnit {
 } */
 
 class LangExerciseUnit extends InteractionUnit {
-    constructor(index, parent, cssClasses, data) {
-        super(index, parent, cssClasses, data)
-        this.text = data.text
-        this.id = data.id
-        this.tip = data.tip
-        this.fb = data.fb
+    constructor(index, parent, cssClasses, dbData) {
+        super(index, parent, cssClasses, dbData)
+        this.text = dbData.text
+        this.id = dbData.id
+        this.tip = dbData.tip
+        this.fb = dbData.fb
         this.tasksWords = []
         this.tasksCompleted = 0
         this.render()
