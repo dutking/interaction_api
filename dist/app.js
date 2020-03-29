@@ -403,7 +403,6 @@ class DictantInteraction extends ScorableInteraction {
         return modifiedWords.join(' ')
     }
 }
-}
 
 class VideoInteraction extends Interaction {
     constructor(index, renderHook) {
