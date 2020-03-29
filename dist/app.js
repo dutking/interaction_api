@@ -204,6 +204,7 @@ class CaseInteraction extends IterableScorableInteraction {
 class DictantInteraction extends ScorableInteraction {
     constructor(index, renderHook) {
         super(index, renderHook)
+        this.data = db[index]
         this.text = data.text
         this.id = data.id
         this.tips = data.tip
