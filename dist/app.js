@@ -264,113 +264,98 @@ class InteractionUnit {
 class DictantUnit extends InteractionUnit {
     constructor(index, parent, cssClasses, dbData) {
         super(index, parent, cssClasses, dbData)
-        this.text = this.dbData.text
-        this.fbs = this.dbData.fbs
-        this.tasksWords = []
-        this.tasksCompleted = 0
+        this.text = dbData.text
+        this.fbs = dbData.fbs
+        this.words = []
         this.render()
     }
 
+    get score() {
+        let score = 0
+        this.words.forEach(function (w) {
+            if (w.result) {
+                score++
+            }
+        })
+        return score
+    }
+
+    get completed() {
+        return this._completed
+    }
+
+    set completed(v) {
+        let numCompleted = 0
+        this.words.forEach(function (w) {
+            if (w.completed) {
+                numCompleted++
+            }
+        })
+        this._completed = numCompleted === this.words.length ? true : false
+
+        if (this.completed === true) {
+            this.unitContainer.querySelector('button.check').classList.remove('off')
+        }
+        // this.setFb(v.status, v.index)
+    }
+
     get totalTasks() {
-        return this.tasksWords.length
+        return this.words.length
     }
 
     get result() {
         return this.score === this.totalTasks ? true : false
     }
 
+    get tasksCompleted() {
+        let numCompleted = 0
+        this.words.forEach(function (w) {
+            if (w.completed) {
+                numCompleted++
+            }
+        })
+        return numCompleted
+    }
+
     render() {
-        console.log('rendering dictant unit...')
+        // creating unit container
         this.unitContainer = this.createUnitContainer(this.cssClasses)
-        this.unitContainer.innerHTML = `
-        <div class="header">Диктант</div>
-        <div class='body'>${this.createTaskBody()}</div>        
-        <div class='fb'></div>
-        <button type='button' class='btn check regular off'>Проверить</button>
-        `
 
-        let spaces = Array.from(this.unitContainer.querySelectorAll('.space'))
-        for (let space of spaces) {
-            space.addEventListener('click', this.toggleItem.bind(this, 'popupAnsContainer'))
-        }
+        // creating unit header
+        let header = document.createElement('div')
+        header.classList.add('header')
+        header.innerHTML = `Диктант`
 
-        let answers = Array.from(this.unitContainer.querySelectorAll('.answer'))
-        for (let answer of answers) {
-            answer.addEventListener('click', this.setAnswer.bind(this))
-        }
+
+        //creating unit body
+        let body = this.createBody()
+
+        // creting unit feedback
+        let fb = document.createElement('div')
+        fb.classList.add('fb')
+
+        // creating unit button
+        let btn = document.createElement('button')
+        btn.setAttribute('type', 'button')
+        btn.className = 'btn check regular off'
+        btn.innerHTML = 'Проверить'
+
+        // appending children to unit container
+        this.unitContainer.appendChild(header)
+        this.unitContainer.appendChild(body)
+        this.unitContainer.appendChild(fb)
+        this.unitContainer.appendChild(btn)
+
+
+        // setting event listeners
 
         let checkBtn = this.unitContainer.querySelector('button.check')
         checkBtn.addEventListener('click', this.check.bind(this))
     }
 
-    check() {
-        console.log(this.tasksWords)
-    }
+    check() {}
 
-    setAnswer(e) {
-        let that = this
-        let answer = e.currentTarget
-        let space = e.currentTarget.parentNode.parentNode.querySelector('.space')
-        let word = space.parentNode.parentNode
-        let wordNum = word.dataset.word_num
-        let currentWord = that.tasksWords[wordNum]
-        let totalSpacesInWord = currentWord.spaces
-        space.innerText = answer.dataset.choice_to_insert
-
-        let userAnswer = []
-
-        for (let i = 0; i < totalSpacesInWord; i++) {
-            userAnswer.push(word.querySelector(`.space[data-space_num='${i}']`).innerText)
-        }
-
-        if (!userAnswer.includes('_')) {
-            that.tasksCompleted++
-            if (App.isArraysSimilar(userAnswer, currentWord.correctAnswers)) {
-                word.querySelectorAll('.space').forEach(function (s) {
-                    s.classList.add('correct')
-                    s.classList.add('disabled')
-                    setTimeout(function () {
-                        s.classList.remove('correct')
-                    }, 2000)
-                })
-                that.score++
-                // that.setFb('correct', wordNum)
-            } else if (
-                !App.isArraysSimilar(userAnswer, currentWord.correctAnswers)
-            ) {
-                word.querySelectorAll('.space').forEach(function (s, i) {
-                    if (s.innerText === currentWord.correctAnswers[i]) {
-                        s.classList.add('correct')
-                    } else if (s.innerText !== currentWord.correctAnswers[i]) {
-                        s.classList.add('incorrect')
-                        setTimeout(function () {
-                            s.innerText = currentWord.correctAnswers[i]
-                            s.classList.remove('incorrect')
-                        }, 2000)
-                    }
-                    setTimeout(function () {
-                        s.classList.remove('correct')
-                        s.classList.remove('incorrect')
-                    }, 2000)
-                    s.classList.add('disabled')
-                })
-                // that.setFb('incorrect', wordNum)
-            }
-        }
-
-        if (that.totalTasks === that.tasksCompleted) {
-            that.completed = true
-            setTimeout(function () {
-                that.unitContainer
-                    .querySelector('button.check')
-                    .classList.remove('off')
-            }, 0)
-        }
-
-        e.currentTarget.parentNode.classList.add('off')
-    }
-
-    setFb(status, position) {
+    /* setFb(status, position) {
         let that = this
         let fb = that.unitContainer.querySelector('.fb')
         let currentFb = document.createElement('div')
@@ -406,47 +391,30 @@ class DictantUnit extends InteractionUnit {
                 }
             })
         }
-    }
+    } */
 
-    toggleItem(cssClass, e) {
-        let currentItem = e.currentTarget.parentNode.querySelector(
-            `.${cssClass}`
-        )
-        if (currentItem.classList.contains('off')) {
-            currentItem.classList.remove('off')
-        } else if (!currentItem.classList.contains('off')) {
-            currentItem.classList.add('off')
-        }
-    }
-
-    toggleTip(e) {
-        let tip = this.unitContainer.querySelector('.tip')
-        if (tip.classList.contains('off')) {
-            tip.classList.remove('off')
-            e.currentTarget.innerHTML =
-                'Скрыть подсказку <i class="fas fa-hand-point-up"></i>'
-        } else if (!tip.classList.contains('off')) {
-            tip.classList.add('off')
-            e.currentTarget.innerHTML =
-                'Показать подсказку <i class="fas fa-hand-point-up"></i>'
-        }
-    }
-
-    createTaskBody() {
+    createBody() {
         let that = this
-        let splitByWords = this.text.split(' ')
-        let wordNum = 0
-        let modifiedWords = splitByWords.map(function (word) {
+        let body = document.createElement('div')
+        body.className = 'body'
+        let separateWords = this.text.split(' ')
+        let wordIndex = 0
+        let modifiedWords = separateWords.map(function (word) {
             if (word.includes('_')) {
-                let newWord = new FillInDropDownItem(that, word, wordNum)
-                that.tasksWords.push(newWord)
-                wordNum++
-                return newWord.init()
+                let FIDDItem = new FillInDropDownItem(that, word, wordIndex)
+                that.words.push(FIDDItem)
+                wordIndex++
+                return `<span class="replace">${word}</span>`
             } else {
                 return word
             }
         })
-        return modifiedWords.join(' ')
+        body.innerHTML = modifiedWords.join(' ')
+        let replaceElements = Array.from(body.querySelectorAll('.replace'))
+        replaceElements.forEach(function (el, i) {
+            body.replaceChild(that.words[i].init(), el)
+        })
+        return body
     }
 }
 
@@ -647,12 +615,7 @@ class FillInDropDownItem {
         this.correctAnswers = this.getCorrectAnwers(this._word)
         this.userAnswer = []
         this.completed = false
-        this.score = 0
         this.htmlElement
-    }
-
-    get result() {
-        return this.score === this.spacesTotal ? true : false
     }
 
     get word() {
@@ -768,6 +731,28 @@ class FillInDropDownItem {
         }
     }
 
+    markAnswers() {
+        let spaces = Array.from(this.htmlElement.querySelectorAll('.space'))
+        space.querySelectorAll('.space').forEach(function (s, i) {
+            if (s.innerText === that.correctAnswers[i]) {
+                s.classList.add('correct')
+            } else if (s.innerText !== that.correctAnswers[i]) {
+                s.classList.add('incorrect')
+                setTimeout(function () {
+                    s.innerText = that.correctAnswers[i]
+                    s.classList.remove('incorrect')
+                }, 2000)
+            }
+            setTimeout(function () {
+                s.classList.remove('correct')
+                s.classList.remove('incorrect')
+            }, 2000)
+            s.classList.add('disabled')
+        })
+    }
+
+    correctAnswers() {}
+
     setAnswer(e) {
         let that = this
         let answer = e.currentTarget
@@ -789,14 +774,17 @@ class FillInDropDownItem {
                     status: 'correct',
                     index: that.wordIndex
                 }
-                word.querySelectorAll('.space').forEach(function (s) {
-                    s.classList.add('correct')
-                    s.classList.add('disabled')
-                    setTimeout(function () {
-                        s.classList.remove('correct')
-                    }, 2000)
-                })
-                that.score++
+                if (that.parent instanceof LangExerciseUnit) {
+                    word.querySelectorAll('.space').forEach(function (s) {
+                        s.classList.add('correct')
+                        s.classList.add('disabled')
+                        setTimeout(function () {
+                            s.classList.remove('correct')
+                        }, 2000)
+                    })
+                }
+
+                that.result = true
             } else if (
                 !App.isArraysSimilar(that.userAnswer, that.correctAnswers)
             ) {
@@ -805,22 +793,25 @@ class FillInDropDownItem {
                     status: 'incorrect',
                     index: that.wordIndex
                 }
-                word.querySelectorAll('.space').forEach(function (s, i) {
-                    if (s.innerText === that.correctAnswers[i]) {
-                        s.classList.add('correct')
-                    } else if (s.innerText !== that.correctAnswers[i]) {
-                        s.classList.add('incorrect')
+                that.result = false
+                if (that.parent instanceof LangExerciseUnit) {
+                    word.querySelectorAll('.space').forEach(function (s, i) {
+                        if (s.innerText === that.correctAnswers[i]) {
+                            s.classList.add('correct')
+                        } else if (s.innerText !== that.correctAnswers[i]) {
+                            s.classList.add('incorrect')
+                            setTimeout(function () {
+                                s.innerText = that.correctAnswers[i]
+                                s.classList.remove('incorrect')
+                            }, 2000)
+                        }
                         setTimeout(function () {
-                            s.innerText = that.correctAnswers[i]
+                            s.classList.remove('correct')
                             s.classList.remove('incorrect')
                         }, 2000)
-                    }
-                    setTimeout(function () {
-                        s.classList.remove('correct')
-                        s.classList.remove('incorrect')
-                    }, 2000)
-                    s.classList.add('disabled')
-                })
+                        s.classList.add('disabled')
+                    })
+                }
             }
         }
         e.currentTarget.parentNode.classList.add('off')
