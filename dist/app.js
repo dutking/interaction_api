@@ -202,14 +202,208 @@ class CaseInteraction extends IterableScorableInteraction {
 }
 
 class DictantInteraction extends ScorableInteraction {
-    constructor(index, renderHook, interactionId, name, minScore) {
-        super(index, renderHook, interactionId, name, minScore)
+    constructor(index, renderHook) {
+        super(index, renderHook)
+        this.text = data.text
+        this.id = data.id
+        this.tips = data.tip
+        this.fbs = data.fb
+        this.tasksWords = []
+        this.tasksCompleted = 0
+        this.render()
     }
+
+    get totalTasks() {
+        return this.tasksWords.length
+    }
+
+    get result() {
+        return this.score === this.totalTasks ? true : false
+    }
+
+    render() {
+        console.log('Rendering task unit...')
+        this.unitContainer = this.createUnitContainer(this.cssClasses)
+        this.unitContainer.innerHTML = `
+        <div class="header">Задание ${this.index + 1} из ${this.parent.amountOfUnits}<a class='showTip'>Показать подсказку <i class="fas fa-hand-point-up"></i></a></div>
+        <div class='tip off'><p>${this.tip}</p></div>
+        <div class='body'>${this.createTaskBody()}</div>        
+        <div class='fb'></div>
+        <button type='button' class='btn continue regular off'>Продолжить</button>
+        `
+        this.unitContainer
+            .querySelector('a.showTip')
+            .addEventListener('click', this.toggleTip.bind(this))
+
+        let spaces = Array.from(this.unitContainer.querySelectorAll('.space'))
+        for (let space of spaces) {
+            space.addEventListener('click', this.toggleItem.bind(this, 'popupAnsContainer'))
+        }
+
+        let answers = Array.from(this.unitContainer.querySelectorAll('.answer'))
+        for (let answer of answers) {
+            answer.addEventListener('click', this.setAnswer.bind(this))
+        }
+
+        let continueBtn = this.unitContainer.querySelector('button.continue')
+        continueBtn.addEventListener('click', this.initNextUnit.bind(this))
+    }
+
+    initNextUnit(e) {
+        if (this.index === this.parent.unitsToComplete - 1) {
+            new LangExeLetter(this.unitContainer, this.parent.insideBox, this.parent.score)
+        }
+        this.parent.createUnit(this.index + 1)
+        e.currentTarget.classList.add('off')
+    }
+
+    setAnswer(e) {
+        let that = this
+        let answer = e.currentTarget
+        let space = e.currentTarget.parentNode.parentNode.querySelector('.space')
+        let word = space.parentNode.parentNode
+        let wordNum = word.dataset.word_num
+        let currentWord = that.tasksWords[wordNum]
+        let totalSpacesInWord = currentWord.spaces
+        space.innerText = answer.dataset.choice_to_insert
+
+        let userAnswer = []
+
+        for (let i = 0; i < totalSpacesInWord; i++) {
+            userAnswer.push(word.querySelector(`.space[data-space_num='${i}']`).innerText)
+        }
+
+        if (!userAnswer.includes('_')) {
+            that.tasksCompleted++
+            if (App.isArraysSimilar(userAnswer, currentWord.correctAnswers)) {
+                word.querySelectorAll('.space').forEach(function (s) {
+                    s.classList.add('correct')
+                    s.classList.add('disabled')
+                    setTimeout(function () {
+                        s.classList.remove('correct')
+                    }, 2000)
+                })
+                that.score++
+                that.setFb('correct', wordNum)
+            } else if (
+                !App.isArraysSimilar(userAnswer, currentWord.correctAnswers)
+            ) {
+                word.querySelectorAll('.space').forEach(function (s, i) {
+                    if (s.innerText === currentWord.correctAnswers[i]) {
+                        s.classList.add('correct')
+                    } else if (s.innerText !== currentWord.correctAnswers[i]) {
+                        s.classList.add('incorrect')
+                        setTimeout(function () {
+                            s.innerText = currentWord.correctAnswers[i]
+                            s.classList.remove('incorrect')
+                        }, 2000)
+                    }
+                    setTimeout(function () {
+                        s.classList.remove('correct')
+                        s.classList.remove('incorrect')
+                    }, 2000)
+                    s.classList.add('disabled')
+                })
+                that.setFb('incorrect', wordNum)
+            }
+        }
+
+        if (that.totalTasks === that.tasksCompleted) {
+            that.completed = true
+            setTimeout(function () {
+                that.unitContainer
+                    .querySelector('button.continue')
+                    .classList.remove('off')
+            }, 0)
+        }
+
+        e.currentTarget.parentNode.classList.add('off')
+    }
+
+    setFb(status, position) {
+        let that = this
+        let fb = that.unitContainer.querySelector('.fb')
+        let currentFb = document.createElement('div')
+        currentFb.dataset.position = position
+        currentFb.className = 'fbUnit leftBorderMarker'
+        currentFb.classList.add(
+            `${status === 'correct' ? 'correct' : 'incorrect'}`
+        )
+        currentFb.innerHTML = `
+            <p class="fbUnitHeader ${
+                status === 'correct' ? 'correct' : 'incorrect'
+            }">${
+            status === 'correct' ? 'Вы ответили верно!' : 'Вы ответили неверно!'
+        }</p>
+            <p class="fbText">${
+                status === 'correct'
+                    ? that.fb.correct
+                    : `${that.fb.incorrect}. Посмотрите верное написание.`
+            }</p>`
+        let fbUnits = fb.querySelectorAll('div')
+
+        if (fbUnits.length === 0) {
+            fb.appendChild(currentFb)
+        } else if (fbUnits.length > 0) {
+            fbUnits.forEach(function (u) {
+                if (Number(position) === Number(u.dataset.position) - 1) {
+                    u.before(currentFb)
+                } else if (
+                    Number(position) ===
+                    Number(u.dataset.position) + 1
+                ) {
+                    u.after(currentFb)
+                }
+            })
+        }
+    }
+
+    toggleItem(cssClass, e) {
+        let currentItem = e.currentTarget.parentNode.querySelector(
+            `.${cssClass}`
+        )
+        if (currentItem.classList.contains('off')) {
+            currentItem.classList.remove('off')
+        } else if (!currentItem.classList.contains('off')) {
+            currentItem.classList.add('off')
+        }
+    }
+
+    toggleTip(e) {
+        let tip = this.unitContainer.querySelector('.tip')
+        if (tip.classList.contains('off')) {
+            tip.classList.remove('off')
+            e.currentTarget.innerHTML =
+                'Скрыть подсказку <i class="fas fa-hand-point-up"></i>'
+        } else if (!tip.classList.contains('off')) {
+            tip.classList.add('off')
+            e.currentTarget.innerHTML =
+                'Показать подсказку <i class="fas fa-hand-point-up"></i>'
+        }
+    }
+
+    createTaskBody() {
+        let that = this
+        let splitByWords = this.text.split(' ')
+        let wordNum = 0
+        let modifiedWords = splitByWords.map(function (word) {
+            if (word.includes('_')) {
+                let newWord = new FillInDropDownItem(that, word, wordNum)
+                that.tasksWords.push(newWord)
+                wordNum++
+                return newWord.init()
+            } else {
+                return word
+            }
+        })
+        return modifiedWords.join(' ')
+    }
+}
 }
 
 class VideoInteraction extends Interaction {
-    constructor(index, renderHook, interactionId, name) {
-        super(index, renderHook, interactionId, name)
+    constructor(index, renderHook) {
+        super(index, renderHook)
     }
 }
 
