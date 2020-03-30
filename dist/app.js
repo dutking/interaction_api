@@ -267,6 +267,7 @@ class DictantUnit extends InteractionUnit {
         this.text = dbData.text
         this.fbs = dbData.fbs
         this.words = []
+        this.mode = 'active' // active, feedback
         this.render()
     }
 
@@ -372,26 +373,22 @@ class DictantUnit extends InteractionUnit {
     showAnswers(e) {
         this.words.forEach(function (w) {
             w.showAnswers()
+            w.addFbIcon()
         })
+        e.currentTarget.classList.add('off')
+        this.setFb('o')
+        this.mode = 'feedback'
     }
 
-    setFb(status, index) {
+    setFb(wordObj, e) {
         let that = this
         let fb = that.unitContainer.querySelector('.fb')
-        let currentFb = document.createElement('div')
-        currentFb.className = 'fbUnit leftBorderMarker'
-        currentFb.classList.add(
-            `${status === 'correct' ? 'correct' : 'incorrect'}`
-        )
-        currentFb.innerHTML = `
-            <p class="fbUnitHeader ${
-                status === 'correct' ? 'correct' : 'incorrect'
-            }">${
-            status === 'correct' ? 'Вы ответили верно!' : 'Вы ответили неверно!'
-        }</p>
-            <p class="fbText">${that.fbs[index]}.</p>`
-
-        fb.appendChild(currentFb)
+        fb.innerHTML = ''
+        if (this.mode === 'active') {
+            fb.innerHTML = `<div class="fbUnit leftBorderMarker"><p class="fbUnitHeader">Обратная связь</p><p class="fbText">Нажимайте на иконку <i class="fas fa-hand-point-up"></i>, чтобы увидеть обратную связь.</p></div>`
+        } else if (this.mode === 'feedback') {
+            fb.innerHTML = `<div class="fbUnit leftBorderMarker selected"><p class="fbUnitHeader">${wordObj.correctWord}</p><p class="fbText">${that.fbs[wordObj.wordIndex]}</p></div>`
+        }
     }
 
     createBody() {
@@ -608,20 +605,37 @@ class LangExerciseUnit extends InteractionUnit {
 class FillInDropDownItem {
     constructor(parent, word, wordIndex) {
         this.parent = parent
-        this._word = word // 1Пр_(а*,б)глаша_(в*,г)м
         this.wordIndex = wordIndex
+        this._word = word // 1Пр_(а*,б)глаша_(в*,г)м
+        this.word = this.getWord(this._word)
         this.spacesTotal = this._word.match(/_/g).length
         this.choicesToInsert = this.getChoicesToInsert(this._word)
         this.choicesToShow = this.getChoicesToShow(this._word)
         this.correctAnswers = this.getCorrectAnwers(this._word)
+        this.correctWord = this.getCorrectWord(this.word)
         this.userAnswer = []
         this.completed = false
         this.htmlElement
     }
 
-    get word() {
-        let w = this._word
-        return w.replace(/(\(.+?\))/g, '')
+    getWord(item) {
+        return item.replace(/(\(.+?\))/g, '')
+    }
+
+    getCorrectWord(item) {
+        let that = this
+        let counter = 0
+        let letters = item.split('')
+        let correctWord = letters.map(function (a, index) {
+            if (a === '_') {
+                let l = that.correctAnswers[counter]
+                counter++
+                return l
+            } else {
+                return a
+            }
+        }).join('')
+        return correctWord
     }
 
     getChoicesToInsert(item) {
@@ -715,7 +729,7 @@ class FillInDropDownItem {
 
         let spaces = Array.from(word.querySelectorAll('.space'))
         for (let space of spaces) {
-            space.addEventListener('click', this.toggleItem.bind(this, 'popupAnsContainer'))
+            space.addEventListener('click', that.toggleItem.bind(that, 'popupAnsContainer'))
         }
         this.htmlElement = word
         return word
@@ -759,6 +773,22 @@ class FillInDropDownItem {
         })
     }
 
+    addFbIcon() {
+        let that = this
+        let icon = document.createElement('span')
+        icon.className = 'box icon empty'
+        icon.innerHTML = `<i class="fas fa-hand-point-up"></i>`
+        this.htmlElement.appendChild(icon)
+        icon.addEventListener('click', this.parent.setFb.bind(this.parent, this))
+        icon.addEventListener('click', function (e) {
+            let icons = Array.from(that.parent.unitContainer.querySelectorAll('.icon'))
+            icons.forEach(function (i) {
+                i.classList.remove('selected')
+            })
+            e.currentTarget.classList.add('selected')
+        })
+    }
+
     setAnswer(e) {
         let that = this
         let answer = e.currentTarget
@@ -771,6 +801,8 @@ class FillInDropDownItem {
         for (let i = 0; i < that.spacesTotal; i++) {
             that.userAnswer.push(word.querySelector(`.space[data-space_num='${i}']`).innerText)
         }
+
+        space.classList.remove('empty')
 
         if (!that.userAnswer.includes('_')) {
             that.completed = true

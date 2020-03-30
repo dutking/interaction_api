@@ -112,11 +112,11 @@
     position: relative;
 }
 
-.interaction .body .space {
+.interaction .body .space,
+.interaction .body .icon {
     display: inline-block;
     width: 2rem;
     height: 2rem;
-    text-decoration: dotted;
     cursor: pointer;
     text-align: center;
     margin: 0 2px 0 2px;
@@ -264,7 +264,8 @@
     border-style: solid;
     border-radius: 2px;
     border-color: var(--color-primary-lightgray);
-    transition: all 0.3s ease-in;
+    color: var(--color-primary-lightgray);
+    transition: background-color 0.3s ease-in, border-color 0.3s ease-in, color 0.1s ease-in;
 }
 
 .box.empty {
@@ -273,16 +274,28 @@
     border-color: var(--color-primary-bluegreen);
 }
 
+.box.selected {
+    background-color: var(--color-primary-orange);
+    border-color: var(--color-primary-orange);
+    color: black;
+}
+
+.box.disabled {
+    border-color: var(--color-primary-lightgray);
+    border-width: 1px;
+    color: var(--color-primary-lightgray);
+}
+
 .box.correct {
+    color: white;
     background-color: var(--color-primary-bluegreen);
     border-color: var(--color-primary-bluegreen);
-    color: white;
 }
 
 .box.incorrect {
+    color: white;
     background-color: var(--color-primary-red);
     border-color: var(--color-primary-red);
-    color: white;
 }
 
 .text.correct {
@@ -308,6 +321,10 @@
 
 .leftBorderMarker.incorrect {
     border-color: var(--color-primary-red);
+}
+
+.leftBorderMarker.selected {
+    border-color: var(--color-primary-orange);
 }
 
 .leftBorderMarker.letterBox {
