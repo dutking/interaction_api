@@ -8,10 +8,6 @@ class Interaction {
         this.interactionUnits = []
     }
 
-    getThis() {
-        console.log(this)
-    }
-
     get id() {
         let type = this.interactionData.type
         let list = App.interactions.filter(i => {
@@ -138,7 +134,6 @@ class DictantInteraction extends ScorableInteraction {
     ) {
         super(index, renderHook)
         this.insideBox = this.interactionData.inside_box
-        console.log('dictant interaction activated...')
         this.init()
     }
 
@@ -267,12 +262,11 @@ class InteractionUnit {
         this.dbData = dbData
         this._completed = false
         this._score = 0
-        console.log('creating new interaction unit...')
     }
 
     get id() {
         if (this.dbData.hasOwnProperty('id')) {
-            return this.dbData.id
+            return `/${this.dbData.id}`
         } else {
             return `/unit_${this.index}`
         }
@@ -662,22 +656,6 @@ class FillInDropDownItem {
         this.htmlElement
     }
 
-    get xapiChoicesOptions() {
-        let arr = this.choicesToShow.map(function (option) {
-            return {
-                id: option,
-                description: {
-                    'ru-RU': option
-                }
-            }
-        })
-        return arr
-    }
-
-    get xapiCorrectPattern() {
-
-    }
-
     getWord(item) {
         return item.replace(/(\(.+?\))/g, '')
     }
@@ -896,6 +874,38 @@ class FillInDropDownItem {
     }
 }
 
+class Xapi {
+    static config() {
+
+    }
+
+    static sendStmt(stmt) {
+        if (App.testMode === false) {
+            ADL.XAPIWrapper.sendStatement(stmt, function (resp, obj) {
+                console.log(resp.status + resp.statusText)
+            })
+        } else if (App.testMode === true) {
+            console.log(stmt)
+        }
+    }
+
+    static getChoicesOptions(arr) {
+        let newArr = arr.map(function (option) {
+            return {
+                id: option,
+                description: {
+                    'ru-RU': option
+                }
+            }
+        })
+        return newArr
+    }
+
+    static getCorrectPattern(arr, index) {
+        return [arr[index]]
+    }
+}
+
 class App {
     constructor() {}
     // static configurationData = {}
@@ -903,7 +913,7 @@ class App {
     static interactions = [];
     static interactionsCounter = {}
     static score = 0;
-    static testMode = false
+    static testMode = true
     static id = ''
 
     static isTestMode() {
@@ -923,7 +933,6 @@ class App {
         App.addFooter()
         App.renderHooks = Array.from(document.querySelectorAll('.interaction'))
         App.interactions = App.renderHooks.map(function (hook, index) {
-            console.log('interaction ' + hook.dataset.type)
             switch (hook.dataset.type) {
                 case 'test':
                     return new TestInteraction(

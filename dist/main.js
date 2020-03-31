@@ -3,11 +3,15 @@
 let xapiData = {}
 let xapiConfig = {}
 let activityId = ''
-let testMode = true
+let testMode = false
 
 function sendStmt(stmt) {
     if (testMode === false) {
-        ADL.XAPIWrapper.sendStatement(stmt)
+        // console.log(stmt)
+        ADL.XAPIWrapper.sendStatement(stmt, function (resp, obj) {
+            // console.log('callback function executing...')
+            console.log(resp.status + resp.statusText)
+        })
     } else if (testMode === true) {
         console.log(stmt)
     }
@@ -15,9 +19,9 @@ function sendStmt(stmt) {
 
 function parseQuery(queryString) {
     let query = {}
-    let pairs = (queryString[0] === '?'
-        ? queryString.substr(1)
-        : queryString
+    let pairs = (queryString[0] === '?' ?
+        queryString.substr(1) :
+        queryString
     ).split('&')
     for (let i = 0; i < pairs.length; i++) {
         let pair = pairs[i].split('=')
@@ -30,7 +34,7 @@ function getXapiData() {
     let queryParams = parseQuery(window.location.search)
     activityId = queryParams.activity_id
 
-    let xapiData = {
+    xapiData = {
         endpoint: queryParams.endpoint,
         auth: queryParams.auth,
         actor: JSON.parse(queryParams.actor),
@@ -44,6 +48,7 @@ function getXapiData() {
         }
     }
 
+    // SCORM Cloud patch
     if (Array.isArray(xapiData.actor.account)) {
         xapiData.actor.account = xapiData.actor.account[0]
     }
@@ -60,6 +65,8 @@ function getXapiData() {
         delete xapiData.actor.account.accountServiceHomePage
         delete xapiData.actor.account.accountName
     }
+
+    // End SCORM Cloud patch
 
     return {
         endpoint: xapiData.endpoint,
@@ -83,6 +90,7 @@ let courseInfo = {
     isLongread: false,
     isLocked: false,
     isInteractive: false,
+    interactionTypes: [],
     interactionCompleted: false, // set TRUE in current interaction script if interaction completed
     interactionResult: false,
     score: 0,
@@ -93,11 +101,24 @@ let courseInfo = {
 }
 
 function checkInteractive() {
-    let items = document.querySelectorAll('.interaction')
-    if (items.length > 0 || testMode === true) {
+    let items = Array.from(document.querySelectorAll('.interaction')).filter(function (i) {
+        if (i.dataset.type !== 'video') return i
+    })
+    console.log('Number of interaction to complete is ' + items.length)
+    if (items.length > 0 /* || testMode === true */ ) {
         return true
     } else if (items.length === 0) {
         return false
+    }
+}
+
+function getInteractionTypes() {
+    let items = document.querySelectorAll('.interaction')
+    if (items.length > 0) {
+        let types = Array.from(items).map(function (i) {
+            return i.dataset.type
+        })
+        return types
     }
 }
 
@@ -150,6 +171,7 @@ function start() {
     courseInfo.isInteractive = checkInteractive()
     courseInfo.isLocked = checkLocked()
     courseInfo.isLongread = checkType()
+    courseInfo.interactionTypes = getInteractionTypes()
 
     if (courseInfo.isLongread === false) {
         courseInfo.completionTriggerReached = true
@@ -164,7 +186,7 @@ function start() {
     prevBtn.innerText = 'Предыдущий курс'
     prevBtn.className = 'nav-btn' */
 
-    let nextBtn = document.createElement('button')
+    /* let nextBtn = document.createElement('button')
     nextBtn.id = 'nextCourse'
     nextBtn.innerText = 'Следующий курс'
     nextBtn.className = 'nav-btn'
@@ -172,19 +194,24 @@ function start() {
         nextBtn.disabled = true
     } else if (courseInfo.isLocked === false) {
         nextBtn.disabled = false
-    }
+    } */
 
     let backBtn = document.createElement('button')
     backBtn.id = 'backToTrack'
-    backBtn.innerText = 'Вернуться к треку'
+    backBtn.innerText = 'Далее'
     backBtn.className = 'nav-btn'
 
+    /* let closeBtn = document.createElement('button')
+    closeBtn.id = 'closeBtn'
+    closeBtn.innerText = 'Закрыть окно'
+    closeBtn.className = 'nav-btn' */
+
     /* completionTrigger.appendChild(prevBtn) */
-    completionTrigger.appendChild(nextBtn)
+    /* completionTrigger.appendChild(nextBtn) */
     completionTrigger.appendChild(backBtn)
     /* completionTrigger.appendChild(closeBtn) */
 
-    nextBtn.addEventListener('click', nextCourse)
+    /* nextBtn.addEventListener('click', nextCourse) */
     backBtn.addEventListener('click', backToTrack)
     /* prevBtn.addEventListener('click', prevCourse) */
 
@@ -199,9 +226,12 @@ function start() {
     if (courseInfo.isDone() === true) {
         complete()
     }
-    /* if (courseInfo.isInteractive) {
+    if (
+        courseInfo.isInteractive &&
+        !courseInfo.interactionTypes.includes('video')
+    ) {
         startInteraction()
-    } */
+    }
 }
 
 function launched() {
@@ -239,7 +269,7 @@ function intersectionCounter() {
 function complete() {
     courseInfo.isCompleted = true
     window.removeEventListener('scroll', intersectionCounter)
-    document.querySelector('#nextCourse').disabled = false
+    // document.querySelector('#nextCourse').disabled = false
 
     let stmtCompleted = {
         actor: xapiConfig.actor || '',
@@ -352,7 +382,7 @@ function exit() {
             objectType: 'Activity'
         }
     }
-    sendStmt(lastTestStmt)
+
     sendStmt(stmtExited)
 
     console.log('Course exit end')
@@ -361,34 +391,34 @@ function exit() {
     /* sendStmt(stmtExited) */
 }
 
-function nextCourse() {
+/* function nextCourse() {
     exit()
-    console.log('to the next course')
-    ;(function() {
+    console.log('User clicked NEXT button');
+    (function () {
         if (window.top) {
             return window.top
         }
         return window.parent
     })().location = '/back/gotonext'
     return false
-}
+} */
 
-function prevCourse() {
+/* function prevCourse() {
     exit()
-    console.log('to the prev course')
-    ;(function() {
+    console.log('to the prev course');
+    (function () {
         if (window.top) {
             return window.top
         }
         return window.parent
     })().location = '/back/gotoprev'
     return false
-}
+} */
 
 function backToTrack() {
     exit()
-    console.log('back to track')
-    ;(function() {
+    console.log('back to track');
+    (function () {
         if (window.top) {
             return window.top
         }
