@@ -1,5 +1,6 @@
 class Interaction {
-    constructor(index, renderHook) {
+    constructor(index, renderHook, parent) {
+        this.parent = parent
         this.index = index
         this.renderHook = renderHook
         this.interactionData = renderHook.dataset
@@ -29,8 +30,8 @@ class Interaction {
 }
 
 class ScorableInteraction extends Interaction {
-    constructor(index, renderHook) {
-        super(index, renderHook)
+    constructor(index, renderHook, parent) {
+        super(index, renderHook, parent)
         this.minScore = this.interactionData.min_score
     }
 
@@ -52,9 +53,9 @@ class ScorableInteraction extends Interaction {
 class IterableScorableInteraction extends ScorableInteraction {
     constructor(
         index,
-        renderHook
+        renderHook, parent
     ) {
-        super(index, renderHook)
+        super(index, renderHook, parent)
         this.isShuffle = this.interactionData.is_shuffle
         this.amountOfUnits = this.interactionData.amount_of_units === '0' ? db[this.index].length : Number(this.interactionData.amount_of_units)
         this.unitsToComplete = this.interactionData.units_to_complete === '0' ? this.amount_of_units : Number(this.interactionData.units_to_complete)
@@ -98,9 +99,9 @@ class IterableScorableInteraction extends ScorableInteraction {
 class LangExerciseInteraction extends IterableScorableInteraction {
     constructor(
         index,
-        renderHook
+        renderHook, parent
     ) {
-        super(index, renderHook)
+        super(index, renderHook, parent)
         this.insideBox = this.interactionData.inside_box
         this.init()
     }
@@ -120,9 +121,9 @@ class LangExerciseInteraction extends IterableScorableInteraction {
 class LongreadInteraction extends ScorableInteraction {
     constructor(
         index,
-        renderHook
+        renderHook, parent
     ) {
-        super(index, renderHook)
+        super(index, renderHook, parent)
         console.log('longread interaction activated...')
     }
 }
@@ -130,9 +131,9 @@ class LongreadInteraction extends ScorableInteraction {
 class DictantInteraction extends ScorableInteraction {
     constructor(
         index,
-        renderHook
+        renderHook, parent
     ) {
-        super(index, renderHook)
+        super(index, renderHook, parent)
         this.insideBox = this.interactionData.inside_box
         this.init()
     }
@@ -224,11 +225,11 @@ class LangExeLetter {
 class TestInteraction extends IterableScorableInteraction {
     constructor(
         index,
-        renderHook
+        renderHook, parent
     ) {
         super(
             index,
-            renderHook
+            renderHook, parent
         )
     }
 }
@@ -236,11 +237,11 @@ class TestInteraction extends IterableScorableInteraction {
 class CaseInteraction extends IterableScorableInteraction {
     constructor(
         index,
-        renderHook
+        renderHook, parent
     ) {
         super(
             index,
-            renderHook
+            renderHook, parent
         )
     }
 }
@@ -248,8 +249,8 @@ class CaseInteraction extends IterableScorableInteraction {
 
 
 class VideoInteraction extends Interaction {
-    constructor(index, renderHook) {
-        super(index, renderHook)
+    constructor(index, renderHook, parent) {
+        super(index, renderHook, parent)
     }
 }
 
@@ -878,6 +879,8 @@ class FillInDropDownItem {
 }
 
 class Xapi {
+    static data = {}
+
     static config() {
 
     }
@@ -943,72 +946,146 @@ class Xapi {
 }
 
 class Statement {
-    constructor(actor, obj, parent) {
-        this.actor = actor
-        this.objId = obj.id
-        this.objName = obj.name ? obj.name : obj.id
-        this.objDescription = obj.description ? this.objName : this.objId
-        this.parent = parent
+    constructor(obj, verb = 'experienced') {
+        this.actor = Xapi.data.actor ? Xapi.data.actor : 'User'
+        this.obj = obj
+        this.objId = this.obj.id
+        this.objName = this.obj.name ? this.obj.name : this.objId
+        this.objDescription = this.obj.description ? this.obj.description : this.objName
+        this.verb = verbs[verb]
+        this.context = {}
+    }
+
+    get parentId() {
+        if (obj instanceof Interaction) {
+            return App.id
+        } else {
+            return this.obj.parent.id
+        }
+    }
+
+    createStmt() {
+        return {
+            actor: this.actor,
+            verb: this.verb,
+            object: {
+                objectType: 'Activity',
+                id: this.objId,
+                definition: {
+                    name: {
+                        'ru-RU': this.objName
+                    },
+                    description: {
+                        'ru-RU': this.objDescription
+                    }
+                }
+            },
+            context: {
+                contextActivities: {
+                    parent: [{
+                        objectType: 'Activity',
+                        id: this
+                    }]
+                }
+            }
+        }
+    }
+}
+
+class Course {
+    constructor(id, renderHooks) {
+        this.id = id
+        this.renderHooks = renderHooks
+        this.score = 0
+        this.interactions = this.getInteractions()
+    }
+
+    getInteractions() {
+        let that = this
+        let interactionsArr = this.renderHooks.map(function (hook, index) {
+            switch (hook.dataset.type) {
+                case 'test':
+                    return new TestInteraction(
+                        index,
+                        hook,
+                        that
+                    )
+                case 'case':
+                    return new CaseInteraction(
+                        index,
+                        hook,
+                        that
+                    )
+                case 'langExercise':
+                    return new LangExerciseInteraction(
+                        index,
+                        hook,
+                        that
+                    )
+                case 'diсtant':
+                    return new DictantInteraction(
+                        index,
+                        hook,
+                        that
+                    )
+                case 'video':
+                    return new VideoInteraction(
+                        index,
+                        hook,
+                        that
+                    )
+                case 'longread':
+                    return new LongreadInteraction(index, hook, that)
+            }
+        })
+        return interactionsArr
+    }
+
+    get result() {
+        let overallResult = 0
+        let requiredResult = 0
+        this.interactions.forEach(function (i) {
+            if (i.required === 'true') {
+                requiredResult++
+                if (i.result) {
+                    overallResult++
+                }
+            }
+        })
+        return overallResult === requiredResult
     }
 }
 
 class App {
     constructor() {}
-    // static configurationData = {}
     static renderHooks = [];
-    static interactions = [];
-    static interactionsCounter = {}
-    static score = 0;
     static testMode = true
     static id = ''
+    static course
+    static loaded = false
 
     static isTestMode() {
-        return Boolean(document.querySelector('#settings').dataset.test_mode)
+        App.testMode = Boolean(document.querySelector('#settings').dataset.test_mode)
     }
 
     static getId() {
         let prefix = document.querySelector('meta[content^="prefix"]').getAttribute('content').split('prefix:')[1]
         let course = document.querySelector('meta[content^="course"]').getAttribute('content').split('course:')[1]
-        return prefix + course
+        App.id = prefix + course
+    }
+
+    static getRenderHooks() {
+        App.renderHooks = Array.from(document.querySelectorAll('.interaction'))
     }
 
     static init() {
-        App.testMode = App.isTestMode()
-        App.id = App.getId()
-        // App.configure()
+        /* App.linkVerbs()
+        App.linkDb() */
         App.addFooter()
-        App.renderHooks = Array.from(document.querySelectorAll('.interaction'))
-        App.interactions = App.renderHooks.map(function (hook, index) {
-            switch (hook.dataset.type) {
-                case 'test':
-                    return new TestInteraction(
-                        index,
-                        hook
-                    )
-                case 'case':
-                    return new CaseInteraction(
-                        index,
-                        hook
-                    )
-                case 'langExercise':
-                    return new LangExerciseInteraction(
-                        index,
-                        hook
-                    )
-                case 'diсtant':
-                    return new DictantInteraction(
-                        index,
-                        hook
-                    )
-                case 'video':
-                    return new VideoInteraction(
-                        index,
-                        hook
-                    )
-                case 'longread':
-                    return new LongreadInteraction(index, hook)
-            }
-        })
+        App.getId()
+        App.getRenderHooks()
+        App.isTestMode()
+        App.course = new Course(App.id, App.renderHooks)
     }
 
     static addFooter() {
@@ -1041,24 +1118,17 @@ class App {
         return false
     }
 
-    static get result() {
-        let overallResult = 0
-        let requiredResult = 0
-        App.interactions.forEach(function (i) {
-            if (i.required === 'true') {
-                requiredResult++
-                if (i.result) {
-                    overallResult++
-                }
-            }
-        })
-        return overallResult === requiredResult
-    }
-
     static linkDb() {
         let head = document.querySelector('head')
         let script = document.createElement('script')
         script.setAttribute('src', 'dist/db.js')
+        head.appendChild(script)
+    }
+
+    static linkVerbs() {
+        let head = document.querySelector('head')
+        let script = document.createElement('script')
+        script.setAttribute('src', 'dist/verbs.js')
         head.appendChild(script)
     }
 
