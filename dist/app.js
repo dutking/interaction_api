@@ -853,8 +853,14 @@ class App {
     static renderHooks = [];
     static interactions = [];
     static score = 0;
+    static testMode = false
+
+    static isTestMode() {
+        return Boolean(document.querySelector('#settings').dataset.test_mode)
+    }
 
     static init() {
+        App.testMode = App.isTestMode()
         // App.configure()
         App.addFooter()
         App.renderHooks = Array.from(document.querySelectorAll('.interaction'))
