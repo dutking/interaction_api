@@ -3,10 +3,22 @@ class Interaction {
         this.index = index
         this.renderHook = renderHook
         this.interactionData = renderHook.dataset
-        this.id = this.interactionData.interaction_id
         this.name = this.interactionData.name
         this.required = this.interactionData.required
         this.interactionUnits = []
+    }
+
+    getThis() {
+        console.log(this)
+    }
+
+    get id() {
+        let type = this.interactionData.type
+        let list = App.interactions.filter(i => {
+            return i.interactionData.type === type
+        })
+        let num = list.indexOf(this)
+        return `/${type}_${num}`
     }
 
     get result() {
@@ -106,6 +118,16 @@ class LangExerciseInteraction extends IterableScorableInteraction {
 
     init() {
         this.createUnit(0)
+    }
+}
+
+class LongreadInteraction extends ScorableInteraction {
+    constructor(
+        index,
+        renderHook
+    ) {
+        super(index, renderHook)
+        console.log('longread interaction activated...')
     }
 }
 
@@ -245,6 +267,10 @@ class InteractionUnit {
         this._completed = false
         this._score = 0
         console.log('creating new interaction unit...')
+    }
+
+    get id() {
+        return `/unit_${this.index}`
     }
 
     render() {}
@@ -425,6 +451,8 @@ class DictantUnit extends InteractionUnit {
         })
         return body
     }
+
+
 }
 
 class LangExerciseUnit extends InteractionUnit {
@@ -627,6 +655,10 @@ class FillInDropDownItem {
         this.userAnswer = []
         this.completed = false
         this.htmlElement
+    }
+
+    get xapiChoicesOptions() {
+
     }
 
     getWord(item) {
@@ -852,15 +884,24 @@ class App {
     // static configurationData = {}
     static renderHooks = [];
     static interactions = [];
+    static interactionsCounter = {}
     static score = 0;
     static testMode = false
+    static id = ''
 
     static isTestMode() {
         return Boolean(document.querySelector('#settings').dataset.test_mode)
     }
 
+    static getId() {
+        let prefix = document.querySelector('meta[content^="prefix"]').getAttribute('content').split('prefix:')[1]
+        let course = document.querySelector('meta[content^="course"]').getAttribute('content').split('course:')[1]
+        return prefix + course
+    }
+
     static init() {
         App.testMode = App.isTestMode()
+        App.id = App.getId()
         // App.configure()
         App.addFooter()
         App.renderHooks = Array.from(document.querySelectorAll('.interaction'))
@@ -892,6 +933,8 @@ class App {
                         index,
                         hook
                     )
+                case 'longread':
+                    return new LongreadInteraction(index, hook)
             }
         })
     }
