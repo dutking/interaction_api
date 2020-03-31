@@ -50,6 +50,16 @@ class IterableScorableInteraction extends ScorableInteraction {
         this.isShuffle = this.interactionData.is_shuffle
         this.amountOfUnits = this.interactionData.amount_of_units === '0' ? db[this.index].length : Number(this.interactionData.amount_of_units)
         this.unitsToComplete = this.interactionData.units_to_complete === '0' ? this.amount_of_units : Number(this.interactionData.units_to_complete)
+        this.unitsList = this.getUnitsList()
+    }
+
+    getUnitsList() {
+        let unitsList = Array.from(db[this.index])
+        if (this.isShuffle === 'true') {
+            unitsList = App.shuffle(unitsList)
+        }
+        unitsList.slice(0, this.amountOfUnits)
+        return unitsList
     }
 
     get score() {
@@ -88,8 +98,8 @@ class LangExerciseInteraction extends IterableScorableInteraction {
     }
 
     createUnit(num) {
-        if (num < this.amountOfUnits) {
-            let unit = new LangExerciseUnit(num, this, 'langExerciseUnit', db[this.index][num])
+        if (num < this.unitsList.length) {
+            let unit = new LangExerciseUnit(num, this, 'langExerciseUnit', this.unitsList[num])
             this.interactionUnits.push(unit)
         }
     }
