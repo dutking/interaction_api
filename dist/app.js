@@ -844,7 +844,8 @@ class App {
     static score = 0;
 
     static init() {
-        // this.configure()
+        // App.configure()
+        App.addFooter()
         App.renderHooks = Array.from(document.querySelectorAll('.interaction'))
         App.interactions = App.renderHooks.map(function (hook, index) {
             console.log('interaction ' + hook.dataset.type)
@@ -876,6 +877,36 @@ class App {
                     )
             }
         })
+    }
+
+    static addFooter() {
+        let body = document.querySelector('body')
+
+        let footer = document.createElement('footer')
+        footer.id = 'pagefooter'
+        footer.className = 'interaction'
+        footer.dataset.type = 'longread'
+        footer.dataset.required = 'true'
+
+        let btn = document.createElement('button')
+        btn.innerHTML = 'Далее'
+        btn.setAttribute('type', 'button')
+        btn.addEventListener('click', App.backToTrack)
+
+        footer.appendChild(btn)
+        body.appendChild(footer)
+    }
+
+    static backToTrack() {
+        // exit()
+        console.log('Redirecting back to track ...');
+        (function () {
+            if (window.top) {
+                return window.top
+            }
+            return window.parent
+        })().location = '/back/'
+        return false
     }
 
     static get result() {
