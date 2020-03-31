@@ -261,6 +261,7 @@ class VideoInteraction extends Interaction {
 class InteractionUnit {
     constructor(index, parent, cssClasses, dbData) {
         this.index = index
+        this._id = this.index
         this.parent = parent
         this.cssClasses = cssClasses
         this.dbData = dbData
@@ -270,7 +271,11 @@ class InteractionUnit {
     }
 
     get id() {
-        return `/unit_${this.index}`
+        if (this.dbData.hasOwnProperty('id')) {
+            return this.dbData.id
+        } else {
+            return `/unit_${this.index}`
+        }
     }
 
     render() {}
@@ -459,7 +464,7 @@ class LangExerciseUnit extends InteractionUnit {
     constructor(index, parent, cssClasses, dbData) {
         super(index, parent, cssClasses, dbData)
         this.text = dbData.text
-        this.id = dbData.id
+        // this.id = dbData.id
         this.tip = dbData.tip
         this.fb = dbData.fb
         this.words = []
@@ -658,6 +663,18 @@ class FillInDropDownItem {
     }
 
     get xapiChoicesOptions() {
+        let arr = this.choicesToShow.map(function (option) {
+            return {
+                id: option,
+                description: {
+                    'ru-RU': option
+                }
+            }
+        })
+        return arr
+    }
+
+    get xapiCorrectPattern() {
 
     }
 
