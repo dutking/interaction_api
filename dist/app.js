@@ -5,6 +5,7 @@ class Interaction {
         this.interactionData = renderHook.dataset
         this.id = this.interactionData.interaction_id
         this.name = this.interactionData.name
+        this.required = this.interactionData.required
         this.interactionUnits = []
     }
 
@@ -911,12 +912,16 @@ class App {
 
     static get result() {
         let overallResult = 0
+        let requiredResult = 0
         App.interactions.forEach(function (i) {
-            if (i.result) {
-                overallResult++
+            if (i.required === 'true') {
+                requiredResult++
+                if (i.result) {
+                    overallResult++
+                }
             }
         })
-        return overallResult === App.interactions.length
+        return overallResult === requiredResult
     }
 
     static linkDb() {
