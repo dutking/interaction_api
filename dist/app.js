@@ -14,7 +14,7 @@ class Interaction {
             return i.interactionData.type === type
         })
         let num = list.indexOf(this)
-        return `/${type}_${num}`
+        return `${App.id}/${type}_${num}`
     }
 
     get result() {
@@ -256,7 +256,6 @@ class VideoInteraction extends Interaction {
 class InteractionUnit {
     constructor(index, parent, cssClasses, dbData) {
         this.index = index
-        this._id = this.index
         this.parent = parent
         this.cssClasses = cssClasses
         this.dbData = dbData
@@ -266,9 +265,9 @@ class InteractionUnit {
 
     get id() {
         if (this.dbData.hasOwnProperty('id')) {
-            return `/${this.dbData.id}`
+            return `${this.parent.id}/unit_${this.dbData.id}`
         } else {
-            return `/unit_${this.index}`
+            return `${this.parent.id}/unit_${this.index}`
         }
     }
 
@@ -656,6 +655,10 @@ class FillInDropDownItem {
         this.htmlElement
     }
 
+    get id() {
+        return `${this.parent.id}/subunit_${this.wordIndex}`
+    }
+
     getWord(item) {
         return item.replace(/(\(.+?\))/g, '')
     }
@@ -936,6 +939,16 @@ class Xapi {
             thisWord = thisWord.replace('_', letter)
         })
         return thisWord
+    }
+}
+
+class Statement {
+    constructor(actor, obj, parent) {
+        this.actor = actor
+        this.objId = obj.id
+        this.objName = obj.name ? obj.name : obj.id
+        this.objDescription = obj.description ? this.objName : this.objId
+        this.parent = parent
     }
 }
 
