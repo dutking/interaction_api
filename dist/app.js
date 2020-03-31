@@ -889,7 +889,7 @@ class Xapi {
         }
     }
 
-    static getChoicesOptions(arr) {
+    static getStmtChoicesOptions(arr) {
         let newArr = arr.map(function (option) {
             return {
                 id: option,
@@ -901,8 +901,41 @@ class Xapi {
         return newArr
     }
 
-    static getCorrectPattern(arr, index) {
-        return [arr[index]]
+    static getStmtCorrectPattern(item) {
+        return [String(item)]
+    }
+
+    static getPossibleOptions(words, choices, num = 0) {
+
+        if (!Array.isArray(words)) {
+            words = [words]
+        }
+
+        if (!Array.isArray(choices[0])) {
+            choices = [choices]
+        }
+
+        let newWords = []
+
+        if (words[words.length - 1].indexOf('_') === -1) {
+            return words
+        }
+
+        words.forEach(function (str) {
+            choices[num].forEach(function (c) {
+                newWords.push(str.replace('_', c))
+            })
+        })
+
+        return Xapi.getPossibleOptions(newWords, choices, num + 1)
+    }
+
+    static getCorrectOption(word, correctArr) {
+        let thisWord = word
+        correctArr.forEach(function (letter) {
+            thisWord = thisWord.replace('_', letter)
+        })
+        return thisWord
     }
 }
 
