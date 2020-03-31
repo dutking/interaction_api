@@ -736,10 +736,12 @@ class FillInDropDownItem {
     }
 
     toggleItem(cssClass, e) {
-        let currentItem = e.currentTarget.parentNode.querySelector(
-            `.${cssClass}`
-        )
+        let allItems = this.parent.unitContainer.querySelectorAll(`.${cssClass}`)
+        let currentItem = e.currentTarget.parentNode.querySelector(`.${cssClass}`)
         if (currentItem.classList.contains('off')) {
+            allItems.forEach(function (i) {
+                i.classList.add('off')
+            })
             currentItem.classList.remove('off')
         } else if (!currentItem.classList.contains('off')) {
             currentItem.classList.add('off')
