@@ -947,7 +947,9 @@ class Xapi {
 
 class Statement {
     constructor(obj, verb = 'experienced') {
-        this.actor = Xapi.data.actor ? Xapi.data.actor : 'User'
+        this.actor = {
+            actor: Xapi.data.actor ? Xapi.data.actor : 'User'
+        }
         this.obj = obj
         this.objId = this.obj.id
         this.objName = this.obj.name ? this.obj.name : this.objId
