@@ -321,11 +321,20 @@ class CaseInteraction extends IterableScorableInteraction {
     }
 }
 
-
-
 class VideoInteraction extends Interaction {
     constructor(index, renderHook, parent) {
         super(index, renderHook, parent)
+        this.vidId = this.interactionData.vid
+        this.init()
+    }
+
+    createUnit(num) {
+        let unit = new VideoUnit(num, this, 'videoUnit', db[this.index][num])
+        this.interactionUnits.push(unit)
+    }
+
+    init() {
+        this.createUnit(0)
     }
 }
 
@@ -373,16 +382,20 @@ class InteractionUnit {
     }
 }
 
-/* class LongreadUnit extends InteractionUnit {
+class VideoUnit extends InteractionUnit {
     constructor(index, parent, cssClasses, dbData) {
         super(index, parent, cssClasses, dbData)
+        this.vid = this.dbData.vid
+        console.log('video unit')
         this.init()
     }
 
     init() {
-        App.observer.observe(this.parent.renderHook)
+        this.unitContainer = this.createUnitContainer('vid')
+        this.unitContainer.id = `player${this.parent.index}${this.index}`
+        this.unitContainer.dataset.vid = this.parent.renderHook.dataset.vid
     }
-} */
+}
 
 class DictantUnit extends InteractionUnit {
     constructor(index, parent, cssClasses, dbData) {
@@ -1004,11 +1017,78 @@ class FillInDropDownItem extends BasicTaskItem {
 }
 
 class Xapi {
-    static data = {}
 
-    static config() {
+    // start of old code
 
+    static parseQuery(queryString) {
+        let query = {}
+        let pairs = (queryString[0] === '?' ?
+            queryString.substr(1) :
+            queryString
+        ).split('&')
+        for (let i = 0; i < pairs.length; i++) {
+            let pair = pairs[i].split('=')
+            query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '')
+        }
+        return query
     }
+
+    static activityId = 'empty'
+    static data = {
+        actor: 'user'
+    }
+
+    static getXapiData() {
+        let queryParams = Xapi.parseQuery(window.location.search)
+        Xapi.activityId = queryParams.activity_id
+
+        Xapi.data = {
+            endpoint: queryParams.endpoint,
+            auth: queryParams.auth,
+            actor: JSON.parse(queryParams.actor),
+            grouping: activityId,
+            registration: queryParams.registration,
+            context: {
+                registration: queryParams.registration,
+                contextActivities: {
+                    grouping: activityId
+                }
+            }
+        }
+
+        // SCORM Cloud patch
+        if (Array.isArray(Xapi.data.actor.account)) {
+            Xapi.data.actor.account = Xapi.data.actor.account[0]
+        }
+        if (Array.isArray(Xapi.data.actor.name)) {
+            Xapi.data.actor.name = Xapi.data.actor.name[0]
+        }
+        if (
+            Xapi.data.actor.account &&
+            Xapi.data.actor.account.accountServiceHomePage
+        ) {
+            Xapi.data.actor.account.homePage =
+                Xapi.data.actor.account.accountServiceHomePage
+            Xapi.data.actor.account.name = Xapi.data.actor.account.accountName
+            delete Xapi.data.actor.account.accountServiceHomePage
+            delete Xapi.data.actor.account.accountName
+        }
+
+        // End SCORM Cloud patch
+
+        return {
+            endpoint: xapiData.endpoint,
+            auth: xapiData.auth,
+            actor: xapiData.actor,
+            grouping: xapiData.grouping,
+            registration: xapiData.registration,
+            context: xapiData.context
+        }
+    }
+
+
+    // end of old code
+
 
     static sendStmt(stmt) {
         App.statements.push(stmt)
@@ -1242,6 +1322,7 @@ class App {
     static course
     static loaded = false
     static statements = []
+    static isVideo = false
 
     static isTestMode() {
         App.testMode = Boolean(document.querySelector('#settings').dataset.test_mode)
@@ -1257,6 +1338,14 @@ class App {
         App.renderHooks = Array.from(document.querySelectorAll('.interaction'))
     }
 
+    static isVideo() {
+        App.renderHooks.forEach(function (h) {
+            if (h.dataset.type === 'video') {
+                App.isVideo = true
+            }
+        })
+    }
+
     static init() {
         /* App.linkVerbs()
         App.linkDb() */
@@ -1264,13 +1353,13 @@ class App {
         App.getId()
         App.getRenderHooks()
         App.isTestMode()
+        if (App.testMode === false) {
+            ADL.XAPIWrapper.changeConfig(Xapi.getXapiData())
+        }
         App.course = new Course(App.id, App.renderHooks)
-        // App.course.sendInteractionsStatements()
     }
 
     static observers = []
-
-
 
     static addFooter() {
         let body = document.querySelector('body')
@@ -1337,6 +1426,438 @@ class App {
         }
         return true
     }
+
+
 }
+
+// YT iFrame API
+
+
+let tag = document.createElement('script')
+let vidData = {}
+let ranges = {}
+let times = {} // for setInterval
+let timeout // for setTimeout
+let vidDivs
+let result = {}
+let players = []
+
+setTimeout(function () {
+    console.log('api timeout finished')
+    tag.src = 'https://www.youtube.com/iframe_api'
+    let firstScriptTag = document.getElementsByTagName('script')[0]
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag)
+}, 2000)
+
+function onYouTubeIframeAPIReady() {
+    console.log('api ready')
+    vidData.viewId = ADL.ruuid()
+    vidDivs = document.querySelectorAll('div[id^="player"]')
+    console.log('vidDivs', vidDivs)
+    vidDivs.forEach(function (div, index) {
+        //div.parentNode.classList.add('center')
+        ranges[div.dataset.vid] = []
+        let player = new YT.Player(`${div.id}`, {
+            height: '480',
+            width: '854',
+            videoId: div.dataset.vid,
+            playerVars: {
+                autoplay: '0'
+                // origin: 'https://cloud.scorm.com'
+            },
+            events: {
+                onReady: onPlayerReady,
+                onStateChange: onPlayerStateChange
+            }
+        })
+        result[div.dataset.vid] = false
+        players.push(player)
+    })
+    document.addEventListener(
+        'visibilitychange',
+        function () {
+            if (players.length > 0) {
+                players.forEach(function (p) {
+                    p.pauseVideo()
+                })
+            }
+        },
+        false
+    )
+}
+
+function onPlayerReady(event) {
+    // event.target.playVideo()
+
+    getVidData(event.target)
+}
+
+function onPlayerStateChange(event) {
+    if (event.data === 1) {
+        clearTimeout(timeout)
+        players.forEach(function (p) {
+            if (
+                event.target.getVideoData().video_id !==
+                p.getVideoData().video_id
+            ) {
+                p.pauseVideo()
+            }
+        })
+        console.log('played')
+        let position = ranges[event.target.getVideoData().video_id].length
+        ranges[event.target.getVideoData().video_id][position] = []
+        ranges[event.target.getVideoData().video_id][position][0] = Math.floor(
+            event.target.getCurrentTime()
+        )
+        ranges[event.target.getVideoData().video_id][position][1] = Math.floor(
+            event.target.getCurrentTime()
+        )
+
+        if (checkSeeked(ranges[event.target.getVideoData().video_id])) {
+            console.log('seeked')
+            Xapi.sendStmt(getVidData(event.target).stmtSeeked)
+        }
+
+        Xapi.sendStmt(getVidData(event.target).stmtPlay)
+
+        times[event.target.getVideoData().video_id] = setInterval(function () {
+            ranges[event.target.getVideoData().video_id][
+                position
+            ][1] = Math.floor(event.target.getCurrentTime())
+        }, 1000)
+    } else if (event.data === 2) {
+        clearInterval(times[event.target.getVideoData().video_id])
+        timeout = setTimeout(function () {
+            console.log('paused')
+            Xapi.sendStmt(getVidData(event.target).stmtPaused)
+        }, 1000)
+    } else if (event.data === 0) {
+        clearInterval(times[event.target.getVideoData().video_id])
+        clearTimeout(timeout)
+        result[event.target.getVideoData().video_id] = true
+        console.log('finished')
+        Xapi.sendStmt(getVidData(event.target).stmtCompleted)
+        Xapi.sendStmt(getVidData(event.target).stmtPassed)
+        Xapi.sendStmt(getVidData(event.target).stmtExited)
+        checkResult()
+    }
+}
+
+function checkResult() {
+    if (!Object.values(result).includes(false)) {
+        console.log('All videos have been viewed.')
+    } else {
+        console.log('Not all videos have been viewed.')
+    }
+}
+
+function getVidData(vid) {
+    vidData.vidId = vid.getVideoData().video_id
+    vidData.vidName = vid.getVideoData().title
+    vidData.duration = moment
+        .duration(vid.getDuration(), 'seconds')
+        .toISOString()
+    vidData.currentTime = formatNum(vid.getCurrentTime())
+    vidData.screenSize = `${vid.getIframe().width}x${vid.getIframe().height}`
+    vidData.quality = vid.getVideoData().video_quality
+    vidData.volume = vid.getVolume()
+    vidData.width = vid.getIframe().width
+    vidData.height = vid.getIframe().height
+    vidData.speed = vid.getPlaybackRate()
+    vidData.focus = true // чекать положение в окне
+    vidData.fullscreen =
+        document.fullscreenElement !== null &&
+        document.fullscreenElement.tagName === 'IFRAME' ?
+        true :
+        false
+    vidData.ranges = formatRanges(ranges[vidData.vidId])
+    vidData.isSeeked = checkSeeked(ranges[vidData.vidId])
+    if (vidData.isSeeked === true) {
+        vidData.seekedData = getSeekedData(ranges[vidData.vidId])
+    } else {
+        vidData.seekedData = getSeekedData([
+            [0, 0],
+            [0, 0]
+        ])
+    }
+
+    return {
+        stmtPlay: {
+            actor: Xapi.data.actor,
+            verb: {
+                id: 'https://w3id.org/xapi/video/verbs/played',
+                display: {
+                    'en-US': 'played'
+                }
+            },
+            object: {
+                id: Xapi.activityId + '/' + vidData.vidId,
+                definition: {
+                    name: {
+                        'en-US': vidData.vidName
+                    },
+                    description: {
+                        'en-US': vidData.vidName
+                    }
+                },
+                objectType: 'Activity'
+            },
+            context: {
+                contextActivities: {
+                    category: [{
+                        id: 'https://w3id.org/xapi/video'
+                    }]
+                },
+                extensions: {
+                    'contextExt:viewId': vidData.viewId,
+                    'contextExt:videoDuration': vidData.duration,
+                    'contextExt:speed': vidData.speed,
+                    'contextExt:volume': vidData.volume,
+                    'contextExt:fullScreen': vidData.fullscreen,
+                    'contextExt:quality': vidData.quality,
+                    'contextExt:screenSize': vidData.screenSize,
+                    'contextExt:focus': vidData.focus
+                }
+            },
+            result: {
+                extensions: {
+                    'resultExt:viewedRanges': vidData.ranges
+                }
+            }
+        },
+        stmtPaused: {
+            actor: Xapi.data.actor,
+            verb: {
+                id: 'https://w3id.org/xapi/video/verbs/paused',
+                display: {
+                    'en-US': 'paused'
+                }
+            },
+            object: {
+                id: Xapi.activityId + '/' + vidData.vidId,
+                definition: {
+                    name: {
+                        'en-US': vidData.vidName
+                    },
+                    description: {
+                        'en-US': vidData.vidName
+                    }
+                },
+                objectType: 'Activity'
+            },
+            context: {
+                contextActivities: {
+                    category: [{
+                        id: 'https://w3id.org/xapi/video'
+                    }]
+                },
+                extensions: {
+                    'contextExt:viewId': vidData.viewId,
+                    'contextExt:videoDuration': vidData.duration
+                }
+            },
+            result: {
+                extensions: {
+                    'resultExt:paused': vidData.currentTime,
+                    'resultExt:viewedRanges': vidData.ranges
+                }
+            }
+        },
+        stmtSeeked: {
+            actor: Xapi.data.actor,
+            verb: {
+                id: 'https://w3id.org/xapi/video/verbs/seeked',
+                display: {
+                    'en-US': 'seeked'
+                }
+            },
+            object: {
+                id: Xapi.activityId + '/' + vidData.vidId,
+                definition: {
+                    name: {
+                        'en-US': vidData.vidName
+                    },
+                    description: {
+                        'en-US': vidData.vidName
+                    }
+                },
+                objectType: 'Activity'
+            },
+            context: {
+                contextActivities: {
+                    category: [{
+                        id: 'https://w3id.org/xapi/video'
+                    }]
+                },
+                extensions: {
+                    'contextExt:viewId': vidData.viewId,
+                    'contextExt:videoDuration': vidData.duration
+                }
+            },
+            result: {
+                extensions: {
+                    'resultExt:from': vidData.seekedData[0],
+                    'resultExt:to': vidData.seekedData[1],
+                    'resultExt:viewedRanges': vidData.ranges
+                }
+            }
+        },
+        stmtCompleted: {
+            actor: Xapi.data.actor,
+            verb: {
+                id: 'https://w3id.org/xapi/video/verbs/completed',
+                display: {
+                    'en-US': 'completed'
+                }
+            },
+            object: {
+                id: Xapi.activityId + '/' + vidData.vidId,
+                definition: {
+                    name: {
+                        'en-US': vidData.vidName
+                    },
+                    description: {
+                        'en-US': vidData.vidName
+                    }
+                },
+                objectType: 'Activity'
+            },
+            context: {
+                contextActivities: {
+                    category: [{
+                        id: 'https://w3id.org/xapi/video'
+                    }]
+                },
+                extensions: {
+                    'contextExt:viewId': vidData.viewId,
+                    'contextExt:videoDuration': vidData.duration
+                }
+            },
+            result: {
+                extensions: {
+                    'resultExt:viewedRanges': vidData.ranges
+                }
+            }
+        },
+        stmtPassed: {
+            actor: Xapi.data.actor,
+            verb: {
+                id: 'https://w3id.org/xapi/video/verbs/passed',
+                display: {
+                    'en-US': 'passed'
+                }
+            },
+            object: {
+                id: Xapi.activityId + '/' + vidData.vidId,
+                definition: {
+                    name: {
+                        'en-US': vidData.vidName
+                    },
+                    description: {
+                        'en-US': vidData.vidName
+                    }
+                },
+                objectType: 'Activity'
+            },
+            context: {
+                contextActivities: {
+                    category: [{
+                        id: 'https://w3id.org/xapi/video'
+                    }]
+                },
+                extensions: {
+                    'contextExt:viewId': vidData.viewId,
+                    'contextExt:videoDuration': vidData.duration
+                }
+            },
+            result: {
+                score: {
+                    raw: 100
+                },
+                success: true,
+                extensions: {
+                    'resultExt:viewedRanges': vidData.ranges
+                }
+            }
+        },
+        stmtExited: {
+            actor: Xapi.data.actor,
+            verb: {
+                id: 'https://w3id.org/xapi/video/verbs/exited',
+                display: {
+                    'en-US': 'exited'
+                }
+            },
+            object: {
+                id: Xapi.activityId + '/' + vidData.vidId,
+                definition: {
+                    name: {
+                        'en-US': vidData.vidName
+                    },
+                    description: {
+                        'en-US': vidData.vidName
+                    }
+                },
+                objectType: 'Activity'
+            },
+            context: {
+                contextActivities: {
+                    category: [{
+                        id: 'https://w3id.org/xapi/video'
+                    }]
+                },
+                extensions: {
+                    'contextExt:viewId': vidData.viewId,
+                    'contextExt:videoDuration': vidData.duration
+                }
+            },
+            result: {
+                extensions: {
+                    'resultExt:viewedRanges': vidData.ranges
+                }
+            }
+        }
+    }
+}
+
+function formatNum(num) {
+    return moment.duration(Math.floor(num), 'seconds').toISOString()
+}
+
+function formatRanges(arr) {
+    if (arr.length > 0) {
+        return arr.map(function (item) {
+            return item.map(function (num) {
+                return formatNum(num)
+            })
+        })
+    } else {
+        return arr
+    }
+}
+
+function checkSeeked(arr) {
+    if (arr.length > 1) {
+        let difference = Math.abs(
+            arr[arr.length - 1][0] - arr[arr.length - 2][1]
+        )
+        if (difference > 1) {
+            return true
+        } else if (difference <= 1) {
+            return false
+        }
+    } else {
+        return false
+    }
+}
+
+function getSeekedData(arr) {
+    return [
+        formatNum(arr[arr.length - 2][1]),
+        formatNum(arr[arr.length - 1][0])
+    ]
+}
+
+
 
 window.addEventListener('DOMContentLoaded', App.init)

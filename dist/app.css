@@ -349,10 +349,10 @@
     max-width: 99vw;
     width: 100%;
     box-sizing: border-box;
-    min-height: 5rem;
+    min-height: 15rem;
     flex-direction: row;
     flex-wrap: wrap;
-    padding: 2rem 0 3rem 0;
+    padding: 2rem 0 2rem 0;
     align-content: center;
     justify-content: center;
     background: #F9E6C8;
