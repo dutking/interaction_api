@@ -11,11 +11,21 @@ class Interaction {
 
     get id() {
         let type = this.interactionData.type
-        let list = App.interactions.filter(i => {
+        let list = App.course.interactions.filter(i => {
             return i.interactionData.type === type
         })
         let num = list.indexOf(this)
-        return `${App.id}/${type}_${num}`
+        return `${this.parent.id}/${type}_${num}`
+    }
+
+    get completed() {
+        let incompleteUnits = this.interactionUnits.filter(function (u) {
+            if (u.completed === false) {
+                return u
+            }
+        })
+
+        return incompleteUnits.length > 0 ? false : true
     }
 
     get result() {
@@ -46,7 +56,7 @@ class ScorableInteraction extends Interaction {
     }
 
     get result() {
-        return this.score > this.minScore === true ? true : false
+        return this.score >= this.minScore ? true : false
     }
 }
 
@@ -167,7 +177,7 @@ class LangExeLetter {
         </div>
         <div class='right'>
         <div class='letter'>${this.letter}</div>
-        <div class='img'><img src='dist/box_new_2.gif'/></div>
+        <div class='img'><img src='dist/assets/box_new_2.gif'/></div>
         </div>
         `
         this.container
@@ -461,13 +471,13 @@ class LangExerciseUnit extends InteractionUnit {
         // this.id = dbData.id
         this.tip = dbData.tip
         this.fb = dbData.fb
-        this.words = []
+        this.subUnits = []
         this.render()
     }
 
     get score() {
         let score = 0
-        this.words.forEach(function (w) {
+        this.subUnits.forEach(function (w) {
             if (w.result) {
                 score++
             }
@@ -481,12 +491,12 @@ class LangExerciseUnit extends InteractionUnit {
 
     set completed(v) {
         let numCompleted = 0
-        this.words.forEach(function (w) {
+        this.subUnits.forEach(function (w) {
             if (w.completed) {
                 numCompleted++
             }
         })
-        this._completed = numCompleted === this.words.length ? true : false
+        this._completed = numCompleted === this.subUnits.length ? true : false
 
         if (this.completed === true) {
             this.unitContainer.querySelector('button.continue').classList.remove('off')
@@ -495,7 +505,7 @@ class LangExerciseUnit extends InteractionUnit {
     }
 
     get totalTasks() {
-        return this.words.length
+        return this.subUnits.length
     }
 
     get result() {
@@ -504,7 +514,7 @@ class LangExerciseUnit extends InteractionUnit {
 
     get tasksCompleted() {
         let numCompleted = 0
-        this.words.forEach(function (w) {
+        this.subUnits.forEach(function (w) {
             if (w.completed) {
                 numCompleted++
             }
@@ -624,7 +634,7 @@ class LangExerciseUnit extends InteractionUnit {
         let modifiedWords = separateWords.map(function (word) {
             if (word.includes('_')) {
                 let FIDDItem = new FillInDropDownItem(that, word, wordIndex)
-                that.words.push(FIDDItem)
+                that.subUnits.push(FIDDItem)
                 wordIndex++
                 return `<span class="replace">${word}</span>`
             } else {
@@ -634,14 +644,21 @@ class LangExerciseUnit extends InteractionUnit {
         body.innerHTML = modifiedWords.join(' ')
         let replaceElements = Array.from(body.querySelectorAll('.replace'))
         replaceElements.forEach(function (el, i) {
-            body.replaceChild(that.words[i].init(), el)
+            body.replaceChild(that.subUnits[i].init(), el)
         })
         return body
     }
 }
 
-class FillInDropDownItem {
+class BasicTaskItem {
+    constructor() {
+        this.type = 'cmi.interaction'
+    }
+}
+
+class FillInDropDownItem extends BasicTaskItem {
     constructor(parent, word, wordIndex) {
+        super()
         this.parent = parent
         this.wordIndex = wordIndex
         this._word = word // 1Пр_(а*,б)глаша_(в*,г)м
@@ -650,10 +667,30 @@ class FillInDropDownItem {
         this.choicesToInsert = this.getChoicesToInsert(this._word)
         this.choicesToShow = this.getChoicesToShow(this._word)
         this.correctAnswers = this.getCorrectAnwers(this._word)
-        this.correctWord = this.getCorrectWord(this.word)
-        this.userAnswer = []
+        this.userAnswer = new Array(this.spacesTotal)
         this.completed = false
         this.htmlElement
+        // Xapi.sendStmt(new Statement(this, 'interacted').finalStatement)
+    }
+
+    get stmtChoicesOptions() {
+        return Xapi.getStmtChoicesOptions(Xapi.getPossibleOptions(this.word, this.choicesToInsert))
+    }
+
+    get stmtResponse() {
+        let that = this
+        let counter = 0
+        let letters = this.word.split('')
+        let newWord = letters.map(function (a) {
+            if (a === '_') {
+                let l = that.userAnswer[counter]
+                counter++
+                return l
+            } else {
+                return a
+            }
+        }).join('')
+        return newWord
     }
 
     get id() {
@@ -664,10 +701,10 @@ class FillInDropDownItem {
         return item.replace(/(\(.+?\))/g, '')
     }
 
-    getCorrectWord(item) {
+    get correctOption() {
         let that = this
         let counter = 0
-        let letters = item.split('')
+        let letters = this.word.split('')
         let correctWord = letters.map(function (a, index) {
             if (a === '_') {
                 let l = that.correctAnswers[counter]
@@ -886,6 +923,7 @@ class Xapi {
     }
 
     static sendStmt(stmt) {
+        App.statements.push(stmt)
         if (App.testMode === false) {
             ADL.XAPIWrapper.sendStatement(stmt, function (resp, obj) {
                 console.log(resp.status + resp.statusText)
@@ -947,50 +985,86 @@ class Xapi {
 
 class Statement {
     constructor(obj, verb = 'experienced') {
-        this.actor = {
-            actor: Xapi.data.actor ? Xapi.data.actor : 'User'
-        }
         this.obj = obj
-        this.objId = this.obj.id
-        this.objName = this.obj.name ? this.obj.name : this.objId
-        this.objDescription = this.obj.description ? this.obj.description : this.objName
-        this.verb = verbs[verb]
-        this.context = {}
+        this.verb = verb
     }
 
-    get parentId() {
-        if (obj instanceof Interaction) {
-            return App.id
-        } else {
-            return this.obj.parent.id
-        }
-    }
-
-    createStmt() {
-        return {
-            actor: this.actor,
-            verb: this.verb,
+    get objectObj() {
+        let simpleObject = {
             object: {
-                objectType: 'Activity',
-                id: this.objId,
+                id: this.obj.id,
                 definition: {
-                    name: {
-                        'ru-RU': this.objName
-                    },
-                    description: {
-                        'ru-RU': this.objDescription
-                    }
-                }
-            },
-            context: {
-                contextActivities: {
-                    parent: [{
-                        objectType: 'Activity',
-                        id: this
-                    }]
+                    name: this.obj.name ? this.obj.name : this.obj.id,
+                    description: this.obj.description ? this.obj.description : (this.obj.name ? this.obj.name : this.obj.id)
                 }
             }
         }
+        if (this.obj.type === 'cmi.interaction') {
+            let extraDefinitionProperties = {
+                type: 'http://adlnet.gov/expapi/activities/cmi.interaction',
+                interactionType: 'choice',
+                correctResponsesPattern: [this.obj.correctOption],
+                choices: this.obj.stmtChoicesOptions
+            }
+            Object.assign(simpleObject.object.definition, extraDefinitionProperties)
+        }
+        return simpleObject
+    }
+
+    get actorObj() {
+        return {
+            actor: Xapi.data.actor ? Xapi.data.actor : 'User'
+        }
+    }
+
+    get verbObj() {
+        return {
+            verb: verbs[this.verb]
+        }
+    }
+
+    get resultObj() {
+        let resultObj = {}
+        if (this.verb === 'completed') {
+            resultObj['result'] = {
+                completion: this.obj.completed
+            }
+        } else if (this.verb === 'answered') {
+            if (this.verb === 'answered') {
+                resultObj['result'] = {
+                    success: this.obj.stmtResponse === this.obj.correctOption,
+                    response: this.obj.stmtResponse
+                }
+            }
+        } else if (this.verb === 'passed' || this.verb === 'failed') {
+            resultObj['result'] = {
+                score: {
+                    raw: this.obj.score
+                },
+                success: this.obj.result
+            }
+        }
+        return resultObj
+    }
+
+    get contextObj() {
+        let contextObj = {}
+        if (this.obj.parent) {
+            contextObj['context'] = {
+                contextActivities: {
+                    parent: [{
+                        "id": this.obj.parent.id,
+                        "objectType": "Activity"
+                    }]
+                }
+            }
+            return contextObj
+        }
+    }
+
+    get finalStatement() {
+        let stmt = Object.assign({}, this.actorObj, this.verbObj, this.objectObj, this.contextObj, this.resultObj)
+        return stmt
     }
 }
 
@@ -998,49 +1072,41 @@ class Course {
     constructor(id, renderHooks) {
         this.id = id
         this.renderHooks = renderHooks
-        this.score = 0
-        this.interactions = this.getInteractions()
+        Xapi.sendStmt(new Statement(this, 'launched').finalStatement)
+        this.interactions = []
+        this.getInteractions()
     }
 
     getInteractions() {
         let that = this
-        let interactionsArr = this.renderHooks.map(function (hook, index) {
-            switch (hook.dataset.type) {
-                case 'test':
-                    return new TestInteraction(
-                        index,
-                        hook,
-                        that
-                    )
-                case 'case':
-                    return new CaseInteraction(
-                        index,
-                        hook,
-                        that
-                    )
-                case 'langExercise':
-                    return new LangExerciseInteraction(
-                        index,
-                        hook,
-                        that
-                    )
-                case 'diсtant':
-                    return new DictantInteraction(
-                        index,
-                        hook,
-                        that
-                    )
-                case 'video':
-                    return new VideoInteraction(
-                        index,
-                        hook,
-                        that
-                    )
-                case 'longread':
-                    return new LongreadInteraction(index, hook, that)
+        this.renderHooks.forEach(function (hook, index) {
+            if (hook.dataset.type === 'langExercise') {
+                let i = new LangExerciseInteraction(index, hook, that)
+                that.interactions.push(i)
+            } else if (hook.dataset.type === 'diсtant') {
+                let i = new DictantInteraction(index, hook, that)
+                that.interactions.push(i)
+            } else if (hook.dataset.type === 'longread') {
+                let i = new LongreadInteraction(index, hook, that)
+                that.interactions.push(i)
+            } else if (hook.dataset.type === 'video') {
+                let i = new VideoInteraction(index, hook, that)
+                that.interactions.push(i)
+            } else if (hook.dataset.type === 'test') {
+                let i = new TestInteraction(index, hook, that)
+                that.interactions.push(i)
+            } else if (hook.dataset.type === 'case') {
+                let i = new CaseInteraction(index, hook, that)
+                that.interactions.push(i)
             }
         })
-        return interactionsArr
+    }
+
+    sendInteractionsStatements() {
+        this.interactions.forEach(function (i, index) {
+            console.log(index)
+            Xapi.sendStmt(new Statement(i, 'interacted').finalStatement)
+        })
     }
 
     get result() {
@@ -1056,6 +1122,28 @@ class Course {
         })
         return overallResult === requiredResult
     }
+
+    get score() {
+        let overallResult = 0
+        this.interactions.forEach(function (i) {
+            if (i.result) {
+                overallResult++
+            }
+        })
+        return overallResult
+    }
+
+    get completed() {
+        let incompleteInteractions = this.interactions.filter(function (i) {
+            if (i.required === 'true') {
+                if (i.completed === false) {
+                    return i
+                }
+            }
+        })
+
+        return incompleteInteractions.length > 0 ? false : true
+    }
 }
 
 class App {
@@ -1065,6 +1153,7 @@ class App {
     static id = ''
     static course
     static loaded = false
+    static statements = []
 
     static isTestMode() {
         App.testMode = Boolean(document.querySelector('#settings').dataset.test_mode)
@@ -1088,7 +1177,10 @@ class App {
         App.getRenderHooks()
         App.isTestMode()
         App.course = new Course(App.id, App.renderHooks)
+        App.course.sendInteractionsStatements()
     }
+
+
 
     static addFooter() {
         let body = document.querySelector('body')
