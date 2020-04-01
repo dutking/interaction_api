@@ -910,6 +910,7 @@ class FillInDropDownItem extends BasicTaskItem {
                     that.showAnswers()
                 }, 2000)
             }
+            Xapi.sendStmt(new Statement(that, 'answered').finalStatement)
         }
         e.currentTarget.parentNode.classList.add('off')
     }
