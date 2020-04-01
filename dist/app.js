@@ -28,6 +28,15 @@ class Interaction {
         return incompleteUnits.length > 0 ? false : true
     }
 
+    set completed(v) {
+        if (this.completed) {
+            let result = this.result ? 'passed' : 'failed'
+            Xapi.sendStmt(new Statement(this, 'completed').finalStatement)
+            Xapi.sendStmt(new Statement(this, result).finalStatement)
+            this.parent.completed = true
+        }
+    }
+
     get result() {
         let result = 0
         this.interactionUnits.forEach(function (u) {
@@ -42,17 +51,12 @@ class Interaction {
 class ScorableInteraction extends Interaction {
     constructor(index, renderHook, parent) {
         super(index, renderHook, parent)
+        this._score = 0
         this.minScore = this.interactionData.min_score
     }
 
     get score() {
-        let score = 0
-        this.interactionUnits.forEach(function (u) {
-            if (u.result === true) {
-                score++
-            }
-        })
-        return score
+        return this.interactionUnits[0].score
     }
 
     get result() {
@@ -79,6 +83,28 @@ class IterableScorableInteraction extends ScorableInteraction {
         }
         unitsList.slice(0, this.amountOfUnits)
         return unitsList
+    }
+
+    get completed() {
+        if (this.interactionUnits.length !== this.unitsToComplete) {
+            return false
+        } else if (this.interactionUnits.length === this.unitsToComplete) {
+            let incompleteUnits = this.interactionUnits.filter(function (u) {
+                if (u.completed === false) {
+                    return u
+                }
+            })
+            return incompleteUnits.length > 0 ? false : true
+        }
+    }
+
+    set completed(v) {
+        if (this.completed) {
+            let result = this.result ? 'passed' : 'failed'
+            Xapi.sendStmt(new Statement(this, 'completed').finalStatement)
+            Xapi.sendStmt(new Statement(this, result).finalStatement)
+            this.parent.completed = true
+        }
     }
 
     get score() {
@@ -159,10 +185,9 @@ class DictantInteraction extends ScorableInteraction {
 }
 
 class LangExeLetter {
-    constructor(renderHook, letter, score) {
+    constructor(renderHook, letter) {
         this.renderHook = renderHook
         this.letter = letter
-        this.score = score
         this.render()
     }
 
@@ -171,13 +196,13 @@ class LangExeLetter {
         this.container.className = 'leftBorderMarker letterBox'
         this.container.innerHTML = `
         <div class='left'>
-        <h2>Вы потренировались в правописании. Ваш результат: ${this.score}</h2>
+        <h2>Вы потренировались в правописании.</h2>
         <p>Вы прошли успешную тренировку и узнаете еще букв${this.letter.length === 1 ? 'у' : 'ы'} из загаданного слова.
         Мы вернемся к ${this.letter.length === 1 ? 'ней' : 'ним'} в конце модуля.</p>
         </div>
         <div class='right'>
         <div class='letter'>${this.letter}</div>
-        <div class='img'><img src='dist/assets/box_new_2.gif'/></div>
+        <div class='img'><img src='dist/assets/slow_box.gif'/></div>
         </div>
         `
         this.container
@@ -312,14 +337,14 @@ class DictantUnit extends InteractionUnit {
         super(index, parent, cssClasses, dbData)
         this.text = dbData.text
         this.fbs = dbData.fbs
-        this.words = []
+        this.subUnits = []
         this.mode = 'active' // active, feedback
         this.render()
     }
 
     get score() {
         let score = 0
-        this.words.forEach(function (w) {
+        this.subUnits.forEach(function (w) {
             if (w.result) {
                 score++
             }
@@ -333,21 +358,22 @@ class DictantUnit extends InteractionUnit {
 
     set completed(v) {
         let numCompleted = 0
-        this.words.forEach(function (w) {
+        this.subUnits.forEach(function (w) {
             if (w.completed) {
                 numCompleted++
             }
         })
-        this._completed = numCompleted === this.words.length ? true : false
+        this._completed = numCompleted === this.subUnits.length ? true : false
 
         if (this.completed === true) {
             this.unitContainer.querySelector('button.check').classList.remove('off')
         }
         // this.setFb(v.status, v.index)
+        this.parent.completed = true
     }
 
     get totalTasks() {
-        return this.words.length
+        return this.subUnits.length
     }
 
     get result() {
@@ -356,7 +382,7 @@ class DictantUnit extends InteractionUnit {
 
     get tasksCompleted() {
         let numCompleted = 0
-        this.words.forEach(function (w) {
+        this.subUnits.forEach(function (w) {
             if (w.completed) {
                 numCompleted++
             }
@@ -409,7 +435,7 @@ class DictantUnit extends InteractionUnit {
     }
 
     checkAnswers(e) {
-        this.words.forEach(function (w) {
+        this.subUnits.forEach(function (w) {
             w.markAnswers()
         })
         e.currentTarget.classList.add('off')
@@ -417,13 +443,14 @@ class DictantUnit extends InteractionUnit {
     }
 
     showAnswers(e) {
-        this.words.forEach(function (w) {
+        this.subUnits.forEach(function (w) {
             w.showAnswers()
             w.addFbIcon()
         })
         e.currentTarget.classList.add('off')
         this.setFb('o')
         this.mode = 'feedback'
+        new LangExeLetter(this.unitContainer, this.parent.insideBox)
     }
 
     setFb(wordObj, e) {
@@ -433,7 +460,7 @@ class DictantUnit extends InteractionUnit {
         if (this.mode === 'active') {
             fb.innerHTML = `<div class="fbUnit leftBorderMarker"><p class="fbUnitHeader">Обратная связь</p><p class="fbText">Нажимайте на иконку <i class="fas fa-hand-point-up"></i>, чтобы увидеть обратную связь.</p></div>`
         } else if (this.mode === 'feedback') {
-            fb.innerHTML = `<div class="fbUnit leftBorderMarker selected"><p class="fbUnitHeader">${wordObj.correctWord}</p><p class="fbText">${that.fbs[wordObj.wordIndex]}</p></div>`
+            fb.innerHTML = `<div class="fbUnit leftBorderMarker selected"><p class="fbUnitHeader">${wordObj.correctOption}</p><p class="fbText">${that.fbs[wordObj.wordIndex]}</p></div>`
         }
     }
 
@@ -446,7 +473,7 @@ class DictantUnit extends InteractionUnit {
         let modifiedWords = separateWords.map(function (word) {
             if (word.includes('_')) {
                 let FIDDItem = new FillInDropDownItem(that, word, wordIndex)
-                that.words.push(FIDDItem)
+                that.subUnits.push(FIDDItem)
                 wordIndex++
                 return `<span class="replace">${word}</span>`
             } else {
@@ -456,7 +483,7 @@ class DictantUnit extends InteractionUnit {
         body.innerHTML = modifiedWords.join(' ')
         let replaceElements = Array.from(body.querySelectorAll('.replace'))
         replaceElements.forEach(function (el, i) {
-            body.replaceChild(that.words[i].init(), el)
+            body.replaceChild(that.subUnits[i].init(), el)
         })
         return body
     }
@@ -490,18 +517,21 @@ class LangExerciseUnit extends InteractionUnit {
     }
 
     set completed(v) {
+        console.log('recieved v')
+        console.log(v)
         let numCompleted = 0
         this.subUnits.forEach(function (w) {
             if (w.completed) {
                 numCompleted++
             }
         })
-        this._completed = numCompleted === this.subUnits.length ? true : false
+        this._completed = (numCompleted === this.subUnits.length) ? true : false
 
         if (this.completed === true) {
             this.unitContainer.querySelector('button.continue').classList.remove('off')
         }
         this.setFb(v.status, v.index)
+        this.parent.completed = true
     }
 
     get totalTasks() {
@@ -568,7 +598,7 @@ class LangExerciseUnit extends InteractionUnit {
 
     initNextUnit(e) {
         if (this.index === this.parent.unitsToComplete - 1) {
-            new LangExeLetter(this.unitContainer, this.parent.insideBox, this.parent.score)
+            new LangExeLetter(this.unitContainer, this.parent.insideBox)
         }
         this.parent.createUnit(this.index + 1)
         e.currentTarget.classList.add('off')
@@ -581,16 +611,16 @@ class LangExerciseUnit extends InteractionUnit {
         currentFb.dataset.position = position
         currentFb.className = 'fbUnit leftBorderMarker'
         currentFb.classList.add(
-            `${status === 'correct' ? 'correct' : 'incorrect'}`
+            `${status === true ? 'correct' : 'incorrect'}`
         )
         currentFb.innerHTML = `
             <p class="fbUnitHeader ${
-                status === 'correct' ? 'correct' : 'incorrect'
+                status === true ? 'correct' : 'incorrect'
             }">${
-            status === 'correct' ? 'Вы ответили верно!' : 'Вы ответили неверно!'
+            status === true ? 'Вы ответили верно!' : 'Вы ответили неверно!'
         }</p>
             <p class="fbText">${
-                status === 'correct'
+                status === true
                     ? that.fb.correct
                     : `${that.fb.incorrect}. Посмотрите верное написание.`
             }</p>`
@@ -668,9 +698,23 @@ class FillInDropDownItem extends BasicTaskItem {
         this.choicesToShow = this.getChoicesToShow(this._word)
         this.correctAnswers = this.getCorrectAnwers(this._word)
         this.userAnswer = new Array(this.spacesTotal)
-        this.completed = false
+        this._completed = false
+        this.result = false
         this.htmlElement
         // Xapi.sendStmt(new Statement(this, 'interacted').finalStatement)
+    }
+
+    get completed() {
+        return this._completed
+    }
+
+    set completed(v) {
+        this._completed = true
+        console.log(this.result)
+        this.parent.completed = {
+            index: this.wordIndex,
+            status: this.result
+        }
     }
 
     get stmtChoicesOptions() {
@@ -844,9 +888,7 @@ class FillInDropDownItem extends BasicTaskItem {
         let that = this
         let spaces = Array.from(this.htmlElement.querySelectorAll('.space'))
         spaces.forEach(function (s, i) {
-            if (s.innerText === that.correctAnswers[i]) {
-                console.log('nothing to change')
-            } else if (s.innerText !== that.correctAnswers[i]) {
+            if (s.innerText === that.correctAnswers[i]) {} else if (s.innerText !== that.correctAnswers[i]) {
                 s.innerText = that.correctAnswers[i]
             }
             s.classList.remove('correct')
@@ -886,22 +928,14 @@ class FillInDropDownItem extends BasicTaskItem {
         space.classList.remove('empty')
 
         if (!that.userAnswer.includes('_')) {
-            that.completed = true
+            Xapi.sendStmt(new Statement(that, 'answered').finalStatement)
             if (App.isArraysSimilar(that.userAnswer, that.correctAnswers)) {
                 console.log('word is correct')
-                that.parent.completed = {
-                    status: 'correct',
-                    index: that.wordIndex
-                }
                 that.result = true
             } else if (
                 !App.isArraysSimilar(that.userAnswer, that.correctAnswers)
             ) {
                 console.log('word is incorrect')
-                that.parent.completed = {
-                    status: 'incorrect',
-                    index: that.wordIndex
-                }
                 that.result = false
             }
             if (that.parent instanceof LangExerciseUnit) {
@@ -910,7 +944,7 @@ class FillInDropDownItem extends BasicTaskItem {
                     that.showAnswers()
                 }, 2000)
             }
-            Xapi.sendStmt(new Statement(that, 'answered').finalStatement)
+            that.completed = true
         }
         e.currentTarget.parentNode.classList.add('off')
     }
@@ -1105,7 +1139,6 @@ class Course {
 
     sendInteractionsStatements() {
         this.interactions.forEach(function (i, index) {
-            console.log(index)
             Xapi.sendStmt(new Statement(i, 'interacted').finalStatement)
         })
     }
@@ -1144,6 +1177,12 @@ class Course {
         })
 
         return incompleteInteractions.length > 0 ? false : true
+    }
+
+    set completed(v) {
+        if (this.completed) {
+            Xapi.sendStmt(new Statement(this, 'completed').finalStatement)
+        }
     }
 }
 
