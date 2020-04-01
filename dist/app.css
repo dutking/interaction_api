@@ -344,6 +344,7 @@
 }
 
 #pagefooter {
+    font-size: var(--font-size);
     display: flex;
     max-width: 99vw;
     width: 100%;
@@ -354,28 +355,31 @@
     padding: 2rem 0 3rem 0;
     align-content: center;
     justify-content: center;
-    background: #99a4ae;
+    background: #F9E6C8;
 }
 
 #pagefooter button {
+    font-size: var(--font-size);
     display: flex;
     align-content: center;
     justify-content: center;
     align-items: center;
-    min-width: 260px;
+    min-width: 160px;
     margin: 1rem;
     height: 60px;
     font-family: 'Open Sans', sans-serif;
     font-weight: 600;
-    color: #435363;
-    border: 2px solid #435363;
-    border-radius: 2px;
+    color: white;
+    background-color: var(--color-primary-darkgray);
+    border: 2px solid var(--color-primary-darkgray);
+    border-radius: 360px;
     cursor: pointer;
     transition: all 0.3s ease-in;
 }
 
 #pagefooter button:hover {
-    background-color: #435363;
+    background-color: #556e87;
+    border-color: #556e87;
     color: white;
 }
 

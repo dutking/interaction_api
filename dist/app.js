@@ -5,17 +5,61 @@ class Interaction {
         this.renderHook = renderHook
         this.interactionData = renderHook.dataset
         this.name = this.interactionData.name
-        this.required = this.interactionData.required
+        this.required = Boolean(this.interactionData.required)
         this.interactionUnits = []
+        Xapi.sendStmt(new Statement(this, 'interacted').finalStatement)
     }
 
     get id() {
         let type = this.interactionData.type
-        let list = App.course.interactions.filter(i => {
-            return i.interactionData.type === type
+        let list = App.renderHooks.filter(i => {
+            return i.dataset.type === type
         })
-        let num = list.indexOf(this)
+        let num = list.indexOf(this.renderHook)
         return `${this.parent.id}/${type}_${num}`
+    }
+
+    get completed() {
+        let incompleteUnits = this.interactionUnits.filter(function (u) {
+            if (u.completed === false) {
+                return u
+            }
+        })
+
+        return incompleteUnits.length > 0 ? false : true
+    }
+
+    set completed(v) {
+        if (this.completed) {
+            Xapi.sendStmt(new Statement(this, 'completed').finalStatement)
+            this.parent.completed = true
+        }
+    }
+
+    get result() {
+        let result = 0
+        this.interactionUnits.forEach(function (u) {
+            if (u.result === true) {
+                result++
+            }
+        })
+        return result === this.interactionUnits.length
+    }
+}
+
+class ScorableInteraction extends Interaction {
+    constructor(index, renderHook, parent) {
+        super(index, renderHook, parent)
+        this._score = 0
+        this.minScore = this.interactionData.min_score
+    }
+
+    get score() {
+        return this.interactionUnits[0].score
+    }
+
+    get result() {
+        return this.score >= this.minScore ? true : false
     }
 
     get completed() {
@@ -35,32 +79,6 @@ class Interaction {
             Xapi.sendStmt(new Statement(this, result).finalStatement)
             this.parent.completed = true
         }
-    }
-
-    get result() {
-        let result = 0
-        this.interactionUnits.forEach(function (u) {
-            if (u.result === true) {
-                result++
-            }
-        })
-        return result === this.interactionUnits
-    }
-}
-
-class ScorableInteraction extends Interaction {
-    constructor(index, renderHook, parent) {
-        super(index, renderHook, parent)
-        this._score = 0
-        this.minScore = this.interactionData.min_score
-    }
-
-    get score() {
-        return this.interactionUnits[0].score
-    }
-
-    get result() {
-        return this.score >= this.minScore ? true : false
     }
 }
 
@@ -154,13 +172,35 @@ class LangExerciseInteraction extends IterableScorableInteraction {
     }
 }
 
-class LongreadInteraction extends ScorableInteraction {
+class LongreadInteraction extends Interaction {
     constructor(
         index,
         renderHook, parent
     ) {
         super(index, renderHook, parent)
-        console.log('longread interaction activated...')
+        this.interactionUnits = [{
+            result: false,
+            completed: false
+        }]
+        this.init()
+    }
+
+    init() {
+        let that = this
+        this.observer = new IntersectionObserver(function (entries, observer) {
+            // let that = this
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting === true) {
+                    console.log('intersecting')
+                    that.observer.unobserve(entry.target);
+                    that.interactionUnits[0].result = true
+                    that.interactionUnits[0].completed = true
+                    that.completed = true
+                }
+            })
+        })
+        this.observer.observe(this.renderHook)
+        App.observers.push(this.observer)
     }
 }
 
@@ -297,6 +337,7 @@ class InteractionUnit {
         this.dbData = dbData
         this._completed = false
         this._score = 0
+        Xapi.sendStmt(new Statement(this, 'interacted').finalStatement)
     }
 
     get id() {
@@ -331,6 +372,17 @@ class InteractionUnit {
         return this.completed
     }
 }
+
+/* class LongreadUnit extends InteractionUnit {
+    constructor(index, parent, cssClasses, dbData) {
+        super(index, parent, cssClasses, dbData)
+        this.init()
+    }
+
+    init() {
+        App.observer.observe(this.parent.renderHook)
+    }
+} */
 
 class DictantUnit extends InteractionUnit {
     constructor(index, parent, cssClasses, dbData) {
@@ -681,15 +733,16 @@ class LangExerciseUnit extends InteractionUnit {
 }
 
 class BasicTaskItem {
-    constructor() {
+    constructor(parent) {
+        this.parent = parent
         this.type = 'cmi.interaction'
     }
 }
 
 class FillInDropDownItem extends BasicTaskItem {
     constructor(parent, word, wordIndex) {
-        super()
-        this.parent = parent
+        super(parent)
+        // this.parent = parent
         this.wordIndex = wordIndex
         this._word = word // 1Пр_(а*,б)глаша_(в*,г)м
         this.word = this.getWord(this._word)
@@ -701,7 +754,7 @@ class FillInDropDownItem extends BasicTaskItem {
         this._completed = false
         this.result = false
         this.htmlElement
-        // Xapi.sendStmt(new Statement(this, 'interacted').finalStatement)
+        Xapi.sendStmt(new Statement(this, 'interacted').finalStatement)
     }
 
     get completed() {
@@ -1106,6 +1159,7 @@ class Statement {
 class Course {
     constructor(id, renderHooks) {
         this.id = id
+        this.name = 'course'
         this.renderHooks = renderHooks
         Xapi.sendStmt(new Statement(this, 'launched').finalStatement)
         this.interactions = []
@@ -1134,12 +1188,6 @@ class Course {
                 let i = new CaseInteraction(index, hook, that)
                 that.interactions.push(i)
             }
-        })
-    }
-
-    sendInteractionsStatements() {
-        this.interactions.forEach(function (i, index) {
-            Xapi.sendStmt(new Statement(i, 'interacted').finalStatement)
         })
     }
 
@@ -1217,8 +1265,10 @@ class App {
         App.getRenderHooks()
         App.isTestMode()
         App.course = new Course(App.id, App.renderHooks)
-        App.course.sendInteractionsStatements()
+        // App.course.sendInteractionsStatements()
     }
+
+    static observers = []
 
 
 
@@ -1229,6 +1279,7 @@ class App {
         footer.id = 'pagefooter'
         footer.className = 'interaction'
         footer.dataset.type = 'longread'
+        footer.dataset.name = 'longread'
         footer.dataset.required = 'true'
 
         let btn = document.createElement('button')
