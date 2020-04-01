@@ -1447,7 +1447,7 @@ setTimeout(function () {
     tag.src = 'https://www.youtube.com/iframe_api'
     let firstScriptTag = document.getElementsByTagName('script')[0]
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag)
-}, 2000)
+}, 1000)
 
 function onYouTubeIframeAPIReady() {
     console.log('api ready')
