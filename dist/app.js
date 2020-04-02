@@ -85,7 +85,7 @@ class ScorableInteraction extends Interaction {
 class IterableScorableInteraction extends ScorableInteraction {
     constructor(index, renderHook, parent) {
         super(index, renderHook, parent);
-        this.isShuffle = this.interactionData.is_shuffle;
+        this.shuffle = this.interactionData.shuffle;
         this.amountOfUnits =
             this.interactionData.amount_of_units === "0" ?
             db[this.index].length :
@@ -99,7 +99,7 @@ class IterableScorableInteraction extends ScorableInteraction {
 
     getUnitsList() {
         let unitsList = Array.from(db[this.index]);
-        if (this.isShuffle === "true") {
+        if (this.shuffle === "true") {
             unitsList = App.shuffle(unitsList);
         }
         unitsList.slice(0, this.amountOfUnits);
@@ -1174,10 +1174,8 @@ class Statement {
                     },
                     description: {
                         "en-US": this.obj.description ?
-                            this.obj.description :
-                            this.obj.name ?
-                            this.obj.name :
-                            this.obj.id
+                            this.obj.description : this.obj.name ?
+                            this.obj.name : this.obj.id
                     }
                 }
             }
@@ -1347,7 +1345,10 @@ class App {
 
     static isTestMode() {
         App.testMode = Boolean(
-            document.querySelector("#settings").dataset.test_mode
+            document
+            .querySelector('meta[content^="testmode"]')
+            .getAttribute("content")
+            .split("testmode:")[1]
         );
     }
 
@@ -1355,12 +1356,12 @@ class App {
         let prefix = document
             .querySelector('meta[content^="prefix"]')
             .getAttribute("content")
-            .split("prefix:")[1];
+            .split("prefix:")[1]
         let course = document
             .querySelector('meta[content^="course"]')
             .getAttribute("content")
-            .split("course:")[1];
-        App.id = prefix + course;
+            .split("course:")[1]
+        App.id = prefix + course
     }
 
     static getRenderHooks() {
@@ -1410,7 +1411,11 @@ class App {
     }
 
     static backToTrack() {
-        // exit()
+        console.log("Finishing course ...");
+        App.course.interactions.forEach(function (i) {
+            Xapi.sendStmt(new Statement(i, "exited").finalStatement);
+        })
+        Xapi.sendStmt(new Statement(App.course, "exited").finalStatement);
         console.log("Redirecting back to track ...");
         (function () {
             if (window.top) {
