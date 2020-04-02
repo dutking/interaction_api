@@ -31,10 +31,13 @@
 
 .interaction {
     margin: 0 auto;
-    padding: 0 2rem 0 2rem;
     max-width: 960px;
     font-family: 'Open Sans', sans-serif;
     font-size: var(--font-size);
+}
+
+.interaction iframe {
+    width: 100%;
 }
 
 .interaction .unit {
