@@ -160,6 +160,8 @@ class LangExerciseInteraction extends IterableScorableInteraction {
     constructor(index, renderHook, parent) {
         super(index, renderHook, parent);
         this.insideBox = this.interactionData.inside_box;
+        this.boxHeader = this.interactionData.box_header;
+        this.boxText = this.interactionData.box_text;
         this.init();
     }
 
@@ -213,6 +215,8 @@ class DictantInteraction extends ScorableInteraction {
     constructor(index, renderHook, parent) {
         super(index, renderHook, parent);
         this.insideBox = this.interactionData.inside_box;
+        this.boxHeader = this.interactionData.box_header;
+        this.boxText = this.interactionData.box_text;
         this.init();
     }
 
@@ -227,9 +231,11 @@ class DictantInteraction extends ScorableInteraction {
 }
 
 class LangExeLetter {
-    constructor(renderHook, letter) {
+    constructor(renderHook, letter, header, text) {
         this.renderHook = renderHook;
         this.letter = letter;
+        this.header = header;
+        this.text = text;
         this.render();
     }
 
@@ -238,13 +244,8 @@ class LangExeLetter {
         this.container.className = "leftBorderMarker letterBox";
         this.container.innerHTML = `
         <div class='left'>
-        <h2>Вы потренировались в правописании.</h2>
-        <p>Вы прошли успешную тренировку и узнаете еще букв${
-          this.letter.length === 1 ? "у" : "ы"
-        } из загаданного слова.
-        Мы вернемся к ${
-          this.letter.length === 1 ? "ней" : "ним"
-        } в конце модуля.</p>
+        <h2>${this.header}</h2>
+        <p>${this.text}</p>
         </div>
         <div class='right'>
         <div class='letter'>${this.letter}</div>
@@ -511,7 +512,7 @@ class DictantUnit extends InteractionUnit {
         e.currentTarget.classList.add("off");
         this.setFb("o");
         this.mode = "feedback";
-        new LangExeLetter(this.unitContainer, this.parent.insideBox);
+        new LangExeLetter(this.unitContainer, this.parent.insideBox, this.parent.boxHeader, this.parent.boxText);
     }
 
     setFb(wordObj, e) {
@@ -662,7 +663,7 @@ class LangExerciseUnit extends InteractionUnit {
 
     initNextUnit(e) {
         if (this.index === this.parent.unitsToComplete - 1) {
-            new LangExeLetter(this.unitContainer, this.parent.insideBox);
+            new LangExeLetter(this.unitContainer, this.parent.insideBox, this.parent.boxHeader, this.parent.boxText);
         }
         this.parent.createUnit(this.index + 1);
         e.currentTarget.classList.add("off");
