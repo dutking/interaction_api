@@ -5,7 +5,7 @@ class Interaction {
         this.renderHook = renderHook;
         this.interactionData = renderHook.dataset;
         this.name = this.interactionData.name;
-        this.required = Boolean(this.interactionData.required);
+        this.required = this.interactionData.required === "true" ? true : false;
         this.interactionUnits = [];
         Xapi.sendStmt(new Statement(this, "interacted").finalStatement);
     }
@@ -578,7 +578,7 @@ class LangExerciseUnit extends InteractionUnit {
         });
         this._completed = numCompleted === this.subUnits.length ? true : false;
 
-        if (this.completed === true) {
+        if (this.completed === true && (this.index !== this.parent.unitsList.length - 1)) {
             this.unitContainer
                 .querySelector("button.continue")
                 .classList.remove("off");

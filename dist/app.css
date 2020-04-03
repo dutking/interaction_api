@@ -194,6 +194,11 @@
 
 .interaction .letterBox .right {
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+    min-height: 250px;
     width: 100%;
 }
 
