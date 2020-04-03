@@ -468,6 +468,11 @@
         padding-right: 2rem;
     }
 
+    .interaction[data-type='video'] {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
     .interaction .langExerciseUnit .letterBox {
         display: grid;
         grid-template-columns: 1fr;
