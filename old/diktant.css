@@ -1,0 +1,244 @@
+:root {
+    --color-primary-lightgray: #99a4ae;
+    --color-primary-darkgray: #435363;
+    --color-primary-bluegreen: #00adbb;
+    --color-primary-orange: #efab21;
+    --color-primary-red: #b52253;
+    --color-primary-purple: #4a0d66;
+    --color-secondary-lightgreen: #c4da00;
+    --color-secondary-lightorange: #ffcb00;
+    --color-secondary-green: #25ab8d;
+    --color-secondary-yellow: #edd000;
+    --color-secondary-lightpurple: #86278c;
+    --color-secondary-lightblue: #1580b3;
+    --color-secondary-rasp: #972571;
+    --color-secondary-lilac: #5a499b;
+    --color-secondary-ink: #3a2785;
+    --color-secondary-darkblue: #0e6aa9;
+    --color-secondary-indigo: #214495;
+    --color-secondary-darkpurple: #3c1a76;
+
+    --font-size: 20px;
+}
+
+@font-face {
+    font-family: 'noto_monoregular';
+    src: url('assets/notomono-regular-webfont.woff2') format('woff2'),
+        url('assets/notomono-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+#diktant {
+    font-family: 'Open Sans', sans-serif;
+    line-height: 1.5;
+    font-size: var(--font-size);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    max-width: 960px;
+    padding: 2em;
+    margin: 0 auto;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+}
+
+#diktant #dikDiv {
+    margin-bottom: 3rem;
+}
+
+#diktant #dikDiv p {
+    margin-bottom: 1rem;
+}
+
+#diktant span.word {
+    box-sizing: border-box;
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 2px dotted var(--color-secondary-lightblue);
+    transition: border-bottom 0.5s ease;
+}
+
+#diktant span.word:hover {
+    border-bottom: 2px solid var(--color-secondary-lightblue);
+}
+
+#diktant span.word span.task {
+    display: inline-block;
+    box-sizing: border-box;
+    font-family: 'noto_monoregular';
+    color: var(--color-secondary-lightblue);
+    font-weight: bold;
+    text-align: center;
+}
+
+#diktant span.word.selected .task {
+    color: var(--color-primary-darkgray);
+    font-weight: bold;
+}
+
+#diktant span.word.incorrect .task {
+    color: var(--color-primary-red);
+    font-weight: bold;
+}
+
+#diktant span.word.correct .task {
+    color: var(--color-primary-bluegreen);
+    font-weight: bold;
+}
+
+#diktant span.word div.choices {
+    box-sizing: border-box;
+    position: absolute;
+    color: var(--color-primary-darkgray);
+    top: 100%;
+    left: -10px;
+    z-index: 100;
+}
+
+#diktant span.word span.tipContainer {
+    display: block;
+    position: absolute;
+    left: -5px;
+    top: 106%;
+    box-sizing: border-box;
+    z-index: 10;
+}
+
+#diktant .word .tipContainer .tipTxt {
+    display: block;
+    box-sizing: border-box;
+    /*     width: 100%; */
+    white-space: nowrap;
+    background: white;
+    color: var(--color-primary-darkgray);
+    border: 2px solid var(--color-primary-darkgray);
+    border-radius: 2px;
+    box-shadow: 0px 0px 5px gray;
+    cursor: pointer;
+    padding: 10px;
+    transform: scale(0);
+    opacity: 0;
+    transition: width 0.3s linear;
+    animation: choice 0.5s ease 0.1s 1 forwards;
+}
+
+/* #diktant span.word div.fbBlock p.fbText {
+    padding: 0.8em;
+    background-color: white;
+    color: var(--color-primary-darkgray);
+    box-shadow: 0px 0px 5px gray;
+    border: 2px solid var(--color-primary-darkgray);
+    border-radius: 2px;
+    transform: scale(0);
+    opacity: 0;
+    animation: choice 0.5s ease 0.1s 1 forwards;
+} */
+
+#diktant span.word div.choices p.choice {
+    box-sizing: border-box;
+    transform: scale(0);
+    padding: 0.8em;
+    margin-bottom: 0.5em;
+    background-color: white;
+    color: var(--color-primary-darkgray);
+    border: 2px solid var(--color-primary-darkgray);
+    border-radius: 2px;
+    box-shadow: 0px 0px 5px gray;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    animation: choice 0.5s ease 0.1s 1 forwards;
+}
+
+#diktant span.word div.choices p.choice:hover {
+    background-color: var(--color-primary-darkgray);
+    color: white;
+}
+
+@keyframes choice {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.btn {
+    box-sizing: border-box;
+    margin-bottom: 3em;
+    width: 100%;
+    color: var(--color-primary-darkgray);
+    padding: 1em;
+    font-size: 1em;
+    font-weight: bold;
+    border: 2px solid var(--color-primary-darkgray);
+    border-radius: 2px;
+    background-color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn#resetBtn {
+    margin-top: 3em;
+}
+
+.btn:hover {
+    background-color: var(--color-primary-darkgray);
+    color: white;
+}
+
+.btn:disabled {
+    color: var(--color-primary-lightgray);
+    border-color: var(--color-primary-lightgray);
+    background-color: white;
+    cursor: auto;
+}
+
+#diktant #fbDiv {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 2rem;
+    background-color: var(--color-secondary-lightblue);
+    color: white;
+}
+
+#diktant #fbDiv #fbResult {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+#diktant #fbDiv #fbText {
+    font-weight: 300;
+}
+
+#diktant .off {
+    display: none !important;
+}
+
+@media screen and (max-width: 1200px) {
+    :root {
+        --font-size: 18px;
+    }
+
+    #diktant {
+        padding: 2em;
+        max-width: 780px;
+    }
+}
+
+@media screen and (max-width: 960px) {
+    :root {
+        --font-size: 16px;
+    }
+
+    #diktant {
+        padding: 1em;
+        max-width: 600px;
+    }
+}

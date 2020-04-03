@@ -264,24 +264,16 @@ class LangExeLetter {
     animateLetters(element) {
         let lettersAnimation = [{
                 transformOrigin: "50% 50%",
-                transform: "scale(0.5) rotate(-20deg)"
+                transform: "scale(0.9)"
             },
             {
                 transformOrigin: "50% 50%",
-                transform: "scale(1)  rotate(20deg)"
-            },
-            {
-                transformOrigin: "50% 50%",
-                transform: "scale(1.5) rotate(-20deg)"
-            },
-            {
-                transformOrigin: "50% 50%",
-                transform: "scale(2)  rotate(20deg)"
+                transform: "scale(1.4)"
             }
         ];
 
         let lettersTiming = {
-            duration: 4000,
+            duration: 2500,
             direction: "alternate",
             iterations: Infinity
         };
@@ -383,7 +375,6 @@ class VideoUnit extends InteractionUnit {
     constructor(index, parent, cssClasses, dbData) {
         super(index, parent, cssClasses, dbData);
         this.vid = this.dbData.vid;
-        console.log("video unit");
         this.init();
     }
 
@@ -579,8 +570,6 @@ class LangExerciseUnit extends InteractionUnit {
     }
 
     set completed(v) {
-        console.log("recieved v");
-        console.log(v);
         let numCompleted = 0;
         this.subUnits.forEach(function (w) {
             if (w.completed) {
@@ -685,7 +674,7 @@ class LangExerciseUnit extends InteractionUnit {
             <p class="fbText">${
               status === true
                 ? that.fb.correct
-                : `${that.fb.incorrect}. Посмотрите верное написание.`
+                : `${that.fb.incorrect} Посмотрите верное написание.`
             }</p>`;
         let fbUnits = fb.querySelectorAll("div");
 
@@ -771,7 +760,6 @@ class FillInDropDownItem extends BasicTaskItem {
 
     set completed(v) {
         this._completed = true;
-        console.log(this.result);
         this.parent.completed = {
             index: this.wordIndex,
             status: this.result
@@ -839,6 +827,8 @@ class FillInDropDownItem extends BasicTaskItem {
                         return "";
                     case "раздельно":
                         return " ";
+                    case "дефис":
+                        return "-";
                     case "пусто":
                         return "";
                     case "зпт":
@@ -863,6 +853,8 @@ class FillInDropDownItem extends BasicTaskItem {
                         return "";
                     case "зпт":
                         return ",";
+                    case "дефис":
+                        return "-";
                     default:
                         return i;
                 }
@@ -1010,10 +1002,8 @@ class FillInDropDownItem extends BasicTaskItem {
         if (!that.userAnswer.includes("_")) {
             Xapi.sendStmt(new Statement(that, "answered").finalStatement);
             if (App.isArraysSimilar(that.userAnswer, that.correctAnswers)) {
-                console.log("word is correct");
                 that.result = true;
             } else if (!App.isArraysSimilar(that.userAnswer, that.correctAnswers)) {
-                console.log("word is incorrect");
                 that.result = false;
             }
             if (that.parent instanceof LangExerciseUnit) {
@@ -1102,6 +1092,7 @@ class Xapi {
     static sendStmt(stmt) {
         App.statements.push(stmt);
         if (App.testMode === false) {
+            console.log(stmt);
             ADL.XAPIWrapper.sendStatement(stmt, function (resp, obj) {
                 console.log(resp.status + resp.statusText);
             });
@@ -1316,20 +1307,25 @@ class Course {
     }
 
     get completed() {
-        let incompleteInteractions = this.interactions.filter(function (i) {
-            if (i.required === "true") {
-                if (i.completed === false) {
-                    return i;
-                }
+        let completionStatus = this.interactions.map(function (i) {
+            if (i.required === true) {
+                return i.completed
             }
         });
-
-        return incompleteInteractions.length > 0 ? false : true;
+        return !completionStatus.includes(false)
     }
 
     set completed(v) {
         if (this.completed) {
+            console.log('Course completed')
             Xapi.sendStmt(new Statement(this, "completed").finalStatement);
+            if (this.result === true) {
+                console.log('Course passed')
+                Xapi.sendStmt(new Statement(this, "passed").finalStatement);
+            } else if (this.result === false) {
+                console.log('Course failed')
+                Xapi.sendStmt(new Statement(this, "failed").finalStatement);
+            }
         }
     }
 }
@@ -1475,17 +1471,16 @@ let result = {};
 let players = [];
 
 setTimeout(function () {
-    console.log("api timeout finished");
+    console.log("YT iFrame API timeout finished");
     tag.src = "https://www.youtube.com/iframe_api";
     let firstScriptTag = document.getElementsByTagName("script")[0];
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 }, 1000);
 
 function onYouTubeIframeAPIReady() {
-    console.log("api ready");
+    console.log("YT iFrame API ready");
     vidData.viewId = ADL.ruuid();
     vidDivs = document.querySelectorAll('div[id^="player"]');
-    console.log("vidDivs", vidDivs);
     vidDivs.forEach(function (div, index) {
         //div.parentNode.classList.add('center')
         ranges[div.dataset.vid] = [];
