@@ -853,8 +853,6 @@ class FillInDropDownItem extends BasicTaskItem {
                         return "";
                     case "зпт":
                         return ",";
-                    case "дефис":
-                        return "-";
                     default:
                         return i;
                 }
@@ -872,6 +870,8 @@ class FillInDropDownItem extends BasicTaskItem {
                     return "";
                 case "раздельно":
                     return " ";
+                case "дефис":
+                    return "-";
                 case "пусто":
                     return "";
                 case "зпт":
@@ -892,14 +892,14 @@ class FillInDropDownItem extends BasicTaskItem {
         let modifiedText = letters
             .map(function (l) {
                 if (l === "_") {
-                    let choicesSpans = that.choicesToShow[spaceNum]
+                    let choicesSpans = that.choicesToInsert[spaceNum]
                         .map(function (c, index) {
-                            return `<span class="answer box" data-correct="${
+                            return `<span class="answer box ${that.choicesToShow[spaceNum][index].length > 2 ? 'long' : ''}" data-correct="${
                 c === that.correctAnswers[spaceNum] ? true : false
               }" data-choice_to_insert="${that.choicesToInsert[spaceNum][index]}">${that.choicesToShow[spaceNum][index]}</span>`;
                         })
                         .join("");
-                    let newLetter = `<span class="subtask"><span class="space box empty" data-space_num=${spaceNum}>_</span><span class="popupAnsContainer off">${choicesSpans}</span></span>`;
+                    let newLetter = `<span class="subtask"><span class="space empty box" data-space_num=${spaceNum}>_</span><span class="popupAnsContainer off">${choicesSpans}</span></span>`;
                     spaceNum++;
                     return newLetter;
                 } else {
@@ -943,9 +943,9 @@ class FillInDropDownItem extends BasicTaskItem {
         let that = this;
         let spaces = Array.from(this.htmlElement.querySelectorAll(".space"));
         spaces.forEach(function (s, i) {
-            if (s.innerText === that.correctAnswers[i]) {
+            if (s.innerHTML === that.correctAnswers[i]) {
                 s.classList.add("correct");
-            } else if (s.innerText !== that.correctAnswers[i]) {
+            } else if (s.innerHTML !== that.correctAnswers[i]) {
                 s.classList.add("incorrect");
             }
             s.classList.add("disabled");
@@ -956,9 +956,33 @@ class FillInDropDownItem extends BasicTaskItem {
         let that = this;
         let spaces = Array.from(this.htmlElement.querySelectorAll(".space"));
         spaces.forEach(function (s, i) {
-            if (s.innerText === that.correctAnswers[i]) {} else if (s.innerText !== that.correctAnswers[i]) {
-                s.innerText = that.correctAnswers[i];
+
+            if (s.innerHTML !== that.correctAnswers[i]) {
+                s.innerHTML = that.correctAnswers[i];
+                if (s.innerHTML === '' || s.innerHTML === ' ') {
+                    s.classList.add('helper')
+                } else {
+                    console.log('removing helper')
+                    s.classList.remove('helper')
+                }
             }
+            if (that.choicesToShow[i].includes('слитно')) {
+                if (s.innerHTML === '') {
+                    s.parentNode.classList.add('nospace')
+                } else {
+                    s.parentNode.classList.remove('nospace')
+                }
+
+                if (s.innerHTML === '-') {
+                    s.classList.add('box')
+                    s.classList.remove('tri')
+                } else {
+                    s.classList.remove('box')
+                    s.classList.add('tri')
+                }
+            }
+
+
             s.classList.remove("correct");
             s.classList.remove("incorrect");
         });
@@ -987,17 +1011,32 @@ class FillInDropDownItem extends BasicTaskItem {
         let answer = e.currentTarget;
         let space = e.currentTarget.parentNode.parentNode.querySelector(".space");
         let word = space.parentNode.parentNode;
-        space.innerText = answer.dataset.choice_to_insert;
+        if (answer.dataset.choice_to_insert === '' || answer.dataset.choice_to_insert === ' ') {
+            space.classList.add('helper')
+        }
+        space.innerHTML = answer.dataset.choice_to_insert;
 
         that.userAnswer = [];
 
         for (let i = 0; i < that.spacesTotal; i++) {
             that.userAnswer.push(
-                word.querySelector(`.space[data-space_num='${i}']`).innerText
+                word.querySelector(`.space[data-space_num='${i}']`).innerHTML
             );
         }
 
         space.classList.remove("empty");
+        if (answer.innerText === 'слитно') {
+            e.currentTarget.parentNode.parentNode.classList.add('nospace')
+            space.classList.add('tri')
+            space.classList.remove('box')
+        } else {
+            e.currentTarget.parentNode.parentNode.classList.remove('nospace')
+            space.classList.remove('tri')
+            space.classList.add('box')
+            if (answer.innerText === 'дефис') {
+                space.classList.remove('helper')
+            }
+        }
 
         if (!that.userAnswer.includes("_")) {
             Xapi.sendStmt(new Statement(that, "answered").finalStatement);
@@ -1333,7 +1372,7 @@ class Course {
 class App {
     constructor() {}
     static renderHooks = [];
-    static testMode = false;
+    static testMode = true;
     static id = "";
     static course;
     static loaded = false;
