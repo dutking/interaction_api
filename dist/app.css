@@ -164,6 +164,7 @@
     justify-content: center;
     align-items: center;
     align-content: center;
+    background-color: white;
     min-width: 2rem;
     height: 2rem;
     padding: 0.5rem;
@@ -298,6 +299,10 @@
     border-color: var(--color-primary-bluegreen);
 }
 
+.box.icon {
+    color: var(--color-primary-bluegreen);
+}
+
 .box.selected {
     background-color: var(--color-primary-orange);
     border-color: var(--color-primary-orange);
@@ -364,7 +369,7 @@
     border-left-width: 5px;
     border-style: solid;
     border-color: var(--color-primary-lightgray);
-    padding-left: 1rem;
+    padding: 1rem;
     transition: all 0.3s ease-in;
 }
 
@@ -406,6 +411,7 @@
     flex-direction: row;
     flex-wrap: wrap;
     padding: 2rem 0 2rem 0;
+    margin-top: 3rem;
     align-content: center;
     justify-content: center;
     background: #F9E6C8;
@@ -417,8 +423,9 @@
     align-content: center;
     justify-content: center;
     align-items: center;
+    padding-left: 1rem;
+    padding-right: 1rem;
     min-width: 160px;
-    margin: 1rem;
     height: 60px;
     font-family: 'Open Sans', sans-serif;
     font-weight: 600;
@@ -528,12 +535,12 @@
         padding-right: 0;
     }
 
-    .interaction .langExerciseUnit .letterBox {
+    .interaction .letterBox {
         display: grid;
         grid-template-columns: 1fr;
     }
 
-    .interaction .langExerciseUnit .letterBox .right .img {
+    .interaction .letterBox .right .img {
         transform: scale(0.7) translateY(1rem);
     }
 }

@@ -160,8 +160,7 @@ class LangExerciseInteraction extends IterableScorableInteraction {
     constructor(index, renderHook, parent) {
         super(index, renderHook, parent);
         this.insideBox = this.interactionData.inside_box;
-        this.boxHeader = this.interactionData.box_header;
-        this.boxText = this.interactionData.box_text;
+        this.ruleName = this.interactionData.name;
         this.init();
     }
 
@@ -215,8 +214,7 @@ class DictantInteraction extends ScorableInteraction {
     constructor(index, renderHook, parent) {
         super(index, renderHook, parent);
         this.insideBox = this.interactionData.inside_box;
-        this.boxHeader = this.interactionData.box_header;
-        this.boxText = this.interactionData.box_text;
+        this.ruleName = this.interactionData.name;
         this.init();
     }
 
@@ -230,12 +228,11 @@ class DictantInteraction extends ScorableInteraction {
     }
 }
 
-class LangExeLetter {
-    constructor(renderHook, letter, header, text) {
-        this.renderHook = renderHook;
-        this.letter = letter;
-        this.header = header;
-        this.text = text;
+class LetterBox {
+    constructor(parent) {
+        this.parent = parent;
+        this.ruleName = this.parent.parent.ruleName;
+        this.letter = this.parent.parent.insideBox;
         this.render();
     }
 
@@ -244,21 +241,23 @@ class LangExeLetter {
         this.container.className = "leftBorderMarker letterBox";
         this.container.innerHTML = `
         <div class='left'>
-        <h2>${this.header}</h2>
-        <p>${this.text}</p>
+        <h2>Вы прошли успешную тренировку!</h2>
+        <p>Узнайте еще букв${this.letter.lenght === 1 ? 'у' : 'ы'} из загаданного слова.</p>
+        <p>Мы вернемся к ${this.letter.lenght === 1 ? 'ней' : 'ним'} в конце модуля.</p>
         </div>
         <div class='right'>
-        <div class='letter'>${this.letter}</div>
+        <div class='letter off'>${this.letter}</div>
         <div class='img'><img src='dist/assets/slow_box.gif'/></div>
         </div>
         `;
         this.container
             .querySelector(".img img")
             .addEventListener("click", this.animateBox.bind(this));
-
-        this.animateLetters(this.container.querySelector(".letter"));
-
-        this.renderHook.appendChild(this.container);
+        if (this.parent instanceof LangExerciseUnit) {
+            this.parent.unitContainer.querySelector('.continue').before(this.container)
+        } else if (this.parent instanceof DictantUnit) {
+            this.renderHook.appendChild(this.container);
+        }
     }
 
     animateLetters(element) {
@@ -274,8 +273,8 @@ class LangExeLetter {
 
         let lettersTiming = {
             duration: 2500,
-            direction: "alternate",
-            iterations: Infinity
+            iterations: 1,
+            fill: "forwards"
         };
         element.animate(lettersAnimation, lettersTiming);
     }
@@ -295,6 +294,8 @@ class LangExeLetter {
             iterations: 1
         };
         e.currentTarget.animate(disappearAnimation, disapperTiming);
+        this.container.querySelector('.letter').classList.remove('off')
+        this.animateLetters(this.container.querySelector(".letter"));
     }
 }
 
@@ -503,7 +504,7 @@ class DictantUnit extends InteractionUnit {
         e.currentTarget.classList.add("off");
         this.setFb("o");
         this.mode = "feedback";
-        new LangExeLetter(this.unitContainer, this.parent.insideBox, this.parent.boxHeader, this.parent.boxText);
+        new LetterBox(this.unitContainer, this.parent.ruleName, this.parent.insideBox);
     }
 
     setFb(wordObj, e) {
@@ -579,6 +580,9 @@ class LangExerciseUnit extends InteractionUnit {
         this._completed = numCompleted === this.subUnits.length ? true : false;
 
         if (this.completed === true && (this.index !== this.parent.unitsList.length - 1)) {
+            if (this.index === this.parent.unitsToComplete - 1) {
+                new LetterBox(this);
+            }
             this.unitContainer
                 .querySelector("button.continue")
                 .classList.remove("off");
@@ -651,9 +655,9 @@ class LangExerciseUnit extends InteractionUnit {
     }
 
     initNextUnit(e) {
-        if (this.index === this.parent.unitsToComplete - 1) {
-            new LangExeLetter(this.unitContainer, this.parent.insideBox, this.parent.boxHeader, this.parent.boxText);
-        }
+        /* if (this.index === this.parent.unitsToComplete - 1) {
+            new LetterBox(this);
+        } */
         this.parent.createUnit(this.index + 1);
         e.currentTarget.classList.add("off");
     }
@@ -973,7 +977,7 @@ class FillInDropDownItem extends BasicTaskItem {
                     s.parentNode.classList.remove('nospace')
                 }
 
-                if (s.innerHTML === '-') {
+                if (s.innerHTML === '-' || s.innerHTML === ' ') {
                     s.classList.add('box')
                     s.classList.remove('tri')
                 } else {
