@@ -160,7 +160,6 @@ class LangExerciseInteraction extends IterableScorableInteraction {
     constructor(index, renderHook, parent) {
         super(index, renderHook, parent);
         this.insideBox = this.interactionData.inside_box;
-        this.ruleName = this.interactionData.name;
         this.init();
     }
 
@@ -214,7 +213,6 @@ class DictantInteraction extends ScorableInteraction {
     constructor(index, renderHook, parent) {
         super(index, renderHook, parent);
         this.insideBox = this.interactionData.inside_box;
-        this.ruleName = this.interactionData.name;
         this.init();
     }
 
@@ -231,7 +229,7 @@ class DictantInteraction extends ScorableInteraction {
 class LetterBox {
     constructor(parent) {
         this.parent = parent;
-        this.ruleName = this.parent.parent.ruleName;
+        this.ruleName = this.parent.parent.name;
         this.letter = this.parent.parent.insideBox;
         this.render();
     }
@@ -256,7 +254,7 @@ class LetterBox {
         if (this.parent instanceof LangExerciseUnit) {
             this.parent.unitContainer.querySelector('.continue').before(this.container)
         } else if (this.parent instanceof DictantUnit) {
-            this.renderHook.appendChild(this.container);
+            this.parent.unitContainer.appendChild(this.container);
         }
     }
 
@@ -504,7 +502,7 @@ class DictantUnit extends InteractionUnit {
         e.currentTarget.classList.add("off");
         this.setFb("o");
         this.mode = "feedback";
-        new LetterBox(this.unitContainer, this.parent.ruleName, this.parent.insideBox);
+        new LetterBox(this);
     }
 
     setFb(wordObj, e) {
@@ -655,9 +653,6 @@ class LangExerciseUnit extends InteractionUnit {
     }
 
     initNextUnit(e) {
-        /* if (this.index === this.parent.unitsToComplete - 1) {
-            new LetterBox(this);
-        } */
         this.parent.createUnit(this.index + 1);
         e.currentTarget.classList.add("off");
     }
@@ -1376,7 +1371,7 @@ class Course {
 class App {
     constructor() {}
     static renderHooks = [];
-    static testMode = true;
+    static testMode = false;
     static id = "";
     static course;
     static loaded = false;
