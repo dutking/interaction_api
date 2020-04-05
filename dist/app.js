@@ -51,7 +51,7 @@ class ScorableInteraction extends Interaction {
     constructor(index, renderHook, parent) {
         super(index, renderHook, parent);
         this._score = 0;
-        this.minScore = this.interactionData.min_score;
+        this.minScore = Number(this.interactionData.min_score);
     }
 
     get score() {
@@ -246,8 +246,17 @@ class LetterBox {
         <div class='right'>
         <div class='letter off'>${this.letter}</div>
         <div class='img'><img src='dist/assets/slow_box.gif'/></div>
-        </div>
-        `;
+        </div>`
+        if (this.parent instanceof LangExerciseUnit && (this.parent.parent.amountOfUnits - this.parent.parent.unitsToComplete > 0)) {
+            let extraDiv = document.createElement('div')
+            extraDiv.className = 'extra'
+            extraDiv.innerHTML = `<div class='extra'>
+            <p>Обязательная часть заданий выполнена. Поздравляем!</p>
+            <p>Далее вы можете продолжить тренировку, чтобы запомнить правило еще лучше. Всего в тренажере ${this.parent.parent.amountOfUnits} заданий, осталось еще ${this.parent.parent.amountOfUnits - this.parent.parent.unitsToComplete} до вашей идеальной формы.</p>
+            </div>
+            `;
+            this.container.appendChild(extraDiv)
+        }
         this.container
             .querySelector(".img img")
             .addEventListener("click", this.animateBox.bind(this));
@@ -1371,7 +1380,7 @@ class Course {
 class App {
     constructor() {}
     static renderHooks = [];
-    static testMode = false;
+    static testMode = true;
     static id = "";
     static course;
     static loaded = false;

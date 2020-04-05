@@ -208,10 +208,21 @@
 .interaction .letterBox {
     display: grid;
     grid-template-columns: 2fr 1fr;
+    grid-template-areas:
+        'left right'
+        'extra right';
     gap: 2rem;
     box-sizing: border-box;
     margin: 4rem 0 4rem 0;
     padding: 2rem 0 2rem 1rem;
+}
+
+.interaction .letterBox .extra {
+    grid-area: extra;
+}
+
+.interaction .letterBox .left {
+    grid-area: left;
 }
 
 .interaction .letterBox .left h2 {
@@ -219,6 +230,7 @@
 }
 
 .interaction .letterBox .right {
+    grid-area: right;
     position: relative;
     display: flex;
     align-items: center;
@@ -536,8 +548,8 @@
     }
 
     .interaction .letterBox {
-        display: grid;
         grid-template-columns: 1fr;
+        grid-template-areas: 'left ''right''extra';
     }
 
     .interaction .letterBox .right .img {
