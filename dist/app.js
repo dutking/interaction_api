@@ -102,8 +102,8 @@ class IterableScorableInteraction extends ScorableInteraction {
         if (this.shuffle === "true") {
             unitsList = App.shuffle(unitsList);
         }
-        unitsList.slice(0, this.amountOfUnits);
-        return unitsList;
+        let shortList = unitsList.slice(0, this.amountOfUnits);
+        return shortList;
     }
 
     get completed() {
