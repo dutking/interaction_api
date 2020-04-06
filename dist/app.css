@@ -171,6 +171,7 @@
     cursor: pointer;
     transition: all 0.3s ease-in;
     opacity: 0;
+    z-index: 500;
     transform: scale(0);
     animation-name: popup;
     animation-duration: 0.3s;
@@ -349,7 +350,7 @@
     border-style: solid;
     border-width: 0 16px 8px 16px;
     border-color: transparent transparent var(--color-primary-lightgray) transparent;
-    transform: translateY(5px);
+    transform: translateY(-3px);
 }
 
 .tri.empty {
@@ -360,7 +361,7 @@
     border-color: transparent transparent var(--color-primary-lightgray) transparent;
 }
 
-.tri.correct {
+.tri.incorrect {
     border-color: transparent transparent var(--color-primary-red) transparent;
 }
 

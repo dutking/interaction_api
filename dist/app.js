@@ -239,7 +239,7 @@ class LetterBox {
         this.container.className = "leftBorderMarker letterBox";
         this.container.innerHTML = `
         <div class='left'>
-        <h2>Вы прошли успешную тренировку!</h2>
+        <h2>${this.parent instanceof LangExerciseUnit ? 'Вы прошли успешную тренировку!' : 'После диктанта.'}</h2>
         <p>Узнайте еще букв${this.letter.lenght === 1 ? 'у' : 'ы'} из загаданного слова.</p>
         <p>Мы вернемся к ${this.letter.lenght === 1 ? 'ней' : 'ним'} в конце модуля.</p>
         </div>
@@ -586,10 +586,11 @@ class LangExerciseUnit extends InteractionUnit {
         });
         this._completed = numCompleted === this.subUnits.length ? true : false;
 
+        if (this.completed === true && this.index === this.parent.unitsToComplete - 1) {
+            new LetterBox(this);
+        }
+
         if (this.completed === true && (this.index !== this.parent.unitsList.length - 1)) {
-            if (this.index === this.parent.unitsToComplete - 1) {
-                new LetterBox(this);
-            }
             this.unitContainer
                 .querySelector("button.continue")
                 .classList.remove("off");
