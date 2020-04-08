@@ -303,6 +303,7 @@ class LetterBox {
         e.currentTarget.animate(disappearAnimation, disapperTiming);
         this.container.querySelector('.letter').classList.remove('off')
         this.animateLetters(this.container.querySelector(".letter"));
+        this.parent.unitContainer.querySelector('.continue').classList.remove('off')
     }
 }
 
@@ -379,242 +380,458 @@ class InteractionUnit {
     }
 }
 
-class VideoUnit extends InteractionUnit {
+class CmiInteractionUnit extends InteractionUnit {
     constructor(index, parent, cssClasses, dbData) {
-        super(index, parent, cssClasses, dbData);
-        this.vid = this.dbData.vid;
-        this.init();
+        super(index, parent, cssClasses, dbData)
     }
 
-    init() {
-        this.unitContainer = this.createUnitContainer("vid");
-        this.unitContainer.id = `player${this.parent.index}${this.index}`;
-        this.unitContainer.dataset.vid = this.parent.renderHook.dataset.vid;
+    /* get correctResponsesPattern() {
+        return [this.correctResponses.join(',')]
     }
+
+    get choices() {
+        return this.optionsToReport
+
+    } */
 }
 
-class DictantUnit extends InteractionUnit {
-    constructor(index, parent, cssClasses, dbData) {
-        super(index, parent, cssClasses, dbData);
-        this.text = dbData.text;
-        this.fbs = dbData.fbs;
-        this.subUnits = [];
-        this.mode = "active"; // active, feedback
-        this.render();
+class SubUnit {
+    constructor(parent, index) {
+        this._parent = parent
+        this.index = index
     }
 
-    get score() {
-        let score = 0;
-        this.subUnits.forEach(function (w) {
-            if (w.result) {
-                score++;
-            }
-        });
-        return score;
+    get parent() {
+        return this._parent.parent
     }
 
-    get completed() {
-        return this._completed;
+    get id() {
+        return this._parent.id + '/' + this.index
     }
 
-    set completed(v) {
-        let numCompleted = 0;
-        this.subUnits.forEach(function (w) {
-            if (w.completed) {
-                numCompleted++;
-            }
-        });
-        this._completed = numCompleted === this.subUnits.length ? true : false;
+    get correctResponsesPattern() {
+        return this._parent.correctResponses[this.index]
+    }
 
-        if (this.completed === true) {
-            this.unitContainer.querySelector("button.check").classList.remove("off");
+    get choices() {
+        let choices = this._parent.optionsToReport[this.index]
+        if (choices.length > 1) {
+            return App.multiplyArrays(choices)
+        } else {
+            return choices
         }
-        // this.setFb(v.status, v.index)
-        this.parent.completed = true;
     }
 
-    get totalTasks() {
-        return this.subUnits.length;
+    get response() {
+        return this._parent.userAnswer[this.index].join(',')
     }
 
     get result() {
-        return this.score === this.totalTasks ? true : false;
+        return this._parent._result[this.index]
     }
 
-    get tasksCompleted() {
-        let numCompleted = 0;
-        this.subUnits.forEach(function (w) {
-            if (w.completed) {
-                numCompleted++;
-            }
-        });
-        return numCompleted;
-    }
-
-    render() {
-        // creating unit container
-        this.unitContainer = this.createUnitContainer(this.cssClasses);
-
-        // creating unit header
-        let header = document.createElement("div");
-        header.classList.add("header");
-        header.innerHTML = `Диктант`;
-
-        //creating unit body
-        let body = this.createBody();
-
-        // creting unit feedback
-        let fb = document.createElement("div");
-        fb.classList.add("fb");
-
-        // creating unit check button
-        let checkBtn = document.createElement("button");
-        checkBtn.setAttribute("type", "button");
-        checkBtn.className = "btn check regular off";
-        checkBtn.innerHTML = "Проверить";
-
-        // creating unit show answers button
-        let showAnswersBtn = document.createElement("button");
-        showAnswersBtn.setAttribute("type", "button");
-        showAnswersBtn.className = "btn showAnswers regular off";
-        showAnswersBtn.innerHTML = "Показать правильные ответы";
-
-        // appending children to unit container
-        this.unitContainer.appendChild(header);
-        this.unitContainer.appendChild(body);
-        this.unitContainer.appendChild(fb);
-        this.unitContainer.appendChild(checkBtn);
-        this.unitContainer.appendChild(showAnswersBtn);
-
-        // setting event listeners
-
-        checkBtn.addEventListener("click", this.checkAnswers.bind(this));
-
-        showAnswersBtn.addEventListener("click", this.showAnswers.bind(this));
-    }
-
-    checkAnswers(e) {
-        this.subUnits.forEach(function (w) {
-            w.markAnswers();
-        });
-        e.currentTarget.classList.add("off");
-        this.unitContainer
-            .querySelector("button.showAnswers")
-            .classList.remove("off");
-    }
-
-    showAnswers(e) {
-        this.subUnits.forEach(function (w) {
-            w.showAnswers();
-            w.addFbIcon();
-        });
-        e.currentTarget.classList.add("off");
-        this.setFb("o");
-        this.mode = "feedback";
-        new LetterBox(this);
-    }
-
-    setFb(wordObj, e) {
-        let that = this;
-        let fb = that.unitContainer.querySelector(".fb");
-        fb.innerHTML = "";
-        if (this.mode === "active") {
-            fb.innerHTML = `<div class="fbUnit leftBorderMarker"><p class="fbUnitHeader">Обратная связь</p><p class="fbText">Нажимайте на иконку <i class="fas fa-hand-point-up"></i>, чтобы увидеть обратную связь.</p></div>`;
-        } else if (this.mode === "feedback") {
-            fb.innerHTML = `<div class="fbUnit leftBorderMarker selected"><p class="fbUnitHeader">${
-        wordObj.correctOption
-      }</p><p class="fbText">${that.fbs[wordObj.wordIndex]}</p></div>`;
+    get score() {
+        if (this.result === true) {
+            return 1
+        } else {
+            return 0
         }
-    }
-
-    createBody() {
-        let that = this;
-        let body = document.createElement("div");
-        body.className = "body";
-        let separateWords = this.text.split(" ");
-        let wordIndex = 0;
-        let modifiedWords = separateWords.map(function (word) {
-            if (word.includes("_")) {
-                let FIDDItem = new FillInDropDownItem(that, word, wordIndex);
-                that.subUnits.push(FIDDItem);
-                wordIndex++;
-                return `<span class="replace">${word}</span>`;
-            } else {
-                return word;
-            }
-        });
-        body.innerHTML = modifiedWords.join(" ");
-        let replaceElements = Array.from(body.querySelectorAll(".replace"));
-        replaceElements.forEach(function (el, i) {
-            body.replaceChild(that.subUnits[i].init(), el);
-        });
-        return body;
     }
 }
 
-class LangExerciseUnit extends InteractionUnit {
+class FillInDropDownUnit extends CmiInteractionUnit {
     constructor(index, parent, cssClasses, dbData) {
-        super(index, parent, cssClasses, dbData);
+        super(index, parent, cssClasses, dbData)
+        this.parent = parent
         this.text = dbData.text;
-        // this.id = dbData.id
+        this.getData()
+        this.createHTMLElements()
+        this.getSubUnits()
+
+        // to subUnits
+        // Xapi.sendStmt(new Statement(this, "interacted").finalStatement);
+    }
+
+
+    getSubUnits() {
+        this.subUnits = this.taskWords.map(function (w, i) {
+            return new SubUnit(this, i)
+        })
+    }
+
+    getData() {
+        let that = this
+        let separateWords = that.text.split(' ')
+        that.taskWords = separateWords.filter(function (w) {
+            return w.includes('_')
+        })
+
+
+
+        that.amountOfWords = that.taskWords.length
+        that.normalWords = that.taskWords.map(function (w) {
+            return w.replace(/(\(.+?\))/g, "")
+        })
+
+        let optionsData = that.taskWords.map(function (w) {
+            return w.match(/(\(.+?\))/g)
+        })
+
+        that.amountOfSpaces = optionsData.map(function (o) {
+            return o.length
+        })
+
+        that.correctResponses = []
+        that.optionsToShow = []
+        that.optionsToInsert = []
+        that.optionsToReport = []
+
+        optionsData.forEach(function (optionData) {
+            let correctResponses = []
+            let optionsToShow = []
+            let optionsToInsert = []
+            let optionsToReport = []
+            optionData.forEach(function (optionStr) {
+                let currentOptions = {
+                    toShow: [],
+                    toInsert: [],
+                    toReport: []
+                }
+
+                let optionArr = optionStr.replace(/[\(\)]/g, "").split(',')
+
+                optionArr.forEach(function (opt, index) {
+
+                    let option = opt.replace('*', '')
+                    switch (option) {
+                        case 'слитно':
+                            currentOptions.toShow.push(option)
+                            currentOptions.toReport.push(option)
+                            currentOptions.toInsert.push('')
+                            break;
+                        case 'раздельно':
+                            currentOptions.toShow.push(option)
+                            currentOptions.toReport.push(option)
+                            currentOptions.toInsert.push(' ')
+                            break;
+                        case 'дефис':
+                            currentOptions.toShow.push(option)
+                            currentOptions.toReport.push(option)
+                            currentOptions.toInsert.push('-')
+                            break;
+                        case 'зпт':
+                            currentOptions.toShow.push(',')
+                            currentOptions.toReport.push('запятая_нужна')
+                            currentOptions.toInsert.push(',')
+                            break;
+                        case 'пусто':
+                            currentOptions.toShow.push(' ')
+                            currentOptions.toReport.push('запятая_не_нужна')
+                            currentOptions.toInsert.push(' ')
+                            break;
+                        default:
+                            currentOptions.toShow.push(option)
+                            currentOptions.toReport.push(option)
+                            currentOptions.toInsert.push(option)
+                            break;
+                    }
+
+                    if (opt.includes('*')) {
+                        correctResponses.push(currentOptions.toReport[index])
+                    }
+                })
+                optionsToShow.push(currentOptions.toShow)
+                optionsToInsert.push(currentOptions.toInsert)
+                optionsToReport.push(currentOptions.toReport)
+
+            })
+
+            that.correctResponses.push(correctResponses)
+            that.optionsToShow.push(optionsToShow)
+            that.optionsToInsert.push(optionsToInsert)
+            that.optionsToReport.push(optionsToReport)
+
+        })
+    }
+
+    createHTMLElements() {
+        let that = this;
+        this.HTMLElements = that.normalWords.map(function (w, index) {
+            let word = document.createElement("span");
+            word.classList.add("word");
+            word.dataset.id = index;
+            let spaceIndex = 0;
+            let letters = w.split("");
+            let modifiedLetters = letters
+                .map(function (l) {
+                    if (l === "_") {
+                        let elements = []
+                        for (let i = 0; i < that.optionsToInsert[index][spaceIndex].length; i++) {
+                            let isLong = that.optionsToShow[index][spaceIndex][i].length > 2
+                            console.log(that.optionsToShow)
+                            let toShow = that.optionsToShow[index][spaceIndex][i]
+                            let span = `<span class="answer box ${isLong ? 'long' : ''}" data-id="${[index]},${spaceIndex},${i}">${toShow}</span>`;
+                            elements.push(span)
+                        }
+
+                        let newLetter = `<span class="subtask"><span class="space empty box" data-id="${index},${spaceIndex}" data-user_answer="_">_</span><span class="popupAnsContainer off">${elements.join('')}</span></span>`;
+                        spaceIndex++;
+                        return newLetter;
+                    } else {
+                        return l;
+                    }
+                })
+
+            word.innerHTML = modifiedLetters.join('');
+
+            let answers = Array.from(word.querySelectorAll(".answer"));
+            answers.forEach(function (a, i) {
+                a.addEventListener("click", that.setAnswer.bind(that));
+            });
+
+            let spaces = Array.from(word.querySelectorAll(".space"));
+            for (let space of spaces) {
+                space.addEventListener(
+                    "click",
+                    that.toggleItem.bind(that, "popupAnsContainer")
+                );
+            }
+            return word;
+        })
+    }
+
+    // move to Group
+    toggleItem(cssClass, e) {
+        let allItems = this.unitContainer.querySelectorAll(`.${cssClass}`);
+        let currentItem = e.currentTarget.parentNode.querySelector(`.${cssClass}`);
+        if (currentItem.classList.contains("off")) {
+            allItems.forEach(function (i) {
+                i.classList.add("off");
+            });
+            currentItem.classList.remove("off");
+        } else if (!currentItem.classList.contains("off")) {
+            currentItem.classList.add("off");
+        }
+    }
+
+    /* addFbIcon() {
+        let that = this;
+        let icon = document.createElement("span");
+        icon.className = "box icon empty";
+        icon.innerHTML = `<i class="fas fa-hand-point-up"></i>`;
+        this.htmlElement.appendChild(icon);
+        icon.addEventListener("click", this.parent.setFb.bind(this.parent, this));
+        icon.addEventListener("click", function (e) {
+            let icons = Array.from(
+                that.parent.unitContainer.querySelectorAll(".icon")
+            );
+            icons.forEach(function (i) {
+                i.classList.remove("selected");
+            });
+            e.currentTarget.classList.add("selected");
+        });
+    } */
+
+    get completed() {
+        let that = this
+        let answers = []
+        this._completed
+        this.userAnswer.forEach(function (a) {
+            a.forEach(function (i) {
+                answers.push(i)
+            })
+        })
+        return !answers.includes('_')
+    }
+
+    set completed(wordIndex) {
+        this.result = true
+        this.onCompletedFired(wordIndex)
+        if (this.completed) {
+
+            this.subUnits.forEach(function (s) {
+                // Xapi.sendStmt(new Statement(s, "answered").finalStatement)
+            })
+
+            this.parent.completed = true
+        }
+    }
+
+    set result(v) {
+        let that = this
+        this._result = []
+        this.userAnswer.forEach(function (a, i) {
+            if (App.isArraysSimilar(a, that.correctResponses[i])) {
+                that._result.push(true)
+            } else {
+                that._result.push(false)
+            }
+        })
+    }
+
+    get result() {
+        return this._result.includes(false) ? false : true
+    }
+
+    get score() {
+        return this._result.filter(function (r) {
+            return r === true
+        }).length
+    }
+
+    get userAnswer() {
+        let that = this
+        let answer = that.HTMLElements.map(function (e) {
+            return Array.from(e.querySelectorAll('.space')).map(function (s) {
+                return s.dataset.user_answer
+            })
+        })
+        return answer
+    }
+
+    markAnswer(wordElement) {
+        let that = this;
+        let wordIndex = wordElement.dataset.id
+        if (!this.userAnswer[wordIndex].includes('_')) {
+            let spaces = Array.from(wordElement.querySelectorAll('.space'))
+            spaces.forEach(function (el, spaceIndex) {
+                if (el.dataset.user_answer === that.correctResponses[wordIndex][spaceIndex]) {
+                    el.classList.add("correct");
+                } else if (el.dataset.user_answer !== that.correctResponses[wordIndex][spaceIndex]) {
+                    el.classList.add("incorrect");
+                }
+            })
+        }
+    }
+
+    disableElement(wordElement) {
+        console.log('disabling')
+        let that = this;
+        let wordIndex = wordElement.dataset.id
+        if (!this.userAnswer[wordIndex].includes('_')) {
+            let spaces = Array.from(wordElement.querySelectorAll('.space'))
+            spaces.forEach(function (el, spaceIndex) {
+                el.classList.add('disabled')
+                console.log('disabled')
+            })
+        }
+
+    }
+
+    showAnswer(wordElement) {
+        let that = this;
+        let wordIndex = wordElement.dataset.id
+        if (!this.userAnswer[wordIndex].includes('_')) {
+            let spaces = Array.from(wordElement.querySelectorAll('.space'))
+            spaces.forEach(function (e, spaceIndex) {
+                if (e.dataset.user_answer !== that.correctResponses[wordIndex][spaceIndex]) {
+
+                    let correctOptionToReport = that.correctResponses[wordIndex][spaceIndex]
+                    let correctOptionIndex = that.optionsToReport[wordIndex][spaceIndex].indexOf(correctOptionToReport)
+                    let correctOptionToInsert = that.optionsToInsert[wordIndex][spaceIndex][correctOptionIndex]
+
+                    e.innerHTML = correctOptionToInsert;
+                    if (e.innerHTML === '' || e.innerHTML === ' ') {
+                        e.classList.add('helper')
+                    } else {
+                        console.log('removing helper')
+                        e.classList.remove('helper')
+                    }
+                }
+                if (that.optionsToShow[wordIndex][spaceIndex].includes('слитно')) {
+                    if (e.innerHTML === '') {
+                        e.parentNode.classList.add('nospace')
+                    } else {
+                        e.parentNode.classList.remove('nospace')
+                    }
+
+                    if (e.innerHTML === '-' || e.innerHTML === ' ') {
+                        e.classList.add('box')
+                        e.classList.remove('tri')
+                    } else {
+                        e.classList.remove('box')
+                        e.classList.add('tri')
+                    }
+                }
+
+                e.classList.remove("correct");
+                e.classList.remove("incorrect");
+            })
+        }
+    }
+
+    setAnswer(e) {
+        let that = this;
+        let ids = e.currentTarget.dataset.id.split(',')
+        let optionIndex = ids[2]
+        let spaceIndex = ids[1]
+        let wordIndex = ids[0]
+        let spaceElement = that.HTMLElements[wordIndex].querySelector(`.space[data-id="${wordIndex},${spaceIndex}"]`);
+        let wordElement = that.HTMLElements[wordIndex]
+        if (that.optionsToInsert[wordIndex][spaceIndex][optionIndex] === '' || that.optionsToInsert[wordIndex][spaceIndex][optionIndex] === ' ') {
+            spaceElement.classList.add('helper')
+        }
+
+        spaceElement.dataset.user_answer = that.optionsToReport[wordIndex][spaceIndex][optionIndex]
+        spaceElement.innerHTML = that.optionsToInsert[wordIndex][spaceIndex][optionIndex];
+
+        spaceElement.classList.remove("empty");
+        if (spaceElement.dataset.user_answer === 'слитно') {
+            e.currentTarget.parentNode.parentNode.classList.add('nospace')
+            spaceElement.classList.add('tri')
+            spaceElement.classList.remove('box')
+        } else {
+            e.currentTarget.parentNode.parentNode.classList.remove('nospace')
+            spaceElement.classList.remove('tri')
+            spaceElement.classList.add('box')
+            if (spaceElement.dataset.user_answer === 'дефис') {
+                spaceElement.classList.remove('helper')
+            }
+        }
+
+
+        e.currentTarget.parentNode.classList.add("off");
+
+        that.completed = wordIndex
+
+        that.onSetAnswer(wordElement)
+    }
+}
+
+class LangExerciseUnit extends FillInDropDownUnit {
+    constructor(index, parent, cssClasses, dbData) {
+        super(index, parent, cssClasses, dbData)
         this.tip = dbData.tip;
         this.fb = dbData.fb;
-        this.subUnits = [];
         this.render();
     }
 
-    get score() {
-        let score = 0;
-        this.subUnits.forEach(function (w) {
-            if (w.result) {
-                score++;
-            }
-        });
-        return score;
+
+
+    onSetAnswer(wordElement) {
+        let that = this
+        that.disableElement(wordElement)
+        that.markAnswer(wordElement);
+        setTimeout(function () {
+            console.log('timeout finished')
+            that.showAnswer(wordElement);
+        }, 2000);
     }
 
-    get completed() {
-        return this._completed;
-    }
-
-    set completed(v) {
-        let numCompleted = 0;
-        this.subUnits.forEach(function (w) {
-            if (w.completed) {
-                numCompleted++;
-            }
-        });
-        this._completed = numCompleted === this.subUnits.length ? true : false;
-
-        if (this.completed === true && this.index === this.parent.unitsToComplete - 1) {
-            new LetterBox(this);
+    onCompletedFired(wordIndex) {
+        if (!this.userAnswer[wordIndex].includes('_')) {
+            this.setFb(this._result[wordIndex], wordIndex);
         }
 
-        if (this.completed === true && (this.index !== this.parent.unitsList.length - 1)) {
-            this.unitContainer
-                .querySelector("button.continue")
-                .classList.remove("off");
-        }
-        this.setFb(v.status, v.index);
-        this.parent.completed = true;
-    }
-
-    get totalTasks() {
-        return this.subUnits.length;
-    }
-
-    get result() {
-        return this.score === this.totalTasks ? true : false;
-    }
-
-    get tasksCompleted() {
-        let numCompleted = 0;
-        this.subUnits.forEach(function (w) {
-            if (w.completed) {
-                numCompleted++;
+        if (this.completed) {
+            if (this.index === this.parent.unitsToComplete - 1) {
+                new LetterBox(this);
+            } else if ((this.index !== (this.parent.unitsToComplete - 1)) && this.index !== this.parent.amountOfUnits - 1) {
+                this.unitContainer
+                    .querySelector("button.continue")
+                    .classList.remove("off");
             }
-        });
-        return numCompleted;
+        }
     }
 
     render() {
@@ -718,6 +935,175 @@ class LangExerciseUnit extends InteractionUnit {
         let body = document.createElement("div");
         body.className = "body";
         let separateWords = this.text.split(" ");
+        let modifiedWords = separateWords.map(function (word) {
+            if (word.includes("_")) {
+                return `<span class="replace">${word}</span>`;
+            } else {
+                return word;
+            }
+        });
+        body.innerHTML = modifiedWords.join(" ");
+        let replaceElements = Array.from(body.querySelectorAll(".replace"));
+        replaceElements.forEach(function (el, i) {
+            body.replaceChild(that.HTMLElements[i], el);
+        });
+        return body;
+    }
+}
+
+class VideoUnit extends InteractionUnit {
+    constructor(index, parent, cssClasses, dbData) {
+        super(index, parent, cssClasses, dbData);
+        this.vid = this.dbData.vid;
+        this.init();
+    }
+
+    init() {
+        this.unitContainer = this.createUnitContainer("vid");
+        this.unitContainer.id = `player${this.parent.index}${this.index}`;
+        this.unitContainer.dataset.vid = this.parent.renderHook.dataset.vid;
+    }
+}
+
+class DictantUnit extends InteractionUnit {
+    constructor(index, parent, cssClasses, dbData) {
+        super(index, parent, cssClasses, dbData);
+        this.text = dbData.text;
+        this.fbs = dbData.fbs;
+        this.taskWords = [];
+        this.mode = "active"; // active, feedback
+        this.render();
+    }
+
+    get score() {
+        let score = 0;
+        this.taskWords.forEach(function (w) {
+            if (w.result) {
+                score++;
+            }
+        });
+        return score;
+    }
+
+    get completed() {
+        return this._completed;
+    }
+
+    set completed(v) {
+        let numCompleted = 0;
+        this.taskWords.forEach(function (w) {
+            if (w.completed) {
+                numCompleted++;
+            }
+        });
+        this._completed = numCompleted === this.taskWords.length ? true : false;
+
+        if (this.completed === true) {
+            this.unitContainer.querySelector("button.check").classList.remove("off");
+        }
+        // this.setFb(v.status, v.index)
+        this.parent.completed = true;
+    }
+
+    get totalTasks() {
+        return this.taskWords.length;
+    }
+
+    get result() {
+        return this.score === this.totalTasks ? true : false;
+    }
+
+    get tasksCompleted() {
+        let numCompleted = 0;
+        this.taskWords.forEach(function (w) {
+            if (w.completed) {
+                numCompleted++;
+            }
+        });
+        return numCompleted;
+    }
+
+    render() {
+        // creating unit container
+        this.unitContainer = this.createUnitContainer(this.cssClasses);
+
+        // creating unit header
+        let header = document.createElement("div");
+        header.classList.add("header");
+        header.innerHTML = `Диктант`;
+
+        //creating unit body
+        let body = this.createBody();
+
+        // creting unit feedback
+        let fb = document.createElement("div");
+        fb.classList.add("fb");
+
+        // creating unit check button
+        let checkBtn = document.createElement("button");
+        checkBtn.setAttribute("type", "button");
+        checkBtn.className = "btn check regular off";
+        checkBtn.innerHTML = "Проверить";
+
+        // creating unit show answers button
+        let showAnswersBtn = document.createElement("button");
+        showAnswersBtn.setAttribute("type", "button");
+        showAnswersBtn.className = "btn showAnswers regular off";
+        showAnswersBtn.innerHTML = "Показать правильные ответы";
+
+        // appending children to unit container
+        this.unitContainer.appendChild(header);
+        this.unitContainer.appendChild(body);
+        this.unitContainer.appendChild(fb);
+        this.unitContainer.appendChild(checkBtn);
+        this.unitContainer.appendChild(showAnswersBtn);
+
+        // setting event listeners
+
+        checkBtn.addEventListener("click", this.checkAnswers.bind(this));
+
+        showAnswersBtn.addEventListener("click", this.showAnswers.bind(this));
+    }
+
+    checkAnswers(e) {
+        this.taskWords.forEach(function (w) {
+            w.markAnswers();
+        });
+        e.currentTarget.classList.add("off");
+        this.unitContainer
+            .querySelector("button.showAnswers")
+            .classList.remove("off");
+    }
+
+    showAnswers(e) {
+        this.taskWords.forEach(function (w) {
+            w.showAnswers();
+            w.addFbIcon();
+        });
+        e.currentTarget.classList.add("off");
+        this.setFb("o");
+        this.mode = "feedback";
+        new LetterBox(this);
+    }
+
+    setFb(wordObj, e) {
+        let that = this;
+        let fb = that.unitContainer.querySelector(".fb");
+        fb.innerHTML = "";
+        if (this.mode === "active") {
+            fb.innerHTML = `<div class="fbUnit leftBorderMarker"><p class="fbUnitHeader">Обратная связь</p><p class="fbText">Нажимайте на иконку <i class="fas fa-hand-point-up"></i>, чтобы увидеть обратную связь.</p></div>`;
+        } else if (this.mode === "feedback") {
+            fb.innerHTML = `<div class="fbUnit leftBorderMarker selected"><p class="fbUnitHeader">${
+        wordObj.correctOption
+      }</p><p class="fbText">${that.fbs[wordObj.wordIndex]}</p></div>`;
+        }
+    }
+
+    createBody() {
+        let that = this;
+        let body = document.createElement("div");
+        body.className = "body";
+        let separateWords = this.text.split(" ");
         let wordIndex = 0;
         let modifiedWords = separateWords.map(function (word) {
             if (word.includes("_")) {
@@ -738,333 +1124,9 @@ class LangExerciseUnit extends InteractionUnit {
     }
 }
 
-class BasicTaskItem {
-    constructor(parent) {
-        this.parent = parent;
-        this.type = "cmi.interaction";
-    }
-}
-
-class FillInDropDownItem extends BasicTaskItem {
-    constructor(parent, word, wordIndex) {
-        super(parent);
-        // this.parent = parent
-        this.wordIndex = wordIndex;
-        this._word = word; // 1Пр_(а*,б)глаша_(в*,г)м
-        this.word = this.getWord(this._word);
-        this.spacesTotal = this._word.match(/_/g).length;
-        this.choicesToInsert = this.getChoicesToInsert(this._word);
-        this.choicesToShow = this.getChoicesToShow(this._word);
-        this.correctAnswers = this.getCorrectAnwers(this._word);
-        this.userAnswer = new Array(this.spacesTotal);
-        this._completed = false;
-        this.result = false;
-        this.htmlElement;
-        Xapi.sendStmt(new Statement(this, "interacted").finalStatement);
-    }
-
-    get completed() {
-        return this._completed;
-    }
-
-    set completed(v) {
-        this._completed = true;
-        this.parent.completed = {
-            index: this.wordIndex,
-            status: this.result
-        };
-    }
-
-    get stmtChoicesOptions() {
-        return Xapi.getStmtChoicesOptions(
-            Xapi.getPossibleOptions(this.word, this.choicesToInsert)
-        );
-    }
-
-    get stmtResponse() {
-        let that = this;
-        let counter = 0;
-        let letters = this.word.split("");
-        let newWord = letters
-            .map(function (a) {
-                if (a === "_") {
-                    let l = that.userAnswer[counter];
-                    counter++;
-                    return l;
-                } else {
-                    return a;
-                }
-            })
-            .join("");
-        return newWord;
-    }
-
-    get id() {
-        return `${this.parent.id}/subunit_${this.wordIndex}`;
-    }
-
-    getWord(item) {
-        return item.replace(/(\(.+?\))/g, "");
-    }
-
-    get correctOption() {
-        let that = this;
-        let counter = 0;
-        let letters = this.word.split("");
-        let correctWord = letters
-            .map(function (a, index) {
-                if (a === "_") {
-                    let l = that.correctAnswers[counter];
-                    counter++;
-                    return l;
-                } else {
-                    return a;
-                }
-            })
-            .join("");
-        return correctWord;
-    }
-
-    getChoicesToInsert(item) {
-        let arr1 = item.match(/(\(.+?\))/g);
-        let arr2 = arr1.map(function (w) {
-            let w1 = w.replace(/[\(\*\)]/g, "");
-            let arr3 = w1.split(",");
-            let arr4 = arr3.map(function (i) {
-                switch (i) {
-                    case "слитно":
-                        return "";
-                    case "раздельно":
-                        return " ";
-                    case "дефис":
-                        return "-";
-                    case "пусто":
-                        return "";
-                    case "зпт":
-                        return ",";
-                    default:
-                        return i;
-                }
-            });
-            return arr4;
-        });
-        return arr2;
-    }
-
-    getChoicesToShow(item) {
-        let arr1 = item.match(/(\(.+?\))/g);
-        let arr2 = arr1.map(function (w) {
-            let w1 = w.replace(/[\(\*\)]/g, "");
-            let arr3 = w1.split(",");
-            let arr4 = arr3.map(function (i) {
-                switch (i) {
-                    case "пусто":
-                        return "";
-                    case "зпт":
-                        return ",";
-                    default:
-                        return i;
-                }
-            });
-            return arr4;
-        });
-        return arr2;
-    }
-
-    getCorrectAnwers(item) {
-        return item.match(/[^\(\,]*\*/g).map(function (i) {
-            let x = i.replace("*", "");
-            switch (x) {
-                case "слитно":
-                    return "";
-                case "раздельно":
-                    return " ";
-                case "дефис":
-                    return "-";
-                case "пусто":
-                    return "";
-                case "зпт":
-                    return ",";
-                default:
-                    return x;
-            }
-        });
-    }
-
-    init() {
-        let word = document.createElement("span");
-        word.classList.add("word");
-        word.dataset.word_index = this.wordIndex;
-        let that = this;
-        let spaceNum = 0;
-        let letters = this.word.split("");
-        let modifiedText = letters
-            .map(function (l) {
-                if (l === "_") {
-                    let choicesSpans = that.choicesToInsert[spaceNum]
-                        .map(function (c, index) {
-                            return `<span class="answer box ${that.choicesToShow[spaceNum][index].length > 2 ? 'long' : ''}" data-correct="${
-                c === that.correctAnswers[spaceNum] ? true : false
-              }" data-choice_to_insert="${that.choicesToInsert[spaceNum][index]}">${that.choicesToShow[spaceNum][index]}</span>`;
-                        })
-                        .join("");
-                    let newLetter = `<span class="subtask"><span class="space empty box" data-space_num=${spaceNum}>_</span><span class="popupAnsContainer off">${choicesSpans}</span></span>`;
-                    spaceNum++;
-                    return newLetter;
-                } else {
-                    return l;
-                }
-            })
-            .join("");
-
-        word.innerHTML = modifiedText;
-
-        let answers = Array.from(word.querySelectorAll(".answer"));
-        answers.forEach(function (a, i) {
-            a.addEventListener("click", that.setAnswer.bind(that));
-        });
-
-        let spaces = Array.from(word.querySelectorAll(".space"));
-        for (let space of spaces) {
-            space.addEventListener(
-                "click",
-                that.toggleItem.bind(that, "popupAnsContainer")
-            );
-        }
-        this.htmlElement = word;
-        return word;
-    }
-
-    toggleItem(cssClass, e) {
-        let allItems = this.parent.unitContainer.querySelectorAll(`.${cssClass}`);
-        let currentItem = e.currentTarget.parentNode.querySelector(`.${cssClass}`);
-        if (currentItem.classList.contains("off")) {
-            allItems.forEach(function (i) {
-                i.classList.add("off");
-            });
-            currentItem.classList.remove("off");
-        } else if (!currentItem.classList.contains("off")) {
-            currentItem.classList.add("off");
-        }
-    }
-
-    markAnswers() {
-        let that = this;
-        let spaces = Array.from(this.htmlElement.querySelectorAll(".space"));
-        spaces.forEach(function (s, i) {
-            if (s.innerHTML === that.correctAnswers[i]) {
-                s.classList.add("correct");
-            } else if (s.innerHTML !== that.correctAnswers[i]) {
-                s.classList.add("incorrect");
-            }
-            s.classList.add("disabled");
-        });
-    }
-
-    showAnswers() {
-        let that = this;
-        let spaces = Array.from(this.htmlElement.querySelectorAll(".space"));
-        spaces.forEach(function (s, i) {
-
-            if (s.innerHTML !== that.correctAnswers[i]) {
-                s.innerHTML = that.correctAnswers[i];
-                if (s.innerHTML === '' || s.innerHTML === ' ') {
-                    s.classList.add('helper')
-                } else {
-                    console.log('removing helper')
-                    s.classList.remove('helper')
-                }
-            }
-            if (that.choicesToShow[i].includes('слитно')) {
-                if (s.innerHTML === '') {
-                    s.parentNode.classList.add('nospace')
-                } else {
-                    s.parentNode.classList.remove('nospace')
-                }
-
-                if (s.innerHTML === '-' || s.innerHTML === ' ') {
-                    s.classList.add('box')
-                    s.classList.remove('tri')
-                } else {
-                    s.classList.remove('box')
-                    s.classList.add('tri')
-                }
-            }
 
 
-            s.classList.remove("correct");
-            s.classList.remove("incorrect");
-        });
-    }
 
-    addFbIcon() {
-        let that = this;
-        let icon = document.createElement("span");
-        icon.className = "box icon empty";
-        icon.innerHTML = `<i class="fas fa-hand-point-up"></i>`;
-        this.htmlElement.appendChild(icon);
-        icon.addEventListener("click", this.parent.setFb.bind(this.parent, this));
-        icon.addEventListener("click", function (e) {
-            let icons = Array.from(
-                that.parent.unitContainer.querySelectorAll(".icon")
-            );
-            icons.forEach(function (i) {
-                i.classList.remove("selected");
-            });
-            e.currentTarget.classList.add("selected");
-        });
-    }
-
-    setAnswer(e) {
-        let that = this;
-        let answer = e.currentTarget;
-        let space = e.currentTarget.parentNode.parentNode.querySelector(".space");
-        let word = space.parentNode.parentNode;
-        if (answer.dataset.choice_to_insert === '' || answer.dataset.choice_to_insert === ' ') {
-            space.classList.add('helper')
-        }
-        space.innerHTML = answer.dataset.choice_to_insert;
-
-        that.userAnswer = [];
-
-        for (let i = 0; i < that.spacesTotal; i++) {
-            that.userAnswer.push(
-                word.querySelector(`.space[data-space_num='${i}']`).innerHTML
-            );
-        }
-
-        space.classList.remove("empty");
-        if (answer.innerText === 'слитно') {
-            e.currentTarget.parentNode.parentNode.classList.add('nospace')
-            space.classList.add('tri')
-            space.classList.remove('box')
-        } else {
-            e.currentTarget.parentNode.parentNode.classList.remove('nospace')
-            space.classList.remove('tri')
-            space.classList.add('box')
-            if (answer.innerText === 'дефис') {
-                space.classList.remove('helper')
-            }
-        }
-
-        if (!that.userAnswer.includes("_")) {
-            Xapi.sendStmt(new Statement(that, "answered").finalStatement);
-            if (App.isArraysSimilar(that.userAnswer, that.correctAnswers)) {
-                that.result = true;
-            } else if (!App.isArraysSimilar(that.userAnswer, that.correctAnswers)) {
-                that.result = false;
-            }
-            if (that.parent instanceof LangExerciseUnit) {
-                that.markAnswers();
-                setTimeout(function () {
-                    that.showAnswers();
-                }, 2000);
-            }
-            that.completed = true;
-        }
-        e.currentTarget.parentNode.classList.add("off");
-    }
-}
 
 class Xapi {
     // start of old code
@@ -1149,7 +1211,7 @@ class Xapi {
         }
     }
 
-    static getStmtChoicesOptions(arr) {
+    static getChoices(arr) {
         let newArr = arr.map(function (option) {
             return {
                 id: option,
@@ -1161,11 +1223,13 @@ class Xapi {
         return newArr;
     }
 
-    static getStmtCorrectPattern(item) {
-        return [String(item)];
+    static getCorrectResponsesPattern(arr) {
+        return [arr.join('[,]')];
     }
 
-    static getPossibleOptions(words, choices, num = 0) {
+
+
+    /* static getPossibleOptions(words, choices, num = 0) {
         if (!Array.isArray(words)) {
             words = [words];
         }
@@ -1187,15 +1251,15 @@ class Xapi {
         });
 
         return Xapi.getPossibleOptions(newWords, choices, num + 1);
-    }
+    } */
 
-    static getCorrectOption(word, correctArr) {
+    /* static getCorrectOption(word, correctArr) {
         let thisWord = word;
         correctArr.forEach(function (letter) {
             thisWord = thisWord.replace("_", letter);
         });
         return thisWord;
-    }
+    } */
 }
 
 class Statement {
@@ -1220,13 +1284,22 @@ class Statement {
                 }
             }
         };
-        if (this.obj.type === "cmi.interaction") {
+        if (this.obj instanceof SubUnit) {
             let extraDefinitionProperties = {
                 type: "http://adlnet.gov/expapi/activities/cmi.interaction",
-                interactionType: "choice",
-                correctResponsesPattern: [this.obj.correctOption],
-                choices: this.obj.stmtChoicesOptions
+                // interactionType: "choice",
+                correctResponsesPattern: Xapi.getCorrectResponsesPattern(this.obj.correctResponsesPattern),
+                choices: Xapi.getCorrectResponsesPattern(this.obj.choices)
             };
+
+
+            if (this.obj._parent instanceof LangExerciseUnit || this.obj._parent instanceof DictantUnit) {
+                Object.assign(extraDefinitionProperties, {
+                    interactionType: "choice"
+                });
+            }
+
+
             Object.assign(simpleObject.object.definition, extraDefinitionProperties);
         }
         return simpleObject;
@@ -1253,8 +1326,8 @@ class Statement {
         } else if (this.verb === "answered") {
             if (this.verb === "answered") {
                 resultObj["result"] = {
-                    success: this.obj.stmtResponse === this.obj.correctOption,
-                    response: this.obj.stmtResponse
+                    success: this.obj.result,
+                    response: this.obj.response
                 };
             }
         } else if (this.verb === "passed" || this.verb === "failed") {
@@ -1381,7 +1454,7 @@ class Course {
 class App {
     constructor() {}
     static renderHooks = [];
-    static testMode = true;
+    static testMode = false;
     static id = "";
     static course;
     static loaded = false;
@@ -1389,12 +1462,10 @@ class App {
     static isVideo = false;
 
     static isTestMode() {
-        App.testMode = Boolean(
-            document
+        App.testMode = document
             .querySelector('meta[content^="testmode"]')
             .getAttribute("content")
-            .split("testmode:")[1]
-        );
+            .split("testmode:")[1] === 'true' ? true : false
     }
 
     static getId() {
@@ -1427,7 +1498,7 @@ class App {
         App.addFooter();
         App.getId();
         App.getRenderHooks();
-        // App.isTestMode()
+        App.isTestMode()
         if (App.testMode === false) {
             ADL.XAPIWrapper.changeConfig(Xapi.getXapiData());
         }
@@ -1504,6 +1575,27 @@ class App {
             }
         }
         return true;
+    }
+
+    static multiplyArrays(...values) {
+        console.log('values are')
+        console.log(values)
+        let result = values[0].map(function (v) {
+            let vals = values[1].map(function (i) {
+                return `${v},${i}`
+            })
+            return vals
+        }).flat()
+
+        let newValues = values
+        newValues.shift()
+        newValues.shift()
+
+        if (newValues.length !== 0) {
+            return multiplyArrays(result, ...newValues)
+        }
+
+        return result
     }
 }
 
