@@ -86,19 +86,29 @@ class IterableScorableInteraction extends ScorableInteraction {
     constructor(index, renderHook, parent) {
         super(index, renderHook, parent);
         this.shuffle = this.interactionData.shuffle;
-        this.amountOfUnits =
-            this.interactionData.amount_of_units === "0" ?
-            db[this.index].length :
-            Number(this.interactionData.amount_of_units);
-        this.unitsToComplete =
-            this.interactionData.units_to_complete === "0" ?
-            this.amount_of_units :
-            Number(this.interactionData.units_to_complete);
+        this.amountOfUnits = this.getAmountOfUnits()
+        this.unitsToComplete = this.getUnitsToComplete()
         this.unitsList = this.getUnitsList();
     }
 
+    getUnitsToComplete() {
+        if (this.interactionData.units_to_complete === "0") {
+            return this.amountOfUnits
+        } else {
+            return Number(this.interactionData.units_to_complete);
+        }
+    }
+
+    getAmountOfUnits() {
+        if (this.interactionData.amount_of_units === '0') {
+            return db[this.index].iterables.length
+        } else {
+            return Number(this.interactionData.amount_of_units);
+        }
+    }
+
     getUnitsList() {
-        let unitsList = Array.from(db[this.index]);
+        let unitsList = Array.from(db[this.index].iterables);
         if (this.shuffle === "true") {
             unitsList = App.shuffle(unitsList);
         }
@@ -149,7 +159,7 @@ class IterableScorableInteraction extends ScorableInteraction {
     }
 
     get result() {
-        return this.score > this.minScore &&
+        return this.score >= this.minScore &&
             this.unitsCompleted >= this.unitsToComplete ?
             true :
             false;
@@ -196,7 +206,7 @@ class LongreadInteraction extends Interaction {
             // let that = this
             entries.forEach(function (entry) {
                 if (entry.isIntersecting === true) {
-                    console.log("intersecting");
+                    console.log("Longread completed");
                     that.observer.unobserve(entry.target);
                     that.interactionUnits[0].result = true;
                     that.interactionUnits[0].completed = true;
@@ -252,7 +262,7 @@ class LetterBox {
             extraDiv.className = 'extra'
             extraDiv.innerHTML = `<div class='extra'>
             <p>Обязательная часть заданий выполнена. Поздравляем!</p>
-            <p>Далее вы можете продолжить тренировку, чтобы запомнить правило еще лучше. Всего в тренажере ${this.parent.parent.amountOfUnits} заданий, осталось еще ${this.parent.parent.amountOfUnits - this.parent.parent.unitsToComplete} до вашей идеальной формы.</p>
+            <p>Далее вы можете продолжить тренировку, чтобы запомнить правило еще лучше. Всего заданий в тренажере – ${this.parent.parent.amountOfUnits}, осталось еще ${this.parent.parent.amountOfUnits - this.parent.parent.unitsToComplete} до вашей идеальной формы.</p>
             </div>
             `;
             this.container.appendChild(extraDiv)
@@ -303,14 +313,35 @@ class LetterBox {
         e.currentTarget.animate(disappearAnimation, disapperTiming);
         this.container.querySelector('.letter').classList.remove('off')
         this.animateLetters(this.container.querySelector(".letter"));
-        this.parent.unitContainer.querySelector('.continue').classList.remove('off')
+        if (this.parent instanceof LangExerciseUnit) {
+            this.parent.unitContainer.querySelector('.continue').classList.remove('off')
+        }
     }
 }
 
 class TestInteraction extends IterableScorableInteraction {
     constructor(index, renderHook, parent) {
         super(index, renderHook, parent);
+        this.fb = db[this.index].fb
+        this.init()
     }
+
+    createUnit(num) {
+        if (num < this.unitsList.length) {
+            let unit = new TestUnit(
+                num,
+                this,
+                "testUnit",
+                this.unitsList[num]
+            );
+            this.interactionUnits.push(unit);
+        }
+    }
+
+    init() {
+        this.createUnit(0);
+    }
+
 }
 
 class CaseInteraction extends IterableScorableInteraction {
@@ -344,7 +375,6 @@ class InteractionUnit {
         this.dbData = dbData;
         this._completed = false;
         this._score = 0;
-        Xapi.sendStmt(new Statement(this, "interacted").finalStatement);
     }
 
     get id() {
@@ -375,6 +405,14 @@ class InteractionUnit {
         return unitContainer;
     }
 
+    get score() {
+        return this._score
+    }
+
+    set score(v) {
+        this._score = v
+    }
+
     get result() {
         return this.completed;
     }
@@ -383,22 +421,240 @@ class InteractionUnit {
 class CmiInteractionUnit extends InteractionUnit {
     constructor(index, parent, cssClasses, dbData) {
         super(index, parent, cssClasses, dbData)
+        this._result = 0
     }
 
-    /* get correctResponsesPattern() {
-        return [this.correctResponses.join(',')]
+    get result() {
+        return this._result
+    }
+
+    set result(v) {
+        this._result = v
+    }
+}
+
+class TestUnit extends CmiInteractionUnit {
+    constructor(index, parent, cssClasses, dbData) {
+        super(index, parent, cssClasses, dbData)
+        this.type = this.dbData.type
+        this.question = this.dbData.text
+        this.answers = App.shuffle(this.dbData.answers)
+        Xapi.sendStmt(new Statement(this, "interacted").finalStatement);
+        this.render()
+    }
+
+    get correctResponsesPattern() {
+        let correctResponses = this.answers.filter(function (a) {
+            return a.aCorrect === true
+        }).map((a) => a.aId)
+        return [correctResponses.join('[,]')]
     }
 
     get choices() {
-        return this.optionsToReport
+        let idArr = []
+        let descArr = []
+        this.answers.forEach(function (a) {
+            idArr.push(a.aId)
+            descArr.push(a.aText)
+        })
+        return [idArr, descArr]
+    }
 
-    } */
+    render() {
+        // creating unit container
+        this.unitContainer = this.createUnitContainer(this.cssClasses);
+
+        // creating unit header
+        let header = document.createElement("div");
+        header.classList.add("header");
+        header.innerHTML = `Вопрос ${this.index + 1} из ${this.parent.amountOfUnits}`;
+
+        // creating unit tip
+        /* let tip = document.createElement("div");
+        tip.className = "tip off";
+        tip.innerHTML = `<p>${this.tip}</p>`; */
+
+        //creating unit body
+        let body = this.createBody();
+
+        // creting unit feedback
+        /* let fb = document.createElement("div");
+        fb.classList.add("fb"); */
+
+        // creating unit button
+        let submitBtn = document.createElement("button");
+        submitBtn.setAttribute("type", "button");
+        submitBtn.className = "btn continue regular disabled";
+        submitBtn.innerHTML = "Ответить";
+
+        // appending children to unit container
+        this.unitContainer.appendChild(header);
+        /* this.unitContainer.appendChild(tip); */
+        this.unitContainer.appendChild(body);
+        /* this.unitContainer.appendChild(fb); */
+        this.unitContainer.appendChild(submitBtn);
+
+        // setting event listeners
+        /* this.unitContainer
+            .querySelector("a.showTip")
+            .addEventListener("click", this.toggleTip.bind(this)); */
+
+        submitBtn.addEventListener("click", this.getResult.bind(this));
+    }
+
+    getResult() {
+        let that = this
+        let responseCorrectness = []
+
+        let inputs = Array.from(this.unitContainer.querySelectorAll('input'))
+
+        let checked = []
+        inputs.forEach(function (i) {
+            checked.push([i.id, i.checked])
+        })
+
+        this.response = inputs
+            .filter(function (i) {
+                if (i.checked) {
+                    return i
+                }
+            })
+            .map(function (i) {
+                return i.id
+            })
+        if (this.response.length === 0) {
+            /* warning.innerText = 'Необходимо ответить на вопрос!' */
+        } else if (this.response.length > 0) {
+            /* warning.innerText = '' */
+            /* if (currentQ.qFeedback !== '') {
+                qFeedback.innerHTML = currentQ.qFeedback
+            } */
+
+            checked.forEach(function (i) {
+                let answer = that.answers.filter(function (a) {
+                    if (i[0] === a.aId) {
+                        return a
+                    }
+                })
+
+                if (i[1] === answer[0].aCorrect) {
+                    responseCorrectness.push(true)
+                    that.unitContainer
+                        .querySelector(`label[for=${i[0]}]`)
+                        .classList.add('correct')
+                } else {
+                    responseCorrectness.push(false)
+                    that.unitContainer
+                        .querySelector(`label[for=${i[0]}]`)
+                        .classList.add('incorrect')
+                }
+            })
+            Array.from(that.unitContainer.querySelectorAll('input')).forEach(function (i) {
+                i.disabled = true
+            })
+
+            this.result = responseCorrectness.includes(false) ? false : true
+            this.score += this.correct ? 1 : 0
+            this._completed = true
+
+            if (this.result) {
+                this.unitContainer.querySelector('.header').classList.add('correct')
+            } else {
+                this.unitContainer.querySelector('.header').classList.add('incorrect')
+            }
+
+            Xapi.sendStmt(new Statement(this, "answered").finalStatement)
+            this.parent.completed = true
+            this.initNextUnit()
+        }
+    }
+
+
+
+
+    initNextUnit() {
+        this.parent.createUnit(this.index + 1);
+        this.unitContainer.querySelector('.continue').classList.add('off')
+    }
+
+    createBody() {
+        let that = this
+        let body = document.createElement('div')
+        body.className = 'body'
+
+        let questionContainer = document.createElement('p')
+        questionContainer.className = 'qText'
+        questionContainer.innerText = this.question
+        body.appendChild(questionContainer)
+
+        let qHelp = document.createElement('p')
+        qHelp.className = 'qHelp'
+        body.appendChild(qHelp)
+
+        let answersContainer = document.createElement('div')
+        answersContainer.className = 'answersContainer'
+
+        this.answers.forEach(function (a, i) {
+            // create container for particular answer
+            let answerContainer = document.createElement('div')
+            answerContainer.classList.add('answerContainer')
+
+            // create answer <input> and <label>
+            let input = document.createElement('input')
+            input.id = a.aId
+            input.setAttribute('value', a.aId)
+
+            input.addEventListener('change', function (e) {
+                let btn = that.unitContainer.querySelector('.continue')
+                if (btn.classList.contains('disabled')) {
+                    btn.classList.remove('disabled')
+                }
+            })
+
+            let label = document.createElement('label')
+            label.setAttribute('for', a.aId)
+            if (a.aText[a.aText.length - 1] !== '.') {
+                label.innerHTML = a.aText + '.'
+            } else {
+                label.innerHTML = a.aText
+            }
+
+            if (that.type === 'mc') {
+                input.setAttribute('type', 'radio')
+                input.setAttribute('name', `group_${that.index}`)
+                qHelp.innerHTML = 'Выберите правильный ответ.'
+            } else if (that.type === 'mr') {
+                input.type = 'checkbox'
+                qHelp.innerHTML = 'Выберите все правильные варианты ответов.'
+            }
+
+            answerContainer.appendChild(input)
+            answerContainer.appendChild(label)
+
+            // create particular feedback
+            if (a.aFeedback !== '') {
+                let feedback = document.createElement('div')
+                feedback.classList.add('feedback')
+                feedback.dataset.for = a.aId
+                feedback.innerHTML = a.aText
+                answerContainer.appendChild(feedback)
+            }
+
+            answersContainer.appendChild(answerContainer)
+        })
+
+        body.appendChild(answersContainer)
+
+        return body
+    }
+
 }
 
 class SubUnit {
     constructor(parent, index) {
         this._parent = parent
         this.index = index
+        Xapi.sendStmt(new Statement(this, "interacted").finalStatement)
     }
 
     get parent() {
@@ -410,15 +666,15 @@ class SubUnit {
     }
 
     get correctResponsesPattern() {
-        return this._parent.correctResponses[this.index]
+        return this._parent.correctResponses[this.index].join(',')
     }
 
     get choices() {
         let choices = this._parent.optionsToReport[this.index]
         if (choices.length > 1) {
-            return App.multiplyArrays(choices)
+            return [App.multiplyArrays(...choices)]
         } else {
-            return choices
+            return [choices[0]]
         }
     }
 
@@ -447,15 +703,14 @@ class FillInDropDownUnit extends CmiInteractionUnit {
         this.getData()
         this.createHTMLElements()
         this.getSubUnits()
-
-        // to subUnits
-        // Xapi.sendStmt(new Statement(this, "interacted").finalStatement);
     }
 
 
     getSubUnits() {
+        let that = this
         this.subUnits = this.taskWords.map(function (w, i) {
-            return new SubUnit(this, i)
+            let su = new SubUnit(that, i)
+            return su
         })
     }
 
@@ -556,51 +811,58 @@ class FillInDropDownUnit extends CmiInteractionUnit {
 
     createHTMLElements() {
         let that = this;
-        this.HTMLElements = that.normalWords.map(function (w, index) {
-            let word = document.createElement("span");
-            word.classList.add("word");
-            word.dataset.id = index;
-            let spaceIndex = 0;
-            let letters = w.split("");
-            let modifiedLetters = letters
-                .map(function (l) {
-                    if (l === "_") {
-                        let elements = []
-                        for (let i = 0; i < that.optionsToInsert[index][spaceIndex].length; i++) {
-                            let isLong = that.optionsToShow[index][spaceIndex][i].length > 2
-                            console.log(that.optionsToShow)
-                            let toShow = that.optionsToShow[index][spaceIndex][i]
-                            let span = `<span class="answer box ${isLong ? 'long' : ''}" data-id="${[index]},${spaceIndex},${i}">${toShow}</span>`;
-                            elements.push(span)
+        this.body = document.createElement("div");
+        this.body.className = "body";
+        let separateWords = this.text.replace(/(\(.+?\))/g, "").split(" ");
+        let wordIndex = 0
+        let modifiedWords = separateWords.map(function (w, index) {
+            if (w.includes("_")) {
+                let letters = w.split("");
+                let spaceIndex = 0
+                let modifiedLetters = letters
+                    .map(function (l) {
+                        if (l === "_") {
+                            let elements = []
+                            for (let i = 0; i < that.optionsToInsert[wordIndex][spaceIndex].length; i++) {
+                                let isLong = that.optionsToShow[wordIndex][spaceIndex][i].length > 2
+                                let toShow = that.optionsToShow[wordIndex][spaceIndex][i]
+                                let span = `<span class="answer box ${isLong ? 'long' : ''}" data-id="${[wordIndex]},${spaceIndex},${i}">${toShow}</span>`;
+                                elements.push(span)
+                            }
+
+                            let newLetter = `<span class="subtask"><span class="space empty box" data-id="${wordIndex},${spaceIndex}" data-user_answer="_">_</span><span class="popupAnsContainer off">${elements.join('')}</span></span>`;
+                            spaceIndex++;
+                            return newLetter;
+                        } else {
+                            return l;
                         }
+                    })
 
-                        let newLetter = `<span class="subtask"><span class="space empty box" data-id="${index},${spaceIndex}" data-user_answer="_">_</span><span class="popupAnsContainer off">${elements.join('')}</span></span>`;
-                        spaceIndex++;
-                        return newLetter;
-                    } else {
-                        return l;
-                    }
-                })
-
-            word.innerHTML = modifiedLetters.join('');
-
-            let answers = Array.from(word.querySelectorAll(".answer"));
-            answers.forEach(function (a, i) {
-                a.addEventListener("click", that.setAnswer.bind(that));
-            });
-
-            let spaces = Array.from(word.querySelectorAll(".space"));
-            for (let space of spaces) {
-                space.addEventListener(
-                    "click",
-                    that.toggleItem.bind(that, "popupAnsContainer")
-                );
+                let wordString = `<span class="word" data-id="${wordIndex}">${modifiedLetters.join('')}</span>`;
+                wordIndex++
+                return wordString
+            } else {
+                return w;
             }
-            return word;
         })
+        this.body.innerHTML = modifiedWords.join(" ");
+
+        this.HTMLElements = Array.from(this.body.querySelectorAll(".word"))
+
+        let answers = Array.from(this.body.querySelectorAll(".answer"));
+        answers.forEach(function (a, i) {
+            a.addEventListener("click", that.setAnswer.bind(that));
+        });
+
+        let spaces = Array.from(this.body.querySelectorAll(".space"));
+        for (let space of spaces) {
+            space.addEventListener(
+                "click",
+                that.toggleItem.bind(that, "popupAnsContainer")
+            );
+        }
     }
 
-    // move to Group
     toggleItem(cssClass, e) {
         let allItems = this.unitContainer.querySelectorAll(`.${cssClass}`);
         let currentItem = e.currentTarget.parentNode.querySelector(`.${cssClass}`);
@@ -611,49 +873,6 @@ class FillInDropDownUnit extends CmiInteractionUnit {
             currentItem.classList.remove("off");
         } else if (!currentItem.classList.contains("off")) {
             currentItem.classList.add("off");
-        }
-    }
-
-    /* addFbIcon() {
-        let that = this;
-        let icon = document.createElement("span");
-        icon.className = "box icon empty";
-        icon.innerHTML = `<i class="fas fa-hand-point-up"></i>`;
-        this.htmlElement.appendChild(icon);
-        icon.addEventListener("click", this.parent.setFb.bind(this.parent, this));
-        icon.addEventListener("click", function (e) {
-            let icons = Array.from(
-                that.parent.unitContainer.querySelectorAll(".icon")
-            );
-            icons.forEach(function (i) {
-                i.classList.remove("selected");
-            });
-            e.currentTarget.classList.add("selected");
-        });
-    } */
-
-    get completed() {
-        let that = this
-        let answers = []
-        this._completed
-        this.userAnswer.forEach(function (a) {
-            a.forEach(function (i) {
-                answers.push(i)
-            })
-        })
-        return !answers.includes('_')
-    }
-
-    set completed(wordIndex) {
-        this.result = true
-        this.onCompletedFired(wordIndex)
-        if (this.completed) {
-
-            this.subUnits.forEach(function (s) {
-                // Xapi.sendStmt(new Statement(s, "answered").finalStatement)
-            })
-
-            this.parent.completed = true
         }
     }
 
@@ -705,14 +924,12 @@ class FillInDropDownUnit extends CmiInteractionUnit {
     }
 
     disableElement(wordElement) {
-        console.log('disabling')
         let that = this;
         let wordIndex = wordElement.dataset.id
         if (!this.userAnswer[wordIndex].includes('_')) {
             let spaces = Array.from(wordElement.querySelectorAll('.space'))
             spaces.forEach(function (el, spaceIndex) {
                 el.classList.add('disabled')
-                console.log('disabled')
             })
         }
 
@@ -734,7 +951,6 @@ class FillInDropDownUnit extends CmiInteractionUnit {
                     if (e.innerHTML === '' || e.innerHTML === ' ') {
                         e.classList.add('helper')
                     } else {
-                        console.log('removing helper')
                         e.classList.remove('helper')
                     }
                 }
@@ -789,10 +1005,7 @@ class FillInDropDownUnit extends CmiInteractionUnit {
             }
         }
 
-
         e.currentTarget.parentNode.classList.add("off");
-
-        that.completed = wordIndex
 
         that.onSetAnswer(wordElement)
     }
@@ -806,21 +1019,41 @@ class LangExerciseUnit extends FillInDropDownUnit {
         this.render();
     }
 
+    get completed() {
+        let that = this
+        let answers = []
+        this._completed
+        this.userAnswer.forEach(function (a) {
+            a.forEach(function (i) {
+                answers.push(i)
+            })
+        })
+        return !answers.includes('_')
+    }
 
+    set completed(wordIndex) {
+        let that = this
+        this.result = true
+        this.onCompletedFired(wordIndex)
+        if (this.completed) {
+            this.parent.completed = true
+        }
+    }
 
     onSetAnswer(wordElement) {
         let that = this
         that.disableElement(wordElement)
         that.markAnswer(wordElement);
+        that.completed = wordElement.dataset.id
         setTimeout(function () {
-            console.log('timeout finished')
             that.showAnswer(wordElement);
         }, 2000);
     }
 
     onCompletedFired(wordIndex) {
         if (!this.userAnswer[wordIndex].includes('_')) {
-            this.setFb(this._result[wordIndex], wordIndex);
+            this.setFb(this._result[wordIndex], wordIndex)
+            Xapi.sendStmt(new Statement(this.subUnits[wordIndex], "answered").finalStatement);
         }
 
         if (this.completed) {
@@ -851,7 +1084,7 @@ class LangExerciseUnit extends FillInDropDownUnit {
         tip.innerHTML = `<p>${this.tip}</p>`;
 
         //creating unit body
-        let body = this.createBody();
+        let body = this.body;
 
         // creting unit feedback
         let fb = document.createElement("div");
@@ -930,31 +1163,14 @@ class LangExerciseUnit extends FillInDropDownUnit {
         }
     }
 
-    createBody() {
-        let that = this;
-        let body = document.createElement("div");
-        body.className = "body";
-        let separateWords = this.text.split(" ");
-        let modifiedWords = separateWords.map(function (word) {
-            if (word.includes("_")) {
-                return `<span class="replace">${word}</span>`;
-            } else {
-                return word;
-            }
-        });
-        body.innerHTML = modifiedWords.join(" ");
-        let replaceElements = Array.from(body.querySelectorAll(".replace"));
-        replaceElements.forEach(function (el, i) {
-            body.replaceChild(that.HTMLElements[i], el);
-        });
-        return body;
-    }
+
 }
 
 class VideoUnit extends InteractionUnit {
     constructor(index, parent, cssClasses, dbData) {
         super(index, parent, cssClasses, dbData);
         this.vid = this.dbData.vid;
+        Xapi.sendStmt(new Statement(this, "interacted").finalStatement);
         this.init();
     }
 
@@ -965,63 +1181,40 @@ class VideoUnit extends InteractionUnit {
     }
 }
 
-class DictantUnit extends InteractionUnit {
+class DictantUnit extends FillInDropDownUnit {
     constructor(index, parent, cssClasses, dbData) {
         super(index, parent, cssClasses, dbData);
-        this.text = dbData.text;
         this.fbs = dbData.fbs;
-        this.taskWords = [];
-        this.mode = "active"; // active, feedback
         this.render();
     }
 
-    get score() {
-        let score = 0;
-        this.taskWords.forEach(function (w) {
-            if (w.result) {
-                score++;
-            }
-        });
-        return score;
-    }
-
     get completed() {
-        return this._completed;
+        return this._completed
     }
 
     set completed(v) {
-        let numCompleted = 0;
-        this.taskWords.forEach(function (w) {
-            if (w.completed) {
-                numCompleted++;
-            }
-        });
-        this._completed = numCompleted === this.taskWords.length ? true : false;
-
-        if (this.completed === true) {
-            this.unitContainer.querySelector("button.check").classList.remove("off");
+        console.log('dictant set completed')
+        this._completed = v
+        this.result = true
+        if (this.completed) {
+            this.parent.completed = true
         }
-        // this.setFb(v.status, v.index)
-        this.parent.completed = true;
     }
 
-    get totalTasks() {
-        return this.taskWords.length;
+    onSetAnswer(e) {
+        let notAnswered = 0
+        this.userAnswer.forEach(function (a) {
+            a.forEach(function (i) {
+                if (i === '_') {
+                    notAnswered++
+                }
+            })
+        })
+        if (notAnswered === 0) {
+            this.unitContainer.querySelector('button.check').classList.remove('disabled')
+        }
     }
 
-    get result() {
-        return this.score === this.totalTasks ? true : false;
-    }
-
-    get tasksCompleted() {
-        let numCompleted = 0;
-        this.taskWords.forEach(function (w) {
-            if (w.completed) {
-                numCompleted++;
-            }
-        });
-        return numCompleted;
-    }
 
     render() {
         // creating unit container
@@ -1033,7 +1226,7 @@ class DictantUnit extends InteractionUnit {
         header.innerHTML = `Диктант`;
 
         //creating unit body
-        let body = this.createBody();
+        let body = this.body;
 
         // creting unit feedback
         let fb = document.createElement("div");
@@ -1042,7 +1235,7 @@ class DictantUnit extends InteractionUnit {
         // creating unit check button
         let checkBtn = document.createElement("button");
         checkBtn.setAttribute("type", "button");
-        checkBtn.className = "btn check regular off";
+        checkBtn.className = "btn check regular disabled";
         checkBtn.innerHTML = "Проверить";
 
         // creating unit show answers button
@@ -1066,67 +1259,75 @@ class DictantUnit extends InteractionUnit {
     }
 
     checkAnswers(e) {
-        this.taskWords.forEach(function (w) {
-            w.markAnswers();
+        let that = this
+        this.HTMLElements.forEach(function (e) {
+            that.disableElement(e)
+            that.markAnswer(e);
         });
         e.currentTarget.classList.add("off");
         this.unitContainer
             .querySelector("button.showAnswers")
             .classList.remove("off");
+        this.subUnits.forEach(function (u) {
+            Xapi.sendStmt(new Statement(u, "answered").finalStatement);
+        })
+        this.completed = true
     }
 
     showAnswers(e) {
-        this.taskWords.forEach(function (w) {
-            w.showAnswers();
-            w.addFbIcon();
+        let that = this
+        this.HTMLElements.forEach(function (el) {
+            that.showAnswer(el);
+            that.addFbIcon(el);
         });
         e.currentTarget.classList.add("off");
-        this.setFb("o");
-        this.mode = "feedback";
+        this.setFb();
         new LetterBox(this);
     }
 
-    setFb(wordObj, e) {
+    addFbIcon(wordElement) {
         let that = this;
-        let fb = that.unitContainer.querySelector(".fb");
-        fb.innerHTML = "";
-        if (this.mode === "active") {
-            fb.innerHTML = `<div class="fbUnit leftBorderMarker"><p class="fbUnitHeader">Обратная связь</p><p class="fbText">Нажимайте на иконку <i class="fas fa-hand-point-up"></i>, чтобы увидеть обратную связь.</p></div>`;
-        } else if (this.mode === "feedback") {
-            fb.innerHTML = `<div class="fbUnit leftBorderMarker selected"><p class="fbUnitHeader">${
-        wordObj.correctOption
-      }</p><p class="fbText">${that.fbs[wordObj.wordIndex]}</p></div>`;
-        }
+        let index = wordElement.dataset.id
+        let icon = document.createElement("span");
+        icon.className = "box icon empty";
+        icon.innerHTML = `<i class="fas fa-hand-point-up"></i>`;
+        wordElement.appendChild(icon)
+        icon.addEventListener("click", that.showFb.bind(that));
+
+        let fbElement = document.createElement('span')
+        fbElement.className = 'fbPopup off'
+        let fbText = document.createElement('span')
+        fbText.innerText = this.fbs[index]
+
+        fbElement.appendChild(fbText)
+        wordElement.appendChild(fbElement)
+
+        fbElement.addEventListener('click', function (e) {
+            e.currentTarget.classList.add('off')
+            wordElement.querySelector('.icon').classList.remove('selected')
+        })
     }
 
-    createBody() {
-        let that = this;
-        let body = document.createElement("div");
-        body.className = "body";
-        let separateWords = this.text.split(" ");
-        let wordIndex = 0;
-        let modifiedWords = separateWords.map(function (word) {
-            if (word.includes("_")) {
-                let FIDDItem = new FillInDropDownItem(that, word, wordIndex);
-                that.subUnits.push(FIDDItem);
-                wordIndex++;
-                return `<span class="replace">${word}</span>`;
-            } else {
-                return word;
-            }
+    showFb(e) {
+        let fbs = Array.from(this.unitContainer.querySelectorAll(".fbPopup"));
+        let icons = Array.from(this.unitContainer.querySelectorAll(".icon"));
+        icons.forEach(function (i) {
+            i.classList.remove("selected");
         });
-        body.innerHTML = modifiedWords.join(" ");
-        let replaceElements = Array.from(body.querySelectorAll(".replace"));
-        replaceElements.forEach(function (el, i) {
-            body.replaceChild(that.subUnits[i].init(), el);
+        fbs.forEach(function (i) {
+            i.classList.add("off");
         });
-        return body;
+
+        e.currentTarget.classList.add("selected");
+        e.currentTarget.parentNode.querySelector('.fbPopup').classList.remove('off')
+    }
+
+    setFb() {
+        let fb = this.unitContainer.querySelector(".fb");
+        fb.innerHTML = "";
+        fb.innerHTML = `<div class="fbUnit leftBorderMarker"><p class="fbUnitHeader">Обратная связь.</p><p class="fbText">Нажимайте на иконку <i class="fas fa-hand-point-up"></i>, чтобы увидеть обратную связь.</p></div>`;
     }
 }
-
-
-
-
 
 class Xapi {
     // start of old code
@@ -1212,19 +1413,31 @@ class Xapi {
     }
 
     static getChoices(arr) {
-        let newArr = arr.map(function (option) {
-            return {
-                id: option,
-                description: {
-                    "ru-RU": option
-                }
-            };
-        });
+        let newArr = []
+        if (arr.length === 1) {
+            newArr = arr[0].map(function (option) {
+                return {
+                    id: option,
+                    description: {
+                        "ru-RU": option
+                    }
+                };
+            });
+        } else if (arr.length === 2) {
+            newArr = arr[0].map(function (option, ind) {
+                return {
+                    id: option,
+                    description: {
+                        "ru-RU": arr[1][ind]
+                    }
+                };
+            });
+        }
         return newArr;
     }
 
-    static getCorrectResponsesPattern(arr) {
-        return [arr.join('[,]')];
+    static getCorrectResponsesPattern(str) {
+        return [str];
     }
 
 
@@ -1284,16 +1497,16 @@ class Statement {
                 }
             }
         };
-        if (this.obj instanceof SubUnit) {
+        if (this.obj instanceof SubUnit || this.obj instanceof TestUnit) {
             let extraDefinitionProperties = {
                 type: "http://adlnet.gov/expapi/activities/cmi.interaction",
                 // interactionType: "choice",
                 correctResponsesPattern: Xapi.getCorrectResponsesPattern(this.obj.correctResponsesPattern),
-                choices: Xapi.getCorrectResponsesPattern(this.obj.choices)
+                choices: Xapi.getChoices(this.obj.choices)
             };
 
 
-            if (this.obj._parent instanceof LangExerciseUnit || this.obj._parent instanceof DictantUnit) {
+            if (this.obj._parent instanceof LangExerciseUnit || this.obj._parent instanceof DictantUnit || this.obj instanceof TestUnit) {
                 Object.assign(extraDefinitionProperties, {
                     interactionType: "choice"
                 });
@@ -1578,8 +1791,6 @@ class App {
     }
 
     static multiplyArrays(...values) {
-        console.log('values are')
-        console.log(values)
         let result = values[0].map(function (v) {
             let vals = values[1].map(function (i) {
                 return `${v},${i}`

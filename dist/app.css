@@ -24,6 +24,9 @@
 
     --font-size: 20px;
     --font-weight: normal;
+
+    --min-col-size: 35px;
+    --max-width: 960px;
 }
 
 * {
@@ -35,10 +38,132 @@
 
 .interaction {
     margin: 0 auto;
-    max-width: 960px;
+    max-width: var(--max-width);
     font-family: 'Open Sans', sans-serif;
     font-size: var(--font-size);
     color: var(--color-primary-darkgray);
+}
+
+/* .interaction .testUnit:only-of-type,
+.interaction .testUnit:last-of-type {
+    border: none;
+} */
+
+.interaction .testUnit {
+    /* margin: 1rem 0 1rem 0; */
+    padding: 2rem 0 2rem 0;
+}
+
+.interaction .testUnit .header.correct::after {
+    content: 'Верно!';
+    color: var(--color-correct);
+    font-weight: bold;
+    margin-left: 1rem;
+}
+
+.interaction .testUnit .header.incorrect::after {
+    content: 'Неверно!';
+    color: var(--color-incorrect);
+    font-weight: bold;
+    margin-left: 1rem;
+}
+
+.interaction .testUnit .qText {
+    font-size: var(--font-size);
+    font-weight: normal;
+    margin-bottom: 1rem;
+}
+
+.interaction .testUnit .qHelp {
+    font-size: var(--font-size);
+    color: var(--color-primary-lightgray, gray);
+    margin-bottom: 3rem;
+}
+
+.interaction .testUnit .answersContainer {
+    margin-bottom: 2rem;
+}
+
+.interaction .testUnit .answersContainer .answerContainer {
+    position: relative;
+}
+
+.interaction .testUnit .answersContainer .answerContainer:not(:last-of-type) {
+    margin-bottom: 1rem;
+}
+
+.interaction .testUnit .answersContainer input {
+    /* position: absolute;
+    top: 5px; */
+    display: none;
+}
+
+.interaction .testUnit .answersContainer input,
+.interaction .testUnit .answersContainer label {
+    cursor: pointer;
+}
+
+.interaction .testUnit .answersContainer input+label {
+    position: relative;
+    display: block;
+    width: calc(100% - 2rem);
+    padding-left: 2.2rem;
+}
+
+.interaction .testUnit .answersContainer input+label::before {
+    content: '';
+    display: block;
+    background-size: contain;
+    width: 25px;
+    height: 25px;
+    position: absolute;
+    left: -0.4rem;
+}
+
+.interaction .testUnit .answersContainer input[type='radio']+label::before {
+    background-image: url(assets/radio_empty.png);
+}
+
+.interaction .testUnit .answersContainer input[type='radio']:checked+label::before {
+    background-image: url(assets/radio_checked.png);
+}
+
+.interaction .testUnit .answersContainer input[type='radio']:checked+label.correct::before {
+    background-image: url(assets/radio_correct.png);
+}
+
+.interaction .testUnit .answersContainer input[type='radio']:checked+label.incorrect::before {
+    background-image: url(assets/radio_incorrect.png);
+}
+
+.interaction .testUnit .answersContainer input[type='checkbox']+label::before {
+    background-image: url(assets/checkbox_empty.png);
+}
+
+.interaction .testUnit .answersContainer input[type='checkbox']:checked+label::before {
+    background-image: url(assets/checkbox_checked.png);
+}
+
+.interaction .testUnit .answersContainer input[type='checkbox']:checked+label.correct::before {
+    background-image: url(assets/checkbox_correct.png);
+}
+
+.interaction .testUnit .answersContainer input[type='checkbox']:checked+label.incorrect::before {
+    background-image: url(assets/checkbox_incorrect.png);
+}
+
+.interaction .testUnit .answersContainer input+label:hover::before {
+    opacity: 0.5;
+}
+
+.interaction .testUnit .answersContainer input:disabled+label {
+    pointer-events: none;
+}
+
+.interaction .testUnit .warning {
+    margin-bottom: 2.5rem;
+    font-weight: normal;
+    color: var(--color-primary-red, darkred);
 }
 
 .interaction iframe {
@@ -64,7 +189,6 @@
 
 .interaction .langExerciseUnit {
     padding: 2rem 0 3rem 0;
-    overflow: hidden;
 }
 
 .interaction .header {
@@ -81,14 +205,6 @@
     cursor: pointer;
     color: var(--color-primary-darkgray) !important;
 }
-
-/* .interaction .langExerciseUnit .header a.showTip i {
-    display: inline-block;
-    box-sizing: border-box;
-    width: 1rem;
-    height: 1rem;
-    background: url('assets/hand-point-up-solid.svg') no-repeat;
-} */
 
 .interaction .langExerciseUnit .header a.showTip:hover {
     text-decoration: none;
@@ -114,11 +230,41 @@
     animation-play-state: running;
 }
 
+.interaction .dictantUnit .fbPopup {
+    position: absolute;
+    background-color: transparent;
+    top: 2rem;
+    left: 0;
+    z-index: 1000;
+    cursor: pointer;
+}
+
+.interaction .dictantUnit .fbPopup span {
+    display: block;
+    width: 300px;
+    white-space: normal;
+    background-color: white;
+    border: 2px solid var(--color-primary-lightgray);
+    border-radius: 2px;
+    padding: 1rem;
+    opacity: 0;
+    transform: scale(0);
+    animation-name: popup;
+    animation-duration: 0.3s;
+    animation-timing-function: ease;
+    animation-delay: 0s;
+    animation-iteration-count: 1;
+    animation-direction: normal;
+    animation-fill-mode: forwards;
+    animation-play-state: running;
+}
+
 .interaction .body {
     margin-bottom: 2rem;
 }
 
 .interaction .body .word {
+    position: relative;
     white-space: nowrap;
 }
 
@@ -156,8 +302,8 @@
     left: 0;
     top: 2.3rem;
     display: grid;
-    max-width: 100px;
-    grid-template-columns: 1fr 1fr 1fr;
+    max-width: 105px;
+    grid-template-columns: 1fr;
     gap: 0.3rem;
     margin-left: 2px;
     z-index: 100;
@@ -302,7 +448,7 @@
 .box {
     display: inline-block;
     background-color: transparent;
-    border-width: 2px;
+    border-width: 3px;
     border-style: solid;
     border-radius: 2px;
     border-color: var(--color-primary-lightgray);
@@ -465,8 +611,9 @@
     color: white;
 }
 
-.interaction button:disabled {
-    opacity: 0.5;
+.interaction button.disabled {
+    background-color: var(--color-primary-lightgray);
+    border-color: var(--color-primary-lightgray);
     pointer-events: none;
 }
 
@@ -528,10 +675,7 @@
     :root {
         --font-size: 18px;
         --font-weight: 300px;
-    }
-
-    .interaction {
-        max-width: 780px;
+        --max-width: 780px;
     }
 }
 
@@ -539,10 +683,10 @@
     :root {
         --font-size: 16px;
         --font-weight: normal;
+        --max-width: 600px;
     }
 
     .interaction {
-        max-width: 600px;
         padding-left: 2rem;
         padding-right: 2rem;
     }
