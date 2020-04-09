@@ -1808,6 +1808,47 @@ class App {
 
         return result
     }
+
+    static getStructure() {
+        let items = App.course.interactions.map(function (i, index) {
+            let data = {
+                "id": i.id,
+                "parent": i.parent.id,
+                "name": i.name,
+                "type": i.interactionData.type,
+                "weight": i.required ? 1 : 0,
+                "is_leaf": false, // Флаг о том, что у этого элемента нет дочерних сущностей
+                "type_name": App.getRusName(i),
+                "order": index
+            }
+            return data
+        })
+
+        let structure = {
+            "id": App.course.id,
+            "type": "course",
+            "version": 1,
+            "component": "course",
+            "name": App.course.name,
+            "items": items
+        }
+
+        return JSON.stringify(structure)
+    }
+
+    static getRusName(i) {
+        if (i instanceof TestInteraction) {
+            return 'Тест'
+        } else if (i instanceof DictantInteraction) {
+            return 'Диктант'
+        } else if (i instanceof LangExerciseInteraction) {
+            return 'Упражнение'
+        } else if (i instanceof VideoInteraction) {
+            return 'Видео'
+        } else if (i instanceof LongreadInteraction) {
+            return 'Лонгрид'
+        }
+    }
 }
 
 // YT iFrame API
