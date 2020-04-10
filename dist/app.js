@@ -204,7 +204,7 @@ class LongreadInteraction extends Interaction {
     let that = this;
 
     let options = {
-      rootMargin: '0px 0px 500px 0px'
+      rootMargin: '0px 0px 700px 0px'
     }
     this.observer = new IntersectionObserver(function (entries, observer) {
       // let that = this
