@@ -29,13 +29,6 @@
     --max-width: 960px;
 }
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    line-height: 1.5;
-}
-
 .interaction {
     margin: 0 auto;
     max-width: var(--max-width);
@@ -445,7 +438,7 @@
     color: white;
 } */
 
-.box {
+.interaction .box {
     display: inline-block;
     background-color: transparent;
     border-width: 3px;
@@ -456,44 +449,44 @@
     transition: background-color 0.3s ease-in, border-color 0.3s ease-in, color 0.1s ease-in;
 }
 
-.box.empty {
+.interaction .box.empty {
     background-color: transparent;
     color: rgba(0, 0, 0, 0);
     border-color: var(--color-active);
 }
 
-.box.icon {
+.interaction .box.icon {
     color: var(--color-active);
 }
 
-.box.selected {
+.interaction .box.selected {
     background-color: var(--color-primary-orange);
     border-color: var(--color-primary-orange);
     color: black;
 }
 
-.box.disabled {
+.interaction .box.disabled {
     border-color: var(--color-primary-lightgray);
     color: var(--color-primary-lightgray);
     border-width: 1px;
     z-index: -10;
 }
 
-.box.correct {
+.interaction .box.correct {
     color: white;
     background-color: var(--color-correct);
     border-color: var(--color-correct);
     z-index: -10;
 }
 
-.box.incorrect {
+.interaction .box.incorrect {
     color: white;
     background-color: var(--color-incorrect);
     border-color: var(--color-incorrect);
     z-index: -10;
 }
 
-.space.tri {
+.interaction .space.tri {
     display: inline-block;
     width: 2rem;
     /* height: 0; */
@@ -503,31 +496,31 @@
     transform: translateY(-3px);
 }
 
-.tri.empty {
+.interaction .tri.empty {
     border-color: transparent transparent var(--color-active) transparent;
 }
 
-.tri.disabled {
+.interaction .tri.disabled {
     border-color: transparent transparent var(--color-primary-lightgray) transparent;
 }
 
-.tri.incorrect {
+.interaction .tri.incorrect {
     border-color: transparent transparent var(--color-incorrect) transparent;
 }
 
-.tri.correct {
+.interaction .tri.correct {
     border-color: transparent transparent var(--color-correct) transparent;
 }
 
-.text.correct {
+.interaction .text.correct {
     color: var(--color-correct);
 }
 
-.text.incorrect {
+.interaction .text.incorrect {
     color: var(--color-incorrect);
 }
 
-.leftBorderMarker {
+.interaction .leftBorderMarker {
     border: 0;
     border-left-width: 5px;
     border-style: solid;
@@ -536,31 +529,31 @@
     transition: all 0.3s ease-in;
 }
 
-.leftBorderMarker.correct {
+.interaction .leftBorderMarker.correct {
     border-color: var(--color-correct);
 }
 
-.leftBorderMarker.incorrect {
+.interaction .leftBorderMarker.incorrect {
     border-color: var(--color-incorrect);
 }
 
-.leftBorderMarker.selected {
+.interaction .leftBorderMarker.selected {
     border-color: var(--color-primary-orange);
 }
 
-.leftBorderMarker.letterBox {
+.interaction .leftBorderMarker.letterBox {
     border-color: #F9E6C8;
 }
 
-.interaction .off {
+.interaction .interaction .off {
     display: none !important;
 }
 
-.interaction .active {
+.interaction .interaction .active {
     pointer-events: visible;
 }
 
-.interaction .disabled {
+.interaction .interaction .disabled {
     pointer-events: none;
 }
 
