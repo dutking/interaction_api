@@ -223,6 +223,17 @@ class LongreadInteraction extends Interaction {
   }
 }
 
+class Comment extends Interaction {
+  constructor(index, renderHook, parent) {
+    super(index, renderHook, parent);
+    this.interactionUnits = [{
+      result: false,
+      completed: false,
+    }, ];
+    this.init();
+  }
+}
+
 class DictantInteraction extends ScorableInteraction {
   constructor(index, renderHook, parent) {
     super(index, renderHook, parent);
@@ -335,9 +346,12 @@ class LetterBox {
     this.container.querySelector(".letter").classList.remove("off");
     this.animateLetters(this.container.querySelector(".letter"));
     if (this.parent instanceof LangExerciseUnit) {
-      this.parent.unitContainer
-        .querySelector(".continue")
-        .classList.remove("off");
+      if (this.parent.index !== this.parent.parent.unitsToComplete - 1 &&
+        this.parent.index !== this.parent.parent.amountOfUnits - 1) {
+        this.parent.unitContainer
+          .querySelector(".continue")
+          .classList.remove("off");
+      }
     }
   }
 }
