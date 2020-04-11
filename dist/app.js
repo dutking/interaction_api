@@ -223,7 +223,7 @@ class LongreadInteraction extends Interaction {
   }
 }
 
-class Comment extends Interaction {
+class CommentInteraction extends Interaction {
   constructor(index, renderHook, parent) {
     super(index, renderHook, parent);
     this.init();
@@ -231,6 +231,22 @@ class Comment extends Interaction {
 
   createUnit(num) {
     let unit = new CommentUnit(num, this, "commentUnit", db[this.index][num]);
+    this.interactionUnits.push(unit);
+  }
+
+  init() {
+    this.createUnit(0);
+  }
+}
+
+class RatingInteraction extends Interaction {
+  constructor(index, renderHook, parent) {
+    super(index, renderHook, parent);
+    this.init();
+  }
+
+  createUnit(num) {
+    let unit = new RatingUnit(num, this, "ratingUnit", db[this.index][num]);
     this.interactionUnits.push(unit);
   }
 
@@ -578,11 +594,6 @@ class TestUnit extends CmiInteractionUnit {
     if (this.response.length === 0) {
       /* warning.innerText = 'Необходимо ответить на вопрос!' */
     } else if (this.response.length > 0) {
-      /* warning.innerText = '' */
-      /* if (currentQ.qFeedback !== '') {
-                qFeedback.innerHTML = currentQ.qFeedback
-            } */
-
       checked.forEach(function (i) {
         let answer = that.answers.filter(function (a) {
           if (i[0] === a.aId) {
@@ -619,14 +630,19 @@ class TestUnit extends CmiInteractionUnit {
       }
 
       Xapi.sendStmt(new Statement(this, "answered").finalStatement);
+      this.unitContainer.querySelector(".continue").classList.add("off");
       this.parent.completed = true;
       this.initNextUnit();
     }
   }
 
   initNextUnit() {
-    this.parent.createUnit(this.index + 1);
-    this.unitContainer.querySelector(".continue").classList.add("off");
+    if (
+      this.index !== this.parent.unitsToComplete - 1 &&
+      this.index !== this.parent.amountOfUnits - 1
+    ) {
+      this.parent.createUnit(this.index + 1);
+    }
   }
 
   createBody() {
@@ -1149,9 +1165,9 @@ class LangExerciseUnit extends FillInDropDownUnit {
     // creating unit header
     let header = document.createElement("div");
     header.classList.add("header");
-    header.innerHTML = `Задание ${this.index + 1} из ${
+    header.innerHTML = `<p>Задание ${this.index + 1} из ${
       this.parent.amountOfUnits
-    }<a class='showTip'>Показать подсказку <i class="fas fa-hand-point-up"></i></a>`;
+    }<a class='showTip'>Показать подсказку <span class="icon"><i> </i><span></a></p>`; // <i class="fas fa-hand-point-up"></i>
 
     // creating unit tip
     let tip = document.createElement("div");
@@ -1230,42 +1246,92 @@ class LangExerciseUnit extends FillInDropDownUnit {
     if (tip.classList.contains("off")) {
       tip.classList.remove("off");
       e.currentTarget.innerHTML =
-        'Скрыть подсказку <i class="fas fa-hand-point-up"></i>';
+        'Скрыть подсказку <span class="icon"><i> </i><span>';
     } else if (!tip.classList.contains("off")) {
       tip.classList.add("off");
       e.currentTarget.innerHTML =
-        'Показать подсказку <i class="fas fa-hand-point-up"></i>';
+        'Показать подсказку <span class="icon"><i> </i><span>';
     }
-  }
-}
-
-class RatingUnit extends InteractionUnit {
-  constructor(index, parent, cssClasses, dbData) {
-    super(index, parent, cssClasses, dbData);
-    this.init();
-  }
-
-  init() {
-    this.unitContainer = this.createUnitContainer("userRating");
-    this.unitContainer.innerHTML = `
-    <textarea></textarea>
-    <button type="button" class="continue disabled">Отправить</button>
-    <p>Благодарим за Ваш отзыв</p>`
   }
 }
 
 class CommentUnit extends InteractionUnit {
   constructor(index, parent, cssClasses, dbData) {
     super(index, parent, cssClasses, dbData);
+    this.title = ''
+    this.text = ''
+    this.tag = ''
     this.init();
   }
 
   init() {
-    this.unitContainer = this.createUnitContainer("userComment");
+    let that = this
+    this.unitContainer = this.createUnitContainer(this.cssClasses);
     this.unitContainer.innerHTML = `
-    <textarea></textarea>
-    <button type="button" class="continue disabled">Отправить</button>
-    <p>Благодарим за Ваш отзыв</p>`
+    <textarea rows="10" placeholder='Пожалуйста, введите Ваш отзыв.'></textarea>
+    <button type="button" class="btn disabled">Отправить</button>`
+
+    this.unitContainer.querySelector('textarea').addEventListener('input', function (e) {
+      that.unitContainer.querySelector('.btn').classList.remove('disabled')
+    })
+
+    this.unitContainer.querySelector('.btn').addEventListener('click', this.proceedComment.bind(this))
+  }
+
+  proceedComment(e) {
+    this.title = 'Отзыв о курсе'
+    this.text = this.unitContainer.querySelector('textarea').value
+    Xapi.sendStmt(new Statement(this, "commented").finalStatement);
+    this.unitContainer.querySelector('textarea').value = 'Благодарим за Ваш отзыв!'
+  }
+}
+
+class RatingUnit extends InteractionUnit {
+  constructor(index, parent, cssClasses, dbData) {
+    super(index, parent, cssClasses, dbData);
+    this.rating = 0
+    this.init();
+  }
+
+  init() {
+    this.unitContainer = this.createUnitContainer(this.cssClasses);
+    let starsContainer = document.createElement('div')
+    starsContainer.className = 'starsContainer'
+    for (let i = 0; i < 5; i++) {
+      let star = document.createElement('img')
+      star.setAttribute('src', './dist/assets/starEmpty.svg')
+      star.className = 'ratingStar'
+      star.dataset.value = i + 1
+      star.addEventListener('click', this.setRating.bind(this))
+      starsContainer.appendChild(star)
+    }
+    this.unitContainer.appendChild(starsContainer)
+
+    let rateBtn = document.createElement('button')
+    rateBtn.setAttribute('type', 'button')
+    rateBtn.className = 'btn'
+    rateBtn.innerHTML = 'Оценить'
+    rateBtn.addEventListener('click', this.proceedRating.bind(this))
+
+    this.unitContainer.appendChild(rateBtn)
+  }
+
+  setRating(e) {
+    let that = this
+    let stars = this.unitContainer.querySelectorAll('.ratingStar')
+    this.rating = Number(e.currentTarget.dataset.value)
+    stars.forEach(function (s) {
+      let val = Number(s.dataset.value)
+      if (val <= that.rating) {
+        s.setAttribute('src', './dist/assets/starFull.svg')
+      } else {
+        s.setAttribute('src', './dist/assets/starEmpty.svg')
+      }
+    })
+  }
+
+  proceedRating(e) {
+    Xapi.sendStmt(new Statement(this, "rated").finalStatement);
   }
 }
 
@@ -1395,7 +1461,7 @@ class DictantUnit extends FillInDropDownUnit {
     let index = wordElement.dataset.id;
     let icon = document.createElement("span");
     icon.className = "box icon empty";
-    icon.innerHTML = `<i class="fas fa-hand-point-up"></i>`;
+    icon.innerHTML = `<span class='icon'><i> </i><span>`;
     wordElement.appendChild(icon);
     icon.addEventListener("click", that.showFb.bind(that));
 
@@ -1432,7 +1498,8 @@ class DictantUnit extends FillInDropDownUnit {
   setFb() {
     let fb = this.unitContainer.querySelector(".fb");
     fb.innerHTML = "";
-    fb.innerHTML = `<div class="fbUnit leftBorderMarker"><p class="fbUnitHeader">Обратная связь.</p><p class="fbText">Нажимайте на иконку <i class="fas fa-hand-point-up"></i>, чтобы увидеть обратную связь.</p></div>`;
+    fb.innerHTML = `<div class="fbUnit leftBorderMarker"><p class="fbUnitHeader">Обратная связь.</p>
+    <p class="fbText">Нажимайте на иконку <span class='icon'><i> </i><span>, чтобы увидеть обратную связь.</span></div>`;
   }
 }
 
@@ -1651,21 +1718,33 @@ class Statement {
     let resultObj = {};
     if (this.verb === "completed") {
       resultObj["result"] = {
-        completion: this.obj.completed,
+        completion: this.obj.completed
       };
     } else if (this.verb === "answered") {
-      if (this.verb === "answered") {
-        resultObj["result"] = {
-          success: this.obj.result,
-          response: Xapi.getResponse(this.obj.response),
-        };
-      }
+      resultObj["result"] = {
+        success: this.obj.result,
+        response: Xapi.getResponse(this.obj.response)
+      };
     } else if (this.verb === "passed" || this.verb === "failed") {
       resultObj["result"] = {
         score: {
-          raw: this.obj.score,
+          raw: this.obj.score
         },
-        success: this.obj.result,
+        success: this.obj.result
+      };
+    } else if (this.verb === "commented") {
+      resultObj["result"] = {
+        response: {
+          title: this.obj.title,
+          text: this.obj.text,
+          tag: this.obj.tag
+        }
+      };
+    } else if (this.verb === "rated") {
+      resultObj["result"] = {
+        score: {
+          raw: this.obj.rating
+        }
       };
     }
     return resultObj;
@@ -1728,6 +1807,12 @@ class Course {
         that.interactions.push(i);
       } else if (hook.dataset.type === "case") {
         let i = new CaseInteraction(index, hook, that);
+        that.interactions.push(i);
+      } else if (hook.dataset.type === "comment") {
+        let i = new CommentInteraction(index, hook, that);
+        that.interactions.push(i);
+      } else if (hook.dataset.type === "rating") {
+        let i = new RatingInteraction(index, hook, that);
         that.interactions.push(i);
       }
     });
@@ -1826,9 +1911,10 @@ class App {
   }
 
   static init() {
-    App.addRating();
-    App.addComment();
     App.addFooter();
+    App.addLongread();
+    App.addComment();
+    App.addRating();
     App.getId();
     App.getRenderHooks();
     App.isTestMode();
@@ -1845,7 +1931,7 @@ class App {
       .querySelector('meta[content^="rating"]')
       .getAttribute("content")
       .split("rating:")[1] === 'true') {
-      let body = document.querySelector("body");
+      let element = document.querySelector('#finalLongread')
 
       let rating = document.createElement("div");
       rating.id = "rating";
@@ -1854,7 +1940,7 @@ class App {
       rating.dataset.name = "Оценка курса";
       rating.dataset.required = "false";
 
-      body.appendChild(rating);
+      element.after(rating);
     }
   }
 
@@ -1863,7 +1949,7 @@ class App {
       .querySelector('meta[content^="comment"]')
       .getAttribute("content")
       .split("comment:")[1] === 'true') {
-      let body = document.querySelector("body");
+      let element = document.querySelector('#finalLongread')
 
       let comment = document.createElement("div");
       comment.id = "comment";
@@ -1872,8 +1958,20 @@ class App {
       comment.dataset.name = "Оценка курса";
       comment.dataset.required = "false";
 
-      body.appendChild(comment);
+      element.after(comment);
     }
+  }
+
+  static addLongread() {
+    let nextBtn = document.querySelector('#nextBtn')
+    let longread = document.createElement('div')
+    longread.id = 'finalLongread'
+    longread.className = "interaction";
+    longread.dataset.type = "longread";
+    longread.dataset.name = "Лонгрид";
+    longread.dataset.required = "true";
+
+    nextBtn.before(longread)
   }
 
   static addFooter() {
@@ -1881,17 +1979,15 @@ class App {
 
     let footer = document.createElement("footer");
     footer.id = "pagefooter";
-    footer.className = "interaction";
-    footer.dataset.type = "longread";
-    footer.dataset.name = "Лонгрид";
-    footer.dataset.required = "true";
 
-    let btn = document.createElement("button");
-    btn.innerHTML = "Далее";
-    btn.setAttribute("type", "button");
-    btn.addEventListener("click", App.backToTrack);
+    let nextBtn = document.createElement("button");
+    nextBtn.id = 'nextBtn'
+    nextBtn.className = 'btn'
+    nextBtn.innerHTML = "Далее";
+    nextBtn.setAttribute("type", "button");
+    nextBtn.addEventListener("click", App.backToTrack);
 
-    footer.appendChild(btn);
+    footer.appendChild(nextBtn);
     body.appendChild(footer);
   }
 
@@ -2009,6 +2105,10 @@ class App {
       return "Видео";
     } else if (i instanceof LongreadInteraction) {
       return "Лонгрид";
+    } else if (i instanceof CommentInteraction) {
+      return "Комментарий";
+    } else if (i instanceof RatingInteraction) {
+      return "Рейтинг";
     }
   }
 }
