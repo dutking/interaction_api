@@ -226,11 +226,16 @@ class LongreadInteraction extends Interaction {
 class Comment extends Interaction {
   constructor(index, renderHook, parent) {
     super(index, renderHook, parent);
-    this.interactionUnits = [{
-      result: false,
-      completed: false,
-    }, ];
     this.init();
+  }
+
+  createUnit(num) {
+    let unit = new CommentUnit(num, this, "commentUnit", db[this.index][num]);
+    this.interactionUnits.push(unit);
+  }
+
+  init() {
+    this.createUnit(0);
   }
 }
 
@@ -1234,6 +1239,36 @@ class LangExerciseUnit extends FillInDropDownUnit {
   }
 }
 
+class RatingUnit extends InteractionUnit {
+  constructor(index, parent, cssClasses, dbData) {
+    super(index, parent, cssClasses, dbData);
+    this.init();
+  }
+
+  init() {
+    this.unitContainer = this.createUnitContainer("userRating");
+    this.unitContainer.innerHTML = `
+    <textarea></textarea>
+    <button type="button" class="continue disabled">Отправить</button>
+    <p>Благодарим за Ваш отзыв</p>`
+  }
+}
+
+class CommentUnit extends InteractionUnit {
+  constructor(index, parent, cssClasses, dbData) {
+    super(index, parent, cssClasses, dbData);
+    this.init();
+  }
+
+  init() {
+    this.unitContainer = this.createUnitContainer("userComment");
+    this.unitContainer.innerHTML = `
+    <textarea></textarea>
+    <button type="button" class="continue disabled">Отправить</button>
+    <p>Благодарим за Ваш отзыв</p>`
+  }
+}
+
 class VideoUnit extends InteractionUnit {
   constructor(index, parent, cssClasses, dbData) {
     super(index, parent, cssClasses, dbData);
@@ -1791,8 +1826,8 @@ class App {
   }
 
   static init() {
-    /* App.linkVerbs()
-            App.linkDb() */
+    App.addRating();
+    App.addComment();
     App.addFooter();
     App.getId();
     App.getRenderHooks();
@@ -1805,6 +1840,42 @@ class App {
 
   static observers = [];
 
+  static addRating() {
+    if (document
+      .querySelector('meta[content^="rating"]')
+      .getAttribute("content")
+      .split("rating:")[1] === 'true') {
+      let body = document.querySelector("body");
+
+      let rating = document.createElement("div");
+      rating.id = "rating";
+      rating.className = "interaction";
+      rating.dataset.type = "rating";
+      rating.dataset.name = "Оценка курса";
+      rating.dataset.required = "false";
+
+      body.appendChild(rating);
+    }
+  }
+
+  static addComment() {
+    if (document
+      .querySelector('meta[content^="comment"]')
+      .getAttribute("content")
+      .split("comment:")[1] === 'true') {
+      let body = document.querySelector("body");
+
+      let comment = document.createElement("div");
+      comment.id = "comment";
+      comment.className = "interaction";
+      comment.dataset.type = "comment";
+      comment.dataset.name = "Оценка курса";
+      comment.dataset.required = "false";
+
+      body.appendChild(comment);
+    }
+  }
+
   static addFooter() {
     let body = document.querySelector("body");
 
@@ -1812,7 +1883,7 @@ class App {
     footer.id = "pagefooter";
     footer.className = "interaction";
     footer.dataset.type = "longread";
-    footer.dataset.name = "longread";
+    footer.dataset.name = "Лонгрид";
     footer.dataset.required = "true";
 
     let btn = document.createElement("button");
