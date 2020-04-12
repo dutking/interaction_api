@@ -492,6 +492,8 @@
     box-sizing: border-box;
     width: 100%;
     margin-bottom: 2rem;
+    font-size: var(--font-size);
+    padding: 1rem;
 }
 
 .interaction .box {
@@ -630,6 +632,7 @@ button.btn {
     border: 2px solid var(--color-primary-darkgray);
     border-radius: 360px;
     cursor: pointer;
+    outline: none;
     transition: all 0.3s ease-in;
 }
 

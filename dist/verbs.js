@@ -35,6 +35,12 @@ const verbs = {
          "en-US": "commented"
       }
    },
+   "rated": {
+      "id": "http://id.tincanapi.com/verb/rated",
+      "display": {
+         "en-US": "rated"
+      }
+   },
    "completed": {
       "id": "http://adlnet.gov/expapi/verbs/completed",
       "display": {

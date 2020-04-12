@@ -204,8 +204,8 @@ class LongreadInteraction extends Interaction {
     let that = this;
 
     let options = {
-      rootMargin: '0px 0px 700px 0px'
-    }
+      rootMargin: "0px 0px 700px 0px",
+    };
     this.observer = new IntersectionObserver(function (entries, observer) {
       // let that = this
       entries.forEach(function (entry) {
@@ -367,13 +367,13 @@ class LetterBox {
     this.container.querySelector(".letter").classList.remove("off");
     this.animateLetters(this.container.querySelector(".letter"));
     if (this.parent instanceof LangExerciseUnit) {
-      if (this.parent.index !== this.parent.parent.unitsToComplete - 1 &&
-        this.parent.index !== this.parent.parent.amountOfUnits - 1) {
+      if (this.parent.index !== this.parent.parent.amountOfUnits - 1) {
         this.parent.unitContainer
           .querySelector(".continue")
           .classList.remove("off");
       }
     }
+    e.currentTarget.classList.add("disabled");
   }
 }
 
@@ -1258,79 +1258,94 @@ class LangExerciseUnit extends FillInDropDownUnit {
 class CommentUnit extends InteractionUnit {
   constructor(index, parent, cssClasses, dbData) {
     super(index, parent, cssClasses, dbData);
-    this.title = ''
-    this.text = ''
-    this.tag = ''
+    this.title = "";
+    this.text = "";
+    this.tag = "";
     this.init();
   }
 
   init() {
-    let that = this
+    let that = this;
     this.unitContainer = this.createUnitContainer(this.cssClasses);
     this.unitContainer.innerHTML = `
     <textarea rows="10" placeholder='Пожалуйста, введите Ваш отзыв.'></textarea>
-    <button type="button" class="btn disabled">Отправить</button>`
+    <button type="button" class="btn disabled">Отправить</button>`;
 
-    this.unitContainer.querySelector('textarea').addEventListener('input', function (e) {
-      that.unitContainer.querySelector('.btn').classList.remove('disabled')
-    })
+    this.unitContainer
+      .querySelector("textarea")
+      .addEventListener("input", function (e) {
+        that.unitContainer.querySelector(".btn").classList.remove("disabled");
+      });
 
-    this.unitContainer.querySelector('.btn').addEventListener('click', this.proceedComment.bind(this))
+    this.unitContainer
+      .querySelector(".btn")
+      .addEventListener("click", this.proceedComment.bind(this));
   }
 
   proceedComment(e) {
-    this.title = 'Отзыв о курсе'
-    this.text = this.unitContainer.querySelector('textarea').value
+    this.title = "Отзыв о курсе";
+    this.text = this.unitContainer.querySelector("textarea").value;
     Xapi.sendStmt(new Statement(this, "commented").finalStatement);
-    this.unitContainer.querySelector('textarea').value = 'Благодарим за Ваш отзыв!'
+    this.unitContainer.querySelector("textarea").value = "";
+    this.unitContainer
+      .querySelector("textarea")
+      .setAttribute("placeholder", "Благодарим за Ваш отзыв!");
+
+    this.completed = true;
   }
 }
 
 class RatingUnit extends InteractionUnit {
   constructor(index, parent, cssClasses, dbData) {
     super(index, parent, cssClasses, dbData);
-    this.rating = 0
+    this.rating = 0;
     this.init();
   }
 
   init() {
     this.unitContainer = this.createUnitContainer(this.cssClasses);
-    let starsContainer = document.createElement('div')
-    starsContainer.className = 'starsContainer'
+    let starsContainer = document.createElement("div");
+    starsContainer.className = "starsContainer";
     for (let i = 0; i < 5; i++) {
-      let star = document.createElement('img')
-      star.setAttribute('src', './dist/assets/starEmpty.svg')
-      star.className = 'ratingStar'
-      star.dataset.value = i + 1
-      star.addEventListener('click', this.setRating.bind(this))
-      starsContainer.appendChild(star)
+      let star = document.createElement("img");
+      star.setAttribute("src", "./dist/assets/starEmpty.svg");
+      star.className = "ratingStar";
+      star.dataset.value = i + 1;
+      star.addEventListener("click", this.setRating.bind(this));
+      starsContainer.appendChild(star);
     }
-    this.unitContainer.appendChild(starsContainer)
+    this.unitContainer.appendChild(starsContainer);
 
-    let rateBtn = document.createElement('button')
-    rateBtn.setAttribute('type', 'button')
-    rateBtn.className = 'btn'
-    rateBtn.innerHTML = 'Оценить'
-    rateBtn.addEventListener('click', this.proceedRating.bind(this))
+    let rateBtn = document.createElement("button");
+    rateBtn.setAttribute("type", "button");
+    rateBtn.className = "btn";
+    rateBtn.innerHTML = "Оценить";
+    rateBtn.addEventListener("click", this.proceedRating.bind(this));
 
-    this.unitContainer.appendChild(rateBtn)
+    this.unitContainer.appendChild(rateBtn);
   }
 
   setRating(e) {
-    let that = this
-    let stars = this.unitContainer.querySelectorAll('.ratingStar')
-    this.rating = Number(e.currentTarget.dataset.value)
+    let that = this;
+    let stars = this.unitContainer.querySelectorAll(".ratingStar");
+    this.rating = Number(e.currentTarget.dataset.value);
     stars.forEach(function (s) {
-      let val = Number(s.dataset.value)
+      let val = Number(s.dataset.value);
       if (val <= that.rating) {
-        s.setAttribute('src', './dist/assets/starFull.svg')
+        s.setAttribute("src", "./dist/assets/starFull.svg");
       } else {
-        s.setAttribute('src', './dist/assets/starEmpty.svg')
+        s.setAttribute("src", "./dist/assets/starEmpty.svg");
       }
-    })
+    });
   }
 
   proceedRating(e) {
+    let btn = e.currentTarget;
+    this.completed = true;
+    btn.innerHTML = "Спасибо за оценку";
+    setTimeout(function () {
+      btn.innerHTML = "Оценить";
+    }, 2000);
     Xapi.sendStmt(new Statement(this, "rated").finalStatement);
   }
 }
@@ -1616,9 +1631,9 @@ class Xapi {
 
   static getResponse(item) {
     if (Array.isArray(item)) {
-      return item.join()
+      return item.join();
     } else {
-      return item
+      return item;
     }
   }
 
@@ -1718,33 +1733,29 @@ class Statement {
     let resultObj = {};
     if (this.verb === "completed") {
       resultObj["result"] = {
-        completion: this.obj.completed
+        completion: this.obj.completed,
       };
     } else if (this.verb === "answered") {
       resultObj["result"] = {
         success: this.obj.result,
-        response: Xapi.getResponse(this.obj.response)
+        response: Xapi.getResponse(this.obj.response),
       };
     } else if (this.verb === "passed" || this.verb === "failed") {
       resultObj["result"] = {
         score: {
-          raw: this.obj.score
+          raw: this.obj.score,
         },
-        success: this.obj.result
+        success: this.obj.result,
       };
     } else if (this.verb === "commented") {
       resultObj["result"] = {
-        response: {
-          title: this.obj.title,
-          text: this.obj.text,
-          tag: this.obj.tag
-        }
+        response: '{' + `"title":"${this.obj.title}","text":"${this.obj.text}","tag":"${this.obj.tag}"` + '}'
       };
     } else if (this.verb === "rated") {
       resultObj["result"] = {
         score: {
-          raw: this.obj.rating
-        }
+          raw: this.obj.rating,
+        },
       };
     }
     return resultObj;
@@ -1927,11 +1938,13 @@ class App {
   static observers = [];
 
   static addRating() {
-    if (document
+    if (document.querySelector('meta[content^="rating"]') &&
+      document
       .querySelector('meta[content^="rating"]')
       .getAttribute("content")
-      .split("rating:")[1] === 'true') {
-      let element = document.querySelector('#finalLongread')
+      .split("rating:")[1] === "true"
+    ) {
+      let element = document.querySelector("#finalLongread");
 
       let rating = document.createElement("div");
       rating.id = "rating";
@@ -1946,10 +1959,12 @@ class App {
 
   static addComment() {
     if (document
+      .querySelector('meta[content^="comment"]') && document
       .querySelector('meta[content^="comment"]')
       .getAttribute("content")
-      .split("comment:")[1] === 'true') {
-      let element = document.querySelector('#finalLongread')
+      .split("comment:")[1] === "true"
+    ) {
+      let element = document.querySelector("#finalLongread");
 
       let comment = document.createElement("div");
       comment.id = "comment";
@@ -1963,15 +1978,15 @@ class App {
   }
 
   static addLongread() {
-    let nextBtn = document.querySelector('#nextBtn')
-    let longread = document.createElement('div')
-    longread.id = 'finalLongread'
+    let nextBtn = document.querySelector("#nextBtn");
+    let longread = document.createElement("div");
+    longread.id = "finalLongread";
     longread.className = "interaction";
     longread.dataset.type = "longread";
     longread.dataset.name = "Лонгрид";
     longread.dataset.required = "true";
 
-    nextBtn.before(longread)
+    nextBtn.before(longread);
   }
 
   static addFooter() {
@@ -1981,8 +1996,8 @@ class App {
     footer.id = "pagefooter";
 
     let nextBtn = document.createElement("button");
-    nextBtn.id = 'nextBtn'
-    nextBtn.className = 'btn'
+    nextBtn.id = "nextBtn";
+    nextBtn.className = "btn";
     nextBtn.innerHTML = "Далее";
     nextBtn.setAttribute("type", "button");
     nextBtn.addEventListener("click", App.backToTrack);
@@ -2087,8 +2102,8 @@ class App {
       items: items,
     };
 
-    let container = document.createElement('div')
-    document.body.appendChild(container)
+    let container = document.createElement("div");
+    document.body.appendChild(container);
     container.innerText = JSON.stringify(structure);
 
     return JSON.stringify(structure);
