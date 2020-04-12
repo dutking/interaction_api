@@ -100,7 +100,7 @@ class IterableScorableInteraction extends ScorableInteraction {
   }
 
   getAmountOfUnits() {
-    if (this.interactionData.amount_of_units === "0") {
+    if (this.interactionData.amount_of_units === "0" || this.interactionData.amount_of_units > db[this.index].iterables.length) {
       return db[this.index].iterables.length;
     } else {
       return Number(this.interactionData.amount_of_units);
@@ -1970,7 +1970,7 @@ class App {
       comment.id = "comment";
       comment.className = "interaction";
       comment.dataset.type = "comment";
-      comment.dataset.name = "Оценка курса";
+      comment.dataset.name = "Комментарий";
       comment.dataset.required = "false";
 
       element.after(comment);
