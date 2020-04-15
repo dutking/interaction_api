@@ -190,6 +190,39 @@ class LangExerciseInteraction extends IterableScorableInteraction {
   }
 }
 
+class SurveyInteraction extends Interaction {
+  constructor(index, renderHook, parent) {
+    super(index, renderHook, parent);
+    this.interactionUnits = [];
+    this.init();
+  }
+
+  createUnit(num) {
+    let unit
+    if (this.interactionData.subtype && this.interactionData.subtype === 'creativity') {
+      unit = new CreativitySurvey(
+        num,
+        this,
+        "surveyUnit",
+        db[this.index]
+      )
+    } else {
+      unit = new SurveyUnit(
+        num,
+        this,
+        "surveyUnit",
+        db[this.index]
+      )
+    }
+
+    this.interactionUnits.push(unit);
+  }
+
+  init() {
+    this.createUnit(0);
+  }
+}
+
 class LongreadInteraction extends Interaction {
   constructor(index, renderHook, parent) {
     super(index, renderHook, parent);
@@ -480,6 +513,206 @@ class InteractionUnit {
 
   get result() {
     return this.completed;
+  }
+}
+
+class SurveyUnit extends InteractionUnit {
+  constructor(index, parent, cssClasses, dbData) {
+    super(index, parent, cssClasses, dbData);
+    this.header = dbData.header
+    this.survey = dbData.survey
+    this.render()
+  }
+
+  get columns() {
+    return this.header.length
+  }
+
+  get itemsDone() {
+    let itemsDone = this.unitContainer.querySelectorAll('input:checked').length
+    return itemsDone
+  }
+
+  get itemsLeft() {
+    return this.survey.length - this.itemsDone
+  }
+
+  get done() {
+    return this.survey.length === this.itemsDone
+  }
+
+  render() {
+    let that = this
+    this.unitContainer = this.createUnitContainer(this.cssClasses);
+    this.unitContainer.id = `survey_${this.index}`
+    this.unitContainer.style.setProperty('--columns', `${this.columns-1}`)
+    this.header.forEach(function (h) {
+      let p = document.createElement('p')
+      p.className = 'header'
+      p.innerText = h
+      that.unitContainer.appendChild(p)
+    })
+    this.createItems()
+
+    let submitBtn = document.createElement('button')
+    submitBtn.setAttribute('type', 'button')
+    submitBtn.className = 'btn disabled'
+    submitBtn.innerHTML = `Осталось ответить на ${this.itemsLeft} вопросов.`
+    this.unitContainer.appendChild(submitBtn)
+
+    submitBtn.addEventListener('click', this.getResults.bind(this))
+  }
+
+  getResults() {}
+
+  createItems() {
+    let that = this
+    let color = false
+    this.survey.forEach(function (s, ind) {
+      let statement = document.createElement('p')
+      statement.innerText = `${ind + 1}. ${s}`
+      that.unitContainer.appendChild(statement)
+      if (color) {
+        statement.classList.add('color')
+      }
+
+      for (let i = 0; i < that.columns - 1; i++) {
+        let answerBox = document.createElement('div')
+
+        let input = document.createElement('input')
+        input.setAttribute('type', 'radio')
+        input.id = `${ind}_${i}`
+        input.setAttribute('name', `radio_${ind}`)
+        answerBox.appendChild(input)
+
+        let label = document.createElement('label')
+        label.setAttribute('for', `${ind}_${i}`)
+
+        input.addEventListener('change', function () {
+          let btn = that.unitContainer.querySelector('button')
+          btn.innerHTML = `Осталось ответить на ${that.itemsLeft} вопросов.`
+          if (that.done) {
+            btn.classList.remove('disabled')
+            btn.innerText = 'Показать результат'
+          }
+        })
+
+        if (color) {
+          label.classList.add('color')
+        }
+
+        answerBox.appendChild(label)
+
+        that.unitContainer.appendChild(answerBox)
+      }
+      color = !color
+    })
+  }
+}
+
+class CreativitySurvey extends SurveyUnit {
+  constructor(index, parent, cssClasses, dbData) {
+    super(index, parent, cssClasses, dbData);
+    this.surveyKeys = {
+      risk: {
+        positive: [1, 21, 25, 35, 36, 43, 44],
+        negative: [5, 8, 22, 29, 32, 34],
+      },
+      curiosity: {
+        positive: [2, 3, 11, 12, 19, 27, 33, 37, 38, 47, 49],
+        negative: [28],
+      },
+      complexity: {
+        positive: [7, 15, 18, 26, 42, 50],
+        negative: [4, 9, 10, 17, 24, 41, 48],
+      },
+      imagination: {
+        positive: [13, 16, 23, 30, 31, 40, 45, 46],
+        negative: [14, 20, 39],
+      }
+    }
+    this.output = {
+      risk: 0,
+      curiosity: 0,
+      complexity: 0,
+      imagination: 0
+    }
+
+    /* this.fbs = {
+      risk: '<p>Проявляется в том, что человек будет отстаивать свои идеи, не обращая внимания на реакцию других. Он ставит перед собой высокие цели и пытается  их осуществить; допускает для себя возможность ошибок и провалов; любит изучать новые вещи или идеи и не поддается чужому мнению; не слишком озабочен, когда другие выражают свое неодобрение; предпочитает рискнуть, чтобы узнать, что из этого получится.</p><p>Если вы получили высокие баллы по шкале склонности к риску (9-13 баллов), вам интересно жить и работать в условиях неоднозначности, постоянных изменений, проявлять инициативу и брать на себя ответственность за предпринятые действия. Это очень мощный ресурс, особенно, если риск является оправданным и сочетается со способностью решать сложные задачи. В противном случае риск может приводить к нежелательным последствиям.</p><p>Если вы получили низкие баллы по шкале склонности к риску (0-4 балла), то вы очень осторожный человек,  ориентирующийся  только на чёткие цели в понятных условиях с проверенными людьми и инструментами. Вы не склонны брать на себя ответственность за решение новых  задач, либо  готовы к этому только при наличии гарантий безопасности и поддержки. Таким людям бывает сложно работать там, где требуется инициативность и смелость, они лучше себя чувствуют в знакомых ситуациях, где могут прогнозировать свои действия и реакции, а также других людей.</p>',
+      curiosity: '<p>Человек с выраженной любознательностью интересуется всем, что его окружает: ему нравится изучать устройства и механизмы, он постоянно ищет нестандартные пути решения сложных задач , изучает    новые  книги, игры, карты, картины и т. д., чтобы получить как можно больше информации.</p><p>Если вы получили высокие данные по любознательности (8-12 баллов), это значит, что ваше стремление узнавать, изучать, открывать для себя новые факты и способы решения задач – ваш ресурс развития. За счет любознательности вам удается справляться с проблемами, видеть новизну, не нервничать в сложных ситуациях и настраиваться на оптимальное решение.</p><p>Если вы получили низкие показатели по данной шкале (0-4 балла), это значит, что ваша личная эффективность может снижаться из-за того, что вы предпочитаете стереотипные решения, не замечаете иных возможностей и инструментов, которые могут появляться в новых условиях. Это может касаться как рабочих, так и жизненных ситуаций. Часто недостаток любознательности, стремления к овладению новой информацией  может приводить к усилению стресса и выгоранию на работе.</p>',
+      complexity: '<p>Человек, ориентированный на всестороннее  познание явлений, проявляет интерес к сложным вещам и идеям; любит ставить перед собой трудные задачи; изучать что-то самостоятельно. Он проявляет настойчивость, чтобы достичь своей цели; предлагает более сложные, чем это необходимо, пути решения проблемы; ему нравятся трудные задания.</p><p>Люди с высокими баллами по шкале сложности (9-13 баллов) любят искать несколько вариантов решения задачи. Их эффективность часто связана с напористостью, уверенностью в себе и иногда упрямством, которое они будут проявлять, пока не найдут оптимального решения рабочей задачи или жизненной ситуации. Если вы получили такие баллы, то вас демотивируют простые, известные пути решения  задач, вам скучно находиться в понятных и однозначных ситуациях, быть в рамках инструкций и очевидных решений.</p><p>Люди с низкими баллами по шкале сложности (0-4 балла), напротив, в ситуации неопределенности чувствуют себя тревожно, что может выражаться либо в агрессии, либо в дистанцировании. Таким людям необходима социальная поддержка и  чёткие правила, по которым он живет и работает.</p>',
+      imagination: '<p>Человек с развитым воображением: придумывает рассказы о местах, которые он никогда не видел. Он представляет, как другие будут решать проблему, которую он решает сам; мечтает о различных предметах; любит думать о явлениях, с которыми не сталкивался; в необычном ракурсе видит то, что изображено на картинах и рисунках,  т.е. не так, как другие; часто испытывает удивление по поводу различных идей и событий.</p><p>Высокие показатели по шкале воображения (8-12 баллов) свойственны творческим, открытым новому людям. Если вы получили столько баллов, то вам нравятся необычные вещи, оригинальные люди, творческие решения. Вполне возможно, у вас есть какой-то художественный талант или навык, который дает вам вдохновение, позволяет творить и реализовывать себя как индивидуальность.</p><p>Низкие баллы по шкале воображения (0-4 балла) говорят о стремлении к упорядоченности, логичности, порой педантичности, потребности в четких инструкциях и низкой способности решать задачи, которые не имеют единственного правильного ответа.</p>'
+    } */
+  }
+
+  fullNums(group) {
+    return [...group.positive, ...group.negative]
+  }
+
+  getResults() {
+    this.completed = true
+    this.parent.completed = true
+    let that = this
+    // col=0 Positive | col=1 Neutral | col=2 Negative | col=3 None
+    let checkedInputs = this.unitContainer.querySelectorAll('input:checked')
+    checkedInputs.forEach(function (i, ind) {
+      let qNum = ind + 1
+      let col = Number(i.id.split('_')[1])
+      let group
+      if (qNum !== 6) {
+        if (that.fullNums(that.surveyKeys.risk).includes(qNum)) {
+          group = 'risk'
+        } else if (that.fullNums(that.surveyKeys.curiosity).includes(qNum)) {
+          group = 'curiosity'
+        } else if (that.fullNums(that.surveyKeys.complexity).includes(qNum)) {
+          group = 'complexity'
+        } else if (that.fullNums(that.surveyKeys.imagination).includes(qNum)) {
+          group = 'imagination'
+        }
+        /* console.log(`Statement ${qNum} belongs to ${group.toUpperCase()} group`) */
+        if ((col === 0 && that.surveyKeys[group].positive.includes(qNum)) || (col === 2 && that.surveyKeys[group].negative.includes(qNum))) {
+          that.output[group] += 2
+        } else if (col === 1) {
+          that.output[group] += 1
+        } else if (col === 3) {
+          that.output[group] -= 1
+        }
+
+      }
+    })
+
+    console.log(this.output)
+    this.showFb()
+  }
+
+  showFb() {
+    let that = this
+    let keys = Object.keys(this.output)
+    let fbContainer = document.createElement('div')
+    fbContainer.className = 'fbContainer'
+    keys.forEach(function (k) {
+      let fbHeader = document.createElement('h3')
+      fbHeader.className = 'fbHeader'
+      let title = ''
+      switch (k) {
+        case 'risk':
+          title = 'Склонность к риску'
+          break;
+        case 'curiosity':
+          title = 'Любознательность'
+          break;
+        case 'complexity':
+          title = ' Сложность'
+          break;
+        case 'imagination':
+          title = 'Воображение'
+          break;
+      }
+      fbHeader.innerHTML = `${title}: ${that.output[k]}.`
+      fbContainer.appendChild(fbHeader)
+    })
+    this.unitContainer.appendChild(fbContainer)
   }
 }
 
@@ -1824,6 +2057,9 @@ class Course {
         that.interactions.push(i);
       } else if (hook.dataset.type === "rating") {
         let i = new RatingInteraction(index, hook, that);
+        that.interactions.push(i);
+      } else if (hook.dataset.type === "survey") {
+        let i = new SurveyInteraction(index, hook, that);
         that.interactions.push(i);
       }
     });
