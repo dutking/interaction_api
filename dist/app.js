@@ -519,18 +519,32 @@ class InteractionUnit {
 class SurveyUnit extends InteractionUnit {
   constructor(index, parent, cssClasses, dbData) {
     super(index, parent, cssClasses, dbData);
-    this.header = dbData.header
+    this.columnsNames = dbData.columnsNames
+    this.columnsValues = dbData.columnsValues
     this.survey = dbData.survey
+    this.surveyMetrics = dbData.surveyMetrics
+    this.surveyResults = {}
+    this.composeSurveyResultsObj()
     this.render()
   }
 
-  get columns() {
-    return this.header.length
+  composeSurveyResultsObj() {
+    let that = this
+    let metrics = this.surveyMetrics.map(function (m) {
+      return m.id
+    })
+    metrics.forEach(function (m) {
+      that.surveyResults[m] = 0
+    })
   }
 
   get itemsDone() {
     let itemsDone = this.unitContainer.querySelectorAll('input:checked').length
     return itemsDone
+  }
+
+  get header() {
+    return ['Утверждение', ...this.columnsNames]
   }
 
   get itemsLeft() {
@@ -545,13 +559,14 @@ class SurveyUnit extends InteractionUnit {
     let that = this
     this.unitContainer = this.createUnitContainer(this.cssClasses);
     this.unitContainer.id = `survey_${this.index}`
-    this.unitContainer.style.setProperty('--columns', `${this.columns-1}`)
+    this.unitContainer.style.setProperty('--columns', `${this.columnsNames.length}`)
     this.header.forEach(function (h) {
       let p = document.createElement('p')
       p.className = 'header'
       p.innerText = h
       that.unitContainer.appendChild(p)
     })
+
     this.createItems()
 
     let submitBtn = document.createElement('button')
@@ -567,7 +582,71 @@ class SurveyUnit extends InteractionUnit {
     this.unitContainer.appendChild(fbContainer)
   }
 
-  getResults() {}
+  getResults(e) {
+    e.currentTarget.classList.add('disabled')
+    Array.from(this.unitContainer.querySelectorAll('label')).forEach(function (l) {
+      l.classList.add('disabled')
+    })
+    let that = this
+    let inputs = Array.from(this.unitContainer.querySelectorAll('input:checked'))
+    inputs.forEach(function (i, index) {
+      let qNum = index + 1
+      let column = i.id.split('_')[2]
+      let metricId = ''
+      let scale = []
+      that.surveyMetrics.forEach(function (m) {
+        let allMetricQuestions = [...m.correspondingQuestions.normalScale, ...m.correspondingQuestions.reverseScale]
+        let questions
+        if (that.surveyMetrics.length === 1) {
+          metricId = m.id
+          questions = that.survey.map(function (s, ind) {
+            return ind + 1
+          })
+        } else {
+          questions = allMetricQuestions
+        }
+
+        if (that.surveyMetrics.length === 1) {
+          scale = Array.from(that.columnsValues)
+        } else {
+          if (questions.includes(qNum)) {
+            metricId = m.id
+            if (m.correspondingQuestions.normalScale.includes(qNum)) {
+              scale = Array.from(that.columnsValues)
+            } else if (m.correspondingQuestions.reverseScale.includes(qNum)) {
+              scale = Array.from(that.columnsValues).reverse()
+            }
+          }
+        }
+      })
+
+      let point = scale[column]
+      console.log('q ' + qNum)
+      console.log('metric ' + metricId)
+      console.log('scale ' + scale.join())
+      console.log('answer ' + column)
+      console.log('point ' + point)
+      console.log('currentResult ' + that.surveyResults[metricId])
+      that.surveyResults[metricId] = that.surveyResults[metricId] + point
+      console.log('result ' + that.surveyResults[metricId])
+
+    })
+    this.completed = true
+    this.parent.completed = true
+
+    this.showFb()
+  }
+
+  showFb() {
+    let that = this
+    let fbContainer = this.unitContainer.querySelector('.fbContainer')
+    this.surveyMetrics.forEach(function (m) {
+      let h3 = document.createElement('h3')
+      let result = that.surveyResults[m.id] < 0 ? 0 : that.surveyResults[m.id]
+      h3.innerHTML = `${m.nameRus}: ${result}`
+      fbContainer.appendChild(h3)
+    })
+  }
 
   createItems() {
     let that = this
@@ -580,17 +659,17 @@ class SurveyUnit extends InteractionUnit {
         statement.classList.add('color')
       }
 
-      for (let i = 0; i < that.columns - 1; i++) {
+      for (let i = 0; i < that.columnsNames.length; i++) {
         let answerBox = document.createElement('div')
 
         let input = document.createElement('input')
         input.setAttribute('type', 'radio')
-        input.id = `${ind}_${i}`
-        input.setAttribute('name', `radio_${ind}`)
+        input.id = `${that.parent.index}_${ind}_${i}`
+        input.setAttribute('name', `radio_${that.parent.index}_${ind}`)
         answerBox.appendChild(input)
 
         let label = document.createElement('label')
-        label.setAttribute('for', `${ind}_${i}`)
+        label.setAttribute('for', `${input.id}`)
 
         input.addEventListener('change', function () {
           let btn = that.unitContainer.querySelector('button')
