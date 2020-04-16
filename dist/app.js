@@ -199,22 +199,12 @@ class SurveyInteraction extends Interaction {
 
   createUnit(num) {
     let unit
-    if (this.interactionData.subtype && this.interactionData.subtype === 'creativity') {
-      unit = new CreativitySurvey(
-        num,
-        this,
-        "surveyUnit",
-        db[this.index]
-      )
-    } else {
-      unit = new SurveyUnit(
-        num,
-        this,
-        "surveyUnit",
-        db[this.index]
-      )
-    }
-
+    unit = new SurveyUnit(
+      num,
+      this,
+      "surveyUnit",
+      db[this.index]
+    )
     this.interactionUnits.push(unit);
   }
 
@@ -516,7 +506,7 @@ class InteractionUnit {
   }
 }
 
-class RangingSurveyUnit extends InteractionUnit {
+class PointsDistributionUnit extends InteractionUnit {
   constructor(index, parent, cssClasses, dbData) {
     super(index, parent, cssClasses, dbData);
   }
