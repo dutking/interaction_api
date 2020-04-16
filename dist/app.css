@@ -83,16 +83,6 @@
     margin-top: 3rem;
 }
 
-
-
-/* .interaction .surveyUnit .survey.item:not(:last-of-type) {
-    border-bottom: 1px solid var(--color-gravity-gray);
-} */
-
-.interaction .surveyUnit .survey.item:nth-of-type(even) {
-    background-color: var(--color-gravity-yellow-pale);
-}
-
 .interaction .surveyUnit p,
 .interaction .surveyUnit label {
     display: flex;
@@ -122,7 +112,7 @@
     text-align: center;
     position: sticky;
     top: 0;
-    font-size: calc(var(--font-size)*0.8);
+    font-size: calc(var(--font-size)*0.6);
     font-weight: bold;
     background-color: white;
     z-index: 100;

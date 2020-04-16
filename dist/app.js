@@ -516,11 +516,18 @@ class InteractionUnit {
   }
 }
 
+class RangingSurveyUnit extends InteractionUnit {
+  constructor(index, parent, cssClasses, dbData) {
+    super(index, parent, cssClasses, dbData);
+  }
+}
+
 class SurveyUnit extends InteractionUnit {
   constructor(index, parent, cssClasses, dbData) {
     super(index, parent, cssClasses, dbData);
     this.columnsNames = dbData.columnsNames
     this.columnsValues = dbData.columnsValues
+    this.staticPositionedColumnsValues = dbData.staticPositionedColumnsValues ? dbData.staticPositionedColumnsValues : []
     this.survey = dbData.survey
     this.surveyMetrics = dbData.surveyMetrics
     this.surveyResults = {}
@@ -608,7 +615,7 @@ class SurveyUnit extends InteractionUnit {
 
         if (that.surveyMetrics.length === 1) {
           scale = Array.from(that.columnsValues)
-        } else {
+        } else if (that.surveyMetrics.length > 1) {
           if (questions.includes(qNum)) {
             metricId = m.id
             if (m.correspondingQuestions.normalScale.includes(qNum)) {
@@ -617,6 +624,9 @@ class SurveyUnit extends InteractionUnit {
               scale = Array.from(that.columnsValues).reverse()
             }
           }
+        }
+        if (that.staticPositionedColumnsValues.length > 0) {
+          scale = [...scale, ...that.staticPositionedColumnsValues]
         }
       })
 
