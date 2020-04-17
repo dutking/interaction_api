@@ -190,10 +190,32 @@ class LangExerciseInteraction extends IterableScorableInteraction {
   }
 }
 
+class PointsDistributionInteraction extends Interaction {
+  constructor(index, renderHook, parent) {
+    super(index, renderHook, parent);
+    this.totalPoints = Number(this.interactionData.total_points)
+    this.init();
+  }
+
+  createUnit(num) {
+    let unit
+    unit = new PointsDistributionUnit(
+      num,
+      this,
+      "pointsDistributionUnit",
+      db[this.index]
+    )
+    this.interactionUnits.push(unit);
+  }
+
+  init() {
+    this.createUnit(0);
+  }
+}
+
 class SurveyInteraction extends Interaction {
   constructor(index, renderHook, parent) {
     super(index, renderHook, parent);
-    this.interactionUnits = [];
     this.init();
   }
 
@@ -212,6 +234,8 @@ class SurveyInteraction extends Interaction {
     this.createUnit(0);
   }
 }
+
+
 
 class LongreadInteraction extends Interaction {
   constructor(index, renderHook, parent) {
@@ -509,7 +533,118 @@ class InteractionUnit {
 class PointsDistributionUnit extends InteractionUnit {
   constructor(index, parent, cssClasses, dbData) {
     super(index, parent, cssClasses, dbData);
+    this.groups = this.dbData.groups
+    this.groupObj = []
+    this.render()
   }
+
+  render() {
+    let that = this
+    this.unitContainer = this.createUnitContainer(this.cssClasses);
+    this.groups.forEach(function (group, index) {
+      let item = new PointsDistributionGroup(that, index, group)
+      that.groupObj.push(item)
+    })
+  }
+}
+
+class PointsDistributionGroup {
+  constructor(parent, index, group) {
+    this.parent = parent
+    this.index = index
+    this.group = group
+    this.totalPoints = this.parent.parent.totalPoints
+    this.rows = []
+    this.render()
+  }
+
+  get pointsLeft() {
+
+  }
+
+  set pointsLeft(v) {
+
+  }
+
+  get pointsUsed() {
+
+  }
+
+  set pointsUsed(v) {
+
+  }
+
+  updateCounter() {
+    this.counter.querySelector('span.counter').innerText = this.pointsLeft
+  }
+
+  render() {
+    let that = this
+    let header = document.createElement('div')
+    header.className = 'groupHeader'
+    let title = document.createElement('p')
+    title.innerHTML = this.index + 1
+    this.counter = document.createElement('p')
+    this.counter.innerHTML = `Необходимо распределить: <span class='counter'>${this.totalPoints}</span>`
+    header.appendChild(title)
+    header.appendChild(this.counter)
+    this.parent.unitContainer.appendChild(header)
+    this.group.forEach(function (stmt, ind) {
+      let row = document.createElement('div')
+      row.className = 'row'
+      let statement = document.createElement('p')
+      statement.className = 'stmt'
+      statement.innerHTML = stmt
+      row.appendChild(statement)
+
+      let primaryBtn = document.createElement('button')
+      primaryBtn.setAttribute('type', 'button')
+      primaryBtn.id = `group${that.index}_stmt${ind}`
+      primaryBtn.className = 'btnPrimary'
+      primaryBtn.value = ''
+      primaryBtn.innerHTML = 'Не выбрано'
+      row.appendChild(primaryBtn)
+
+      let options = document.createElement('div')
+      options.className = 'options off'
+      options.innerHTML = `<button id="group${that.index}_stmt${ind}_empty" type="button" value="" class="btnSecondary"> </button>`
+      row.appendChild(options)
+
+      primaryBtn.addEventListener('click', function (e) {
+        options.classList.remove('off')
+      })
+
+      for (let i = 0; i <= that.totalPoints; i++) {
+        let secondaryBtn = document.createElement('button')
+        secondaryBtn.setAttribute('type', 'button')
+        secondaryBtn.className = 'btnSecondary'
+        secondaryBtn.id = `group${that.index}_stmt${ind}_${i}`
+        secondaryBtn.value = i
+        secondaryBtn.innerHTML = secondaryBtn.value
+        options.appendChild(secondaryBtn)
+      }
+
+      options.querySelectorAll('button').forEach(function (i) {
+        i.addEventListener('click', that.setValue.bind(that))
+      })
+      that.rows.push(row)
+      that.parent.unitContainer.appendChild(row)
+    })
+  }
+
+  setValue(event) {
+    console.log('button clicked')
+    let newValue = event.currentTarget.value
+    let primaryBtn = event.currentTarget.parentNode.parentNode.querySelector('.btnPrimary')
+    primaryBtn.value = newValue
+    if (newValue === '') {
+      primaryBtn.innerHTML = 'Не выбрано'
+    } else {
+      primaryBtn.innerHTML = newValue
+    }
+    event.currentTarget.parentNode.classList.add('off')
+  }
+
 }
 
 class SurveyUnit extends InteractionUnit {
@@ -2140,6 +2275,9 @@ class Course {
       } else if (hook.dataset.type === "survey") {
         let i = new SurveyInteraction(index, hook, that);
         that.interactions.push(i);
+      } else if (hook.dataset.type === "points_distribution") {
+        let i = new PointsDistributionInteraction(index, hook, that);
+        that.interactions.push(i);
       }
     });
   }
@@ -2441,6 +2579,8 @@ class App {
       return "Рейтинг";
     } else if (i instanceof SurveyInteraction) {
       return "Опросник";
+    } else if (i instanceof PointsDistributionInteraction) {
+      return "Задание на распределение баллов";
     }
   }
 }
