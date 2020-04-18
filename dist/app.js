@@ -533,9 +533,22 @@ class InteractionUnit {
 class PointsDistributionUnit extends InteractionUnit {
   constructor(index, parent, cssClasses, dbData) {
     super(index, parent, cssClasses, dbData);
+    this.metrics = this.dbData.metrics
     this.groups = this.dbData.groups
     this.groupObj = []
+    this.PDresults = {}
+    this.composeResultsObj()
     this.render()
+  }
+
+  composeResultsObj() {
+    let that = this
+    let metrics = this.metrics.map(function (m) {
+      return m.id
+    })
+    metrics.forEach(function (m) {
+      that.PDresults[m] = 0
+    })
   }
 
   render() {
@@ -545,7 +558,74 @@ class PointsDistributionUnit extends InteractionUnit {
       let item = new PointsDistributionGroup(that, index, group)
       that.groupObj.push(item)
     })
+
+    let submitBtn = document.createElement('button')
+    submitBtn.setAttribute('type', 'button')
+    submitBtn.className = 'btn disabled'
+    submitBtn.innerHTML = `Принять ответы`
+    this.unitContainer.appendChild(submitBtn)
+
+    submitBtn.addEventListener('click', this.getResults.bind(this))
+
+    let fbContainer = document.createElement('div')
+    fbContainer.className = 'fbContainer'
+    this.unitContainer.appendChild(fbContainer)
   }
+
+  get values() {
+    let values = this.groupObj.map(function (g) {
+      return g.values
+    }).flat()
+    return values
+  }
+
+  get done() {
+    if (!this.values.includes('')) {
+      return true
+    }
+  }
+
+  set done(v) {
+    if (this.done) {
+      this.unitContainer.querySelector('.btn').classList.remove('disabled')
+    } else {
+      this.unitContainer.querySelector('.btn').classList.add('disabled')
+    }
+  }
+
+  getResults(e) {
+    e.currentTarget.classList.add('disabled')
+    Array.from(this.unitContainer.querySelectorAll('.btnPrimary')).forEach(function (l) {
+      l.classList.add('disabled')
+    })
+    let that = this
+    this.values.forEach(function (i, index) {
+      let qNum = index + 1
+      let metricId = ''
+      that.metrics.forEach(function (m) {
+        if (m.correspondingStatements.includes(qNum)) {
+          metricId = m.id
+        }
+      })
+      that.PDresults[metricId] = that.PDresults[metricId] + Number(i)
+    })
+
+    this.completed = true
+    this.parent.completed = true
+
+    this.showFb()
+  }
+
+  showFb() {
+    let that = this
+    let fbContainer = this.unitContainer.querySelector('.fbContainer')
+    this.metrics.forEach(function (m) {
+      let h3 = document.createElement('h3')
+      h3.innerHTML = `${m.nameRus}: ${that.PDresults[m.id]}`
+      fbContainer.appendChild(h3)
+    })
+  }
+
 }
 
 class PointsDistributionGroup {
@@ -554,41 +634,55 @@ class PointsDistributionGroup {
     this.index = index
     this.group = group
     this.totalPoints = this.parent.parent.totalPoints
-    this.rows = []
     this.render()
   }
 
-  get pointsLeft() {
+  get values() {
+    let values = Array.from(this.groupContainer.querySelectorAll('.btnPrimary')).map(function (b) {
+      return b.value
+    })
 
+    return values
   }
 
-  set pointsLeft(v) {
-
+  get pointsLeft() {
+    let points = this.totalPoints - this.pointsUsed
+    return points
   }
 
   get pointsUsed() {
-
-  }
-
-  set pointsUsed(v) {
-
+    let points = 0
+    this.groupContainer.querySelectorAll('.btnPrimary').forEach(function (b) {
+      if (b.value !== '') {
+        points += Number(b.value)
+      }
+    })
+    return points
   }
 
   updateCounter() {
-    this.counter.querySelector('span.counter').innerText = this.pointsLeft
+    this.groupContainer.querySelector('span.counter').innerHTML = this.pointsLeft
+    this.parent.done = true
+    if (this.pointsLeft === 0 && !this.values.includes('')) {
+      this.groupContainer.querySelector('.groupHeader').classList.add('done')
+    } else if (this.pointsLeft > 0 || this.values.includes('')) {
+      this.groupContainer.querySelector('.groupHeader').classList.remove('done')
+    }
   }
 
   render() {
     let that = this
+    this.groupContainer = document.createElement('div')
+    this.groupContainer.className = 'group'
     let header = document.createElement('div')
     header.className = 'groupHeader'
     let title = document.createElement('p')
-    title.innerHTML = this.index + 1
-    this.counter = document.createElement('p')
-    this.counter.innerHTML = `Необходимо распределить: <span class='counter'>${this.totalPoints}</span>`
+    title.innerHTML = `${this.index + 1}/${this.parent.dbData.groups.length}`
+    let counter = document.createElement('p')
+    counter.innerHTML = `Необходимо распределить: <span class='counter'>${this.totalPoints}</span>`
     header.appendChild(title)
-    header.appendChild(this.counter)
-    this.parent.unitContainer.appendChild(header)
+    header.appendChild(counter)
+    this.groupContainer.appendChild(header)
     this.group.forEach(function (stmt, ind) {
       let row = document.createElement('div')
       row.className = 'row'
@@ -611,7 +705,14 @@ class PointsDistributionGroup {
       row.appendChild(options)
 
       primaryBtn.addEventListener('click', function (e) {
-        options.classList.remove('off')
+        let allOptions = that.groupContainer.querySelectorAll('.options')
+        allOptions.forEach(function (o) {
+          if (o.parentNode === e.currentTarget.parentNode) {
+            o.classList.remove('off')
+          } else {
+            o.classList.add('off')
+          }
+        })
       })
 
       for (let i = 0; i <= that.totalPoints; i++) {
@@ -627,24 +728,37 @@ class PointsDistributionGroup {
       options.querySelectorAll('button').forEach(function (i) {
         i.addEventListener('click', that.setValue.bind(that))
       })
-      that.rows.push(row)
-      that.parent.unitContainer.appendChild(row)
+      that.groupContainer.appendChild(row)
     })
+    this.parent.unitContainer.appendChild(this.groupContainer)
   }
 
   setValue(event) {
-    console.log('button clicked')
+    let that = this
     let newValue = event.currentTarget.value
     let primaryBtn = event.currentTarget.parentNode.parentNode.querySelector('.btnPrimary')
     primaryBtn.value = newValue
+
     if (newValue === '') {
       primaryBtn.innerHTML = 'Не выбрано'
     } else {
       primaryBtn.innerHTML = newValue
     }
-    event.currentTarget.parentNode.classList.add('off')
-  }
 
+    let btns = this.groupContainer.querySelectorAll('.btnPrimary')
+    btns.forEach(function (b) {
+      if (b !== primaryBtn) {
+        if (newValue !== '') {
+          b.value = that.totalPoints - newValue
+          b.innerHTML = b.value
+        }
+      }
+    })
+
+    this.updateCounter()
+    event.currentTarget.parentNode.classList.add('off')
+
+  }
 }
 
 class SurveyUnit extends InteractionUnit {
@@ -754,18 +868,11 @@ class SurveyUnit extends InteractionUnit {
           scale = [...scale, ...that.staticPositionedColumnsValues]
         }
       })
-
-      let point = scale[column]
-      console.log('q ' + qNum)
-      console.log('metric ' + metricId)
-      console.log('scale ' + scale.join())
-      console.log('answer ' + column)
-      console.log('point ' + point)
-      console.log('currentResult ' + that.surveyResults[metricId])
-      that.surveyResults[metricId] = that.surveyResults[metricId] + point
-      console.log('result ' + that.surveyResults[metricId])
-
     })
+
+    let point = scale[column]
+    that.surveyResults[metricId] = that.surveyResults[metricId] + point
+
     this.completed = true
     this.parent.completed = true
 
@@ -824,108 +931,6 @@ class SurveyUnit extends InteractionUnit {
         that.unitContainer.appendChild(answerBox)
       }
       color = !color
-    })
-  }
-}
-
-class CreativitySurvey extends SurveyUnit {
-  constructor(index, parent, cssClasses, dbData) {
-    super(index, parent, cssClasses, dbData);
-    this.surveyKeys = {
-      risk: {
-        positive: [1, 21, 25, 35, 36, 43, 44],
-        negative: [5, 8, 22, 29, 32, 34],
-      },
-      curiosity: {
-        positive: [2, 3, 11, 12, 19, 27, 33, 37, 38, 47, 49],
-        negative: [28],
-      },
-      complexity: {
-        positive: [7, 15, 18, 26, 42, 50],
-        negative: [4, 9, 10, 17, 24, 41, 48],
-      },
-      imagination: {
-        positive: [13, 16, 23, 30, 31, 40, 45, 46],
-        negative: [14, 20, 39],
-      }
-    }
-  }
-
-  fullNums(group) {
-    return [...group.positive, ...group.negative]
-  }
-
-  getResults(e) {
-    e.currentTarget.classList.add('disabled')
-    Array.from(this.unitContainer.querySelectorAll('label')).forEach(function (l) {
-      l.classList.add('disabled')
-    })
-    this.output = {
-      risk: 0,
-      curiosity: 0,
-      complexity: 0,
-      imagination: 0
-    }
-    this.completed = true
-    this.parent.completed = true
-    let that = this
-    // col=0 Positive | col=1 Neutral | col=2 Negative | col=3 None
-    let checkedInputs = this.unitContainer.querySelectorAll('input:checked')
-    checkedInputs.forEach(function (i, ind) {
-      let qNum = ind + 1
-      let col = Number(i.id.split('_')[1])
-      let group
-      if (qNum !== 6) {
-        if (that.fullNums(that.surveyKeys.risk).includes(qNum)) {
-          group = 'risk'
-        } else if (that.fullNums(that.surveyKeys.curiosity).includes(qNum)) {
-          group = 'curiosity'
-        } else if (that.fullNums(that.surveyKeys.complexity).includes(qNum)) {
-          group = 'complexity'
-        } else if (that.fullNums(that.surveyKeys.imagination).includes(qNum)) {
-          group = 'imagination'
-        }
-        /* console.log(`Statement ${qNum} belongs to ${group.toUpperCase()} group`) */
-        if ((col === 0 && that.surveyKeys[group].positive.includes(qNum)) || (col === 2 && that.surveyKeys[group].negative.includes(qNum))) {
-          that.output[group] += 2
-        } else if (col === 1) {
-          that.output[group] += 1
-        } else if (col === 3) {
-          that.output[group] -= 1
-        }
-
-      }
-    })
-
-    console.log(this.output)
-    this.showFb()
-  }
-
-  showFb() {
-    let that = this
-    let keys = Object.keys(this.output)
-    let fbContainer = this.unitContainer.querySelector('.fbContainer')
-    fbContainer.innerHTML = ''
-    keys.forEach(function (k) {
-      let fbHeader = document.createElement('h3')
-      fbHeader.className = 'fbHeader'
-      let title = ''
-      switch (k) {
-        case 'risk':
-          title = 'Склонность к риску'
-          break;
-        case 'curiosity':
-          title = 'Любознательность'
-          break;
-        case 'complexity':
-          title = ' Сложность'
-          break;
-        case 'imagination':
-          title = 'Воображение'
-          break;
-      }
-      fbHeader.innerHTML = `${title}: ${that.output[k]}.`
-      fbContainer.appendChild(fbHeader)
     })
   }
 }
