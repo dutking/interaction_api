@@ -868,10 +868,9 @@ class SurveyUnit extends InteractionUnit {
           scale = [...scale, ...that.staticPositionedColumnsValues]
         }
       })
+      let point = scale[column]
+      that.surveyResults[metricId] = that.surveyResults[metricId] + point
     })
-
-    let point = scale[column]
-    that.surveyResults[metricId] = that.surveyResults[metricId] + point
 
     this.completed = true
     this.parent.completed = true
@@ -895,6 +894,7 @@ class SurveyUnit extends InteractionUnit {
     let color = false
     this.survey.forEach(function (s, ind) {
       let statement = document.createElement('p')
+      statement.classList.add('statement')
       statement.innerText = `${ind + 1}. ${s}`
       that.unitContainer.appendChild(statement)
       if (color) {
@@ -903,6 +903,7 @@ class SurveyUnit extends InteractionUnit {
 
       for (let i = 0; i < that.columnsNames.length; i++) {
         let answerBox = document.createElement('div')
+        answerBox.classList.add('answerBox')
 
         let input = document.createElement('input')
         input.setAttribute('type', 'radio')
@@ -1970,158 +1971,6 @@ class DictantUnit extends FillInDropDownUnit {
   }
 }
 
-class Xapi {
-  // start of old code
-
-  static parseQuery(queryString) {
-    let query = {};
-    let pairs = (queryString[0] === "?" ?
-      queryString.substr(1) :
-      queryString
-    ).split("&");
-    for (let i = 0; i < pairs.length; i++) {
-      let pair = pairs[i].split("=");
-      query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || "");
-    }
-    return query;
-  }
-
-  static activityId = "empty";
-  static data = {
-    actor: "user",
-  };
-
-  static getXapiData() {
-    let queryParams = Xapi.parseQuery(window.location.search);
-    Xapi.activityId = queryParams.activity_id;
-
-    Xapi.data = {
-      endpoint: queryParams.endpoint,
-      auth: queryParams.auth,
-      actor: JSON.parse(queryParams.actor),
-      grouping: Xapi.activityId,
-      registration: queryParams.registration,
-      context: {
-        registration: queryParams.registration,
-        contextActivities: {
-          grouping: Xapi.activityId,
-        },
-      },
-    };
-
-    // SCORM Cloud patch
-    if (Array.isArray(Xapi.data.actor.account)) {
-      Xapi.data.actor.account = Xapi.data.actor.account[0];
-    }
-    if (Array.isArray(Xapi.data.actor.name)) {
-      Xapi.data.actor.name = Xapi.data.actor.name[0];
-    }
-    if (
-      Xapi.data.actor.account &&
-      Xapi.data.actor.account.accountServiceHomePage
-    ) {
-      Xapi.data.actor.account.homePage =
-        Xapi.data.actor.account.accountServiceHomePage;
-      Xapi.data.actor.account.name = Xapi.data.actor.account.accountName;
-      delete Xapi.data.actor.account.accountServiceHomePage;
-      delete Xapi.data.actor.account.accountName;
-    }
-
-    // End SCORM Cloud patch
-
-    return {
-      endpoint: Xapi.data.endpoint,
-      auth: Xapi.data.auth,
-      actor: Xapi.data.actor,
-      grouping: Xapi.data.grouping,
-      registration: Xapi.data.registration,
-      context: Xapi.data.context,
-    };
-  }
-
-  // end of old code
-
-  static sendStmt(stmt) {
-    App.statements.push(stmt);
-    if (App.testMode === false) {
-      console.log(stmt);
-      ADL.XAPIWrapper.sendStatement(stmt, function (resp, obj) {
-        console.log(resp.status + resp.statusText);
-      });
-    } else if (App.testMode === true) {
-      console.log(stmt);
-    }
-  }
-
-  static getChoices(arr) {
-    let newArr = [];
-    if (arr.length === 1) {
-      newArr = arr[0].map(function (option) {
-        return {
-          id: option,
-          description: {
-            "ru-RU": option,
-          },
-        };
-      });
-    } else if (arr.length === 2) {
-      newArr = arr[0].map(function (option, ind) {
-        return {
-          id: option,
-          description: {
-            "ru-RU": arr[1][ind],
-          },
-        };
-      });
-    }
-    return newArr;
-  }
-
-  static getCorrectResponsesPattern(str) {
-    return [str];
-  }
-
-  static getResponse(item) {
-    if (Array.isArray(item)) {
-      return item.join();
-    } else {
-      return item;
-    }
-  }
-
-  /* static getPossibleOptions(words, choices, num = 0) {
-        if (!Array.isArray(words)) {
-            words = [words];
-        }
-
-        if (!Array.isArray(choices[0])) {
-            choices = [choices];
-        }
-
-        let newWords = [];
-
-        if (words[words.length - 1].indexOf("_") === -1) {
-            return words;
-        }
-
-        words.forEach(function (str) {
-            choices[num].forEach(function (c) {
-                newWords.push(str.replace("_", c));
-            });
-        });
-
-        return Xapi.getPossibleOptions(newWords, choices, num + 1);
-    } */
-
-  /* static getCorrectOption(word, correctArr) {
-        let thisWord = word;
-        correctArr.forEach(function (letter) {
-            thisWord = thisWord.replace("_", letter);
-        });
-        return thisWord;
-    } */
-}
-
 class Statement {
   constructor(obj, verb = "experienced") {
     this.obj = obj;
@@ -2332,6 +2181,158 @@ class Course {
         Xapi.sendStmt(new Statement(this, "failed").finalStatement);
       }
     }
+  }
+}
+
+class Xapi {
+  // start of old code
+
+  static parseQuery(queryString) {
+    let query = {};
+    let pairs = (queryString[0] === "?" ?
+      queryString.substr(1) :
+      queryString
+    ).split("&");
+    for (let i = 0; i < pairs.length; i++) {
+      let pair = pairs[i].split("=");
+      query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || "");
+    }
+    return query;
+  }
+
+  static activityId = "empty";
+  static data = {
+    actor: "user",
+  };
+
+  static getXapiData() {
+    let queryParams = Xapi.parseQuery(window.location.search);
+    Xapi.activityId = queryParams.activity_id;
+
+    Xapi.data = {
+      endpoint: queryParams.endpoint,
+      auth: queryParams.auth,
+      actor: JSON.parse(queryParams.actor),
+      grouping: Xapi.activityId,
+      registration: queryParams.registration,
+      context: {
+        registration: queryParams.registration,
+        contextActivities: {
+          grouping: Xapi.activityId,
+        },
+      },
+    };
+
+    // SCORM Cloud patch
+    if (Array.isArray(Xapi.data.actor.account)) {
+      Xapi.data.actor.account = Xapi.data.actor.account[0];
+    }
+    if (Array.isArray(Xapi.data.actor.name)) {
+      Xapi.data.actor.name = Xapi.data.actor.name[0];
+    }
+    if (
+      Xapi.data.actor.account &&
+      Xapi.data.actor.account.accountServiceHomePage
+    ) {
+      Xapi.data.actor.account.homePage =
+        Xapi.data.actor.account.accountServiceHomePage;
+      Xapi.data.actor.account.name = Xapi.data.actor.account.accountName;
+      delete Xapi.data.actor.account.accountServiceHomePage;
+      delete Xapi.data.actor.account.accountName;
+    }
+
+    // End SCORM Cloud patch
+
+    return {
+      endpoint: Xapi.data.endpoint,
+      auth: Xapi.data.auth,
+      actor: Xapi.data.actor,
+      grouping: Xapi.data.grouping,
+      registration: Xapi.data.registration,
+      context: Xapi.data.context,
+    };
+  }
+
+  // end of old code
+
+  static sendStmt(stmt) {
+    App.statements.push(stmt);
+    if (App.testMode === false) {
+      console.log(stmt);
+      ADL.XAPIWrapper.sendStatement(stmt, function (resp, obj) {
+        console.log(resp.status + resp.statusText);
+      });
+    } else if (App.testMode === true) {
+      console.log(stmt);
+    }
+  }
+
+  static getChoices(arr) {
+    let newArr = [];
+    if (arr.length === 1) {
+      newArr = arr[0].map(function (option) {
+        return {
+          id: option,
+          description: {
+            "ru-RU": option,
+          },
+        };
+      });
+    } else if (arr.length === 2) {
+      newArr = arr[0].map(function (option, ind) {
+        return {
+          id: option,
+          description: {
+            "ru-RU": arr[1][ind],
+          },
+        };
+      });
+    }
+    return newArr;
+  }
+
+  static getCorrectResponsesPattern(str) {
+    return [str];
+  }
+
+  static getResponse(item) {
+    if (Array.isArray(item)) {
+      return item.join();
+    } else {
+      return item;
+    }
+  }
+
+  static getPossibleOptions(words, choices, num = 0) {
+    if (!Array.isArray(words)) {
+      words = [words];
+    }
+
+    if (!Array.isArray(choices[0])) {
+      choices = [choices];
+    }
+
+    let newWords = [];
+
+    if (words[words.length - 1].indexOf("_") === -1) {
+      return words;
+    }
+
+    words.forEach(function (str) {
+      choices[num].forEach(function (c) {
+        newWords.push(str.replace("_", c));
+      });
+    });
+
+    return Xapi.getPossibleOptions(newWords, choices, num + 1);
+  }
+
+  static getCorrectOption(word, correctArr) {
+    let thisWord = word;
+    correctArr.forEach(function (letter) {
+      thisWord = thisWord.replace("_", letter);
+    });
+    return thisWord;
   }
 }
 
@@ -3011,5 +3012,9 @@ function checkSeeked(arr) {
 function getSeekedData(arr) {
   return [formatNum(arr[arr.length - 2][1]), formatNum(arr[arr.length - 1][0])];
 }
+
+/* function startApp() {
+  App.observers = []
+} */
 
 window.addEventListener("DOMContentLoaded", App.init);

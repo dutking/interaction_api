@@ -23,6 +23,8 @@
     --color-gravity-gray: #999999;
     --color-gravity-yellow: #F9DF66;
     --color-gravity-yellow-pale: #FDF4CA;
+    --color-gravity-yellow-pale-dark: #e9e1ba;
+    --color-gravity-yellow-pale-darker: #D5CDAB;
     --color-gravity-yellow-dark: #FBCE65;
     --color-gravity-orange: #F08A48;
     --color-gravity-peach: #77354C;
@@ -30,6 +32,9 @@
     --color-gravity-blue-dark: #42396E;
     --color-gravity-blue-pale: #FCFEFF;
     --color-gravity-pink: #F3B9A7;
+    --color-gravity-purple: #b2aad3;
+    --color-gravity-purple-dark: #a69ec5;
+    --color-gravity-purple-darker: #9992b4;
 
     --text-color: var(--color-gravity-gray-dark, #435363);
 
@@ -985,20 +990,77 @@ button.btn.disabled {
     }
 }
 
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 630px) {
     :root {
         --max-width: 100%;
     }
 
     .interaction {
-        padding-left: .5rem;
-        padding-right: .5rem;
-    }
-
-    .interaction[data-type='video'],
-    .interaction[data-type='comment'],
-    .interaction[data-type='rating'] {
         padding-left: 0;
         padding-right: 0;
+    }
+
+    .interaction .surveyUnit {
+        grid-template-columns: repeat(var(--columns), 1fr);
+    }
+
+    .interaction .surveyUnit .header:first-child {
+        display: none;
+    }
+
+    .interaction div.surveyUnit p.header:nth-of-type(2) {
+        border-left: 0;
+    }
+
+    .interaction div.surveyUnit p.header {
+        min-width: initial !important;
+    }
+
+    .interaction .surveyUnit .statement {
+        grid-column: 1 / -1;
+        padding: 1rem;
+    }
+
+    .interaction .surveyUnit p,
+    .interaction .surveyUnit label {
+        padding: .3rem;
+        min-height: 3rem;
+        margin-bottom: 2rem;
+        background-color: var(--color-gravity-purple);
+    }
+
+    .interaction .surveyUnit p.color,
+    .interaction .surveyUnit label.color {
+        background-color: var(--color-gravity-yellow-pale);
+    }
+
+    .interaction .surveyUnit label {
+        border: 0;
+    }
+
+    .interaction .surveyUnit div.answerBox:nth-of-type(odd) label.color {
+        background-color: var(--color-gravity-yellow-pale-dark);
+    }
+
+    .interaction .surveyUnit div.answerBox:nth-of-type(even) label.color {
+        background-color: var(--color-gravity-yellow-pale-darker);
+    }
+
+    .interaction .surveyUnit div.answerBox:nth-of-type(odd) label:not(.color) {
+        background-color: var(--color-gravity-purple-dark);
+    }
+
+    .interaction .surveyUnit div.answerBox:nth-of-type(even) label:not(.color) {
+        background-color: var(--color-gravity-purple-darker);
+    }
+
+    .interaction .surveyUnit .btn {
+        grid-column: 1 / -1;
+    }
+
+    .interaction .surveyUnit .fbContainer {
+        grid-column: 1 / -1;
+        grid-template-columns: 1fr;
+        padding: 1rem;
     }
 }
