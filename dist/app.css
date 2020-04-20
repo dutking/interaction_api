@@ -35,12 +35,20 @@
     --color-gravity-purple: #b2aad3;
     --color-gravity-purple-dark: #a69ec5;
     --color-gravity-purple-darker: #9992b4;
+    --color-gravity-blue-darker1: #1D1A2F;
+    --color-gravity-blue-darker2: #2A2543;
 
     --text-color: var(--color-gravity-gray-dark, #435363);
 
     --color-active: #0066FF;
     --color-correct: #00BA56;
     --color-incorrect: #FF0000;
+
+    --footer-bg: var(--color-gravity-blue-dark);
+    --footer-btn-bg: var(--color-gravity-blue-darker1);
+    --footer-btn-font-color: white;
+    --footer-btn-bg-hover: var(--color-gravity-blue-darker2);
+    --footer-btn-font-color-hover: var(--color-gravity-yellow);
 
     --font-size: 20px;
     --font-weight: normal;
@@ -892,23 +900,31 @@ button.btn.disabled {
     font-size: var(--font-size);
     display: flex;
     align-items: center;
-    align-content: center;
+    align-content: flex-end;
     justify-content: center;
-    max-width: 99vw;
+    max-width: 100%;
     width: 100%;
     box-sizing: border-box;
-    min-height: 15rem;
+    /* min-height: 5rem; */
     flex-direction: column;
     flex-wrap: wrap;
-    padding: 3rem 0 3rem 0;
+    /* padding: 3rem 0 0 0; */
     margin-top: 3rem;
-    align-content: center;
-    justify-content: center;
-    background: #F9E6C8;
+    background: var(--footer-bg);
 }
 
 #pagefooter #nextBtn {
-    margin-top: 5rem;
+    /* margin-top: 5rem; */
+    width: 100%;
+    border-radius: initial;
+    border: 0;
+    color: var(--footer-btn-font-color);
+    background: var(--footer-btn-bg);
+}
+
+#pagefooter #nextBtn:hover {
+    color: var(--footer-btn-font-color-hover);
+    background: var(--footer-btn-bg-hover);
 }
 
 @keyframes scale {
