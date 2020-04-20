@@ -2200,10 +2200,10 @@ class Xapi {
     return query;
   }
 
-  static activityId = "empty";
+  /* static activityId = "empty";
   static data = {
     actor: "user",
-  };
+  }; */
 
   static getXapiData() {
     let queryParams = Xapi.parseQuery(window.location.search);
@@ -2338,13 +2338,14 @@ class Xapi {
 
 class App {
   constructor() {}
-  static renderHooks = [];
+  /* static renderHooks = [];
   static testMode = false;
   static id = "";
   static course;
   static loaded = false;
   static statements = [];
   static isVideo = false;
+  static observers = []; */
 
   static isTestMode() {
     App.testMode =
@@ -2372,13 +2373,13 @@ class App {
     App.renderHooks = Array.from(document.querySelectorAll(".interaction"));
   }
 
-  static isVideo() {
+  /* static isVid() {
     App.renderHooks.forEach(function (h) {
       if (h.dataset.type === "video") {
         App.isVideo = true;
       }
     });
-  }
+  } */
 
   static init() {
     App.addFooter();
@@ -2393,8 +2394,6 @@ class App {
     }
     App.course = new Course(App.id, App.renderHooks);
   }
-
-  static observers = [];
 
   static addRating() {
     if (document.querySelector('meta[content^="rating"]') &&
@@ -3013,8 +3012,21 @@ function getSeekedData(arr) {
   return [formatNum(arr[arr.length - 2][1]), formatNum(arr[arr.length - 1][0])];
 }
 
-/* function startApp() {
-  App.observers = []
-} */
+function startApp() {
+  App.renderHooks = [];
+  App.testMode = false;
+  App.id = "";
+  App.course;
+  App.loaded = false;
+  App.statements = [];
+  App.observers = [];
 
-window.addEventListener("DOMContentLoaded", App.init);
+  Xapi.activityId = "empty";
+  Xapi.data = {
+    actor: "user",
+  };
+
+  App.init()
+}
+
+window.addEventListener("DOMContentLoaded", startApp);
