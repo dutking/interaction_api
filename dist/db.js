@@ -2,6 +2,7 @@ const db = [{
         name: 'Стратегии преодоления стрессовых ситуаций',
         columnsNames: ['Нет, это совсем не так', 'Скорее нет, чем да', 'Затрудняюсь ответить', 'Скорее да, чем нет', 'Да, совершенно верно'],
         columnsValues: [1, 2, 3, 4, 5],
+        surveyMetricsRanges: ['низкий', 'средний', 'высокий'],
         surveyMetrics: [{
                 id: 'assertiveActions',
                 nameRus: 'Ассертивные действия',
@@ -9,11 +10,11 @@ const db = [{
                     normalScale: [1, 10, 19, 37],
                     reverseScale: [28, 46]
                 },
-                ranges: {
-                    low: [6, 17],
-                    medium: [18, 22],
-                    high: [23, 30]
-                }
+                ranges: [
+                    [6, 17],
+                    [18, 22],
+                    [23, 30]
+                ]
             },
             {
                 id: 'socialContact',
@@ -22,11 +23,11 @@ const db = [{
                     normalScale: [2, 11, 20, 29, 38, 47],
                     reverseScale: []
                 },
-                ranges: {
-                    low: [6, 21],
-                    medium: [22, 25],
-                    high: [26, 30]
-                }
+                ranges: [
+                    [6, 21],
+                    [22, 25],
+                    [26, 30]
+                ]
             },
             {
                 id: 'socialsupport',
@@ -35,11 +36,11 @@ const db = [{
                     normalScale: [3, 12, 21, 30, 39, 48],
                     reverseScale: []
                 },
-                ranges: {
-                    low: [6, 20],
-                    medium: [21, 24],
-                    high: [25, 30]
-                }
+                ranges: [
+                    [6, 20],
+                    [21, 24],
+                    [25, 30]
+                ]
             },
             {
                 id: 'cautiousActions',
@@ -48,11 +49,11 @@ const db = [{
                     normalScale: [4, 13, 22, 31, 40, 49],
                     reverseScale: []
                 },
-                ranges: {
-                    low: [6, 17],
-                    medium: [18, 23],
-                    high: [24, 30]
-                }
+                ranges: [
+                    [6, 17],
+                    [18, 23],
+                    [24, 30]
+                ]
             },
             {
                 id: 'impulsiveActions',
@@ -61,11 +62,11 @@ const db = [{
                     normalScale: [5, 14, 23, 32, 41],
                     reverseScale: [50]
                 },
-                ranges: {
-                    low: [6, 15],
-                    medium: [16, 19],
-                    high: [20, 30]
-                }
+                ranges: [
+                    [6, 15],
+                    [16, 19],
+                    [20, 30]
+                ]
             },
             {
                 id: 'avoidance',
@@ -74,11 +75,11 @@ const db = [{
                     normalScale: [6, 15, 24, 33, 42, 51],
                     reverseScale: []
                 },
-                ranges: {
-                    low: [6, 13],
-                    medium: [14, 17],
-                    high: [18, 30]
-                }
+                ranges: [
+                    [6, 13],
+                    [14, 17],
+                    [18, 30]
+                ]
             },
             {
                 id: 'indirectActions',
@@ -87,11 +88,11 @@ const db = [{
                     normalScale: [7, 16, 25, 34, 43, 52],
                     reverseScale: []
                 },
-                ranges: {
-                    low: [6, 17],
-                    medium: [18, 23],
-                    high: [24, 30]
-                }
+                ranges: [
+                    [6, 17],
+                    [18, 23],
+                    [24, 30]
+                ]
             },
             {
                 id: 'asocialActions',
@@ -100,11 +101,11 @@ const db = [{
                     normalScale: [8, 17, 26, 35, 44, 53],
                     reverseScale: []
                 },
-                ranges: {
-                    low: [6, 14],
-                    medium: [15, 19],
-                    high: [20, 30]
-                }
+                ranges: [
+                    [6, 14],
+                    [15, 19],
+                    [20, 30]
+                ]
             },
             {
                 id: 'agressiveActions',
@@ -113,11 +114,11 @@ const db = [{
                     normalScale: [9, 18, 27, 36, 45, 54],
                     reverseScale: []
                 },
-                ranges: {
-                    low: [6, 13],
-                    medium: [14, 18],
-                    high: [19, 30]
-                }
+                ranges: [
+                    [6, 13],
+                    [14, 18],
+                    [19, 30]
+                ]
             }
         ],
         survey: [
@@ -178,7 +179,7 @@ const db = [{
         ],
         fbs: {}
     },
-    /* {
+    {
         metrics: [{
             id: 'conservative',
             nameRus: 'Консервативный стиль',
@@ -224,7 +225,7 @@ const db = [{
             ['Я с удовольствием принимаю новые идеи и возможности, которые они мне могут дать', 'Я являюсь сдерживающей силой для энтузиазма других и часто вижу последствия, о которых другие не говорят'],
             ['В ситуации неприятных для меня изменений, я нахожу личную выгоду и принимаю их', 'В ситуации неприятных для меня изменений вначале я внутренне сопротивляюсь и стараюсь находить возможности действовать по-старому']
         ]
-    }, */
+    },
     // empty for longread, rating and comment
     [{}],
     [{}],

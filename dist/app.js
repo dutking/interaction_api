@@ -235,8 +235,6 @@ class SurveyInteraction extends Interaction {
   }
 }
 
-
-
 class LongreadInteraction extends Interaction {
   constructor(index, renderHook, parent) {
     super(index, renderHook, parent);
@@ -620,9 +618,22 @@ class PointsDistributionUnit extends InteractionUnit {
     let that = this
     let fbContainer = this.unitContainer.querySelector('.fbContainer')
     this.metrics.forEach(function (m) {
-      let h3 = document.createElement('h3')
-      h3.innerHTML = `${m.nameRus}: ${that.PDresults[m.id]}`
-      fbContainer.appendChild(h3)
+      let resultNum = that.PDresults[m.id]
+
+      let fbUnit = document.createElement('div')
+      fbUnit.className = 'fbUnit'
+
+      let metricName = document.createElement('p')
+      metricName.className = 'metricName'
+      metricName.innerHTML = m.nameRus
+      fbUnit.appendChild(metricName)
+
+      let result = document.createElement('p')
+      result.className = 'result'
+      result.innerHTML = 'Результат: ' + resultNum
+      fbUnit.appendChild(result)
+
+      fbContainer.appendChild(fbUnit)
     })
   }
 
@@ -763,12 +774,13 @@ class PointsDistributionGroup {
 
 class SurveyUnit extends InteractionUnit {
   constructor(index, parent, cssClasses, dbData) {
-    super(index, parent, cssClasses, dbData);
+    super(index, parent, cssClasses, dbData)
     this.columnsNames = dbData.columnsNames
     this.columnsValues = dbData.columnsValues
     this.staticPositionedColumnsValues = dbData.staticPositionedColumnsValues ? dbData.staticPositionedColumnsValues : []
     this.survey = dbData.survey
     this.surveyMetrics = dbData.surveyMetrics
+    this.surveyMetricsRanges = dbData.surveyMetricsRanges || []
     this.surveyResults = {}
     this.composeSurveyResultsObj()
     this.render()
@@ -882,11 +894,39 @@ class SurveyUnit extends InteractionUnit {
     let that = this
     let fbContainer = this.unitContainer.querySelector('.fbContainer')
     this.surveyMetrics.forEach(function (m) {
-      let h3 = document.createElement('h3')
-      let result = that.surveyResults[m.id] < 0 ? 0 : that.surveyResults[m.id]
-      h3.innerHTML = `${m.nameRus}: ${result}`
-      fbContainer.appendChild(h3)
+      let fbUnit = document.createElement('div')
+      fbUnit.className = 'fbUnit'
+
+      let metricName = document.createElement('p')
+      metricName.className = 'metricName'
+      metricName.innerHTML = m.nameRus
+      fbUnit.appendChild(metricName)
+
+      let resultNum = that.surveyResults[m.id] < 0 ? 0 : that.surveyResults[m.id]
+      let result = document.createElement('p')
+      result.className = 'result'
+      result.innerHTML = 'Результат: ' + resultNum
+      fbUnit.appendChild(result)
+
+      if (that.surveyMetricsRanges.length > 0) {
+        let range = document.createElement('p')
+        range.className = 'range'
+        range.innerHTML = 'Это ' + that.getRange(m, resultNum) + ' показатель'
+        fbUnit.appendChild(range)
+      }
+      fbContainer.appendChild(fbUnit)
     })
+  }
+
+  getRange(metric, result) {
+    let that = this
+    let range = ''
+    metric.ranges.forEach(function (r, ind) {
+      if (result >= r[0] && result <= r[1]) {
+        range = that.surveyMetricsRanges[ind]
+      }
+    })
+    return range
   }
 
   createItems() {

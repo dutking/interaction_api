@@ -182,6 +182,18 @@
     column-gap: 2rem;
 }
 
+.interaction .pointsDistributionUnit .fbContainer .fbUnit {
+    display: flex;
+    flex-direction: column;
+    font-size: var(--font-size);
+    color: var(--color-gravity-blue-darker1);
+}
+
+.interaction .pointsDistributionUnit .fbContainer .fbUnit .metricName,
+.interaction .pointsDistributionUnit .fbContainer .fbUnit .result {
+    font-weight: bold;
+}
+
 .interaction .surveyUnit {
     --columns: 0;
     display: grid;
@@ -198,6 +210,23 @@
     grid-template-columns: 1fr 1fr;
     row-gap: 1rem;
     column-gap: 2rem;
+}
+
+.interaction .surveyUnit .fbContainer .fbUnit {
+    display: flex;
+    flex-direction: column;
+    font-size: var(--font-size);
+    color: var(--color-gravity-blue-darker1);
+}
+
+.interaction .surveyUnit .fbContainer .fbUnit p {
+    padding: 0;
+    min-height: initial;
+}
+
+.interaction .surveyUnit .fbContainer .fbUnit .metricName,
+.interaction .surveyUnit .fbContainer .fbUnit .result {
+    font-weight: bold;
 }
 
 .interaction .surveyUnit .btn {
@@ -1078,5 +1107,11 @@ button.btn.disabled {
         grid-column: 1 / -1;
         grid-template-columns: 1fr;
         padding: 1rem;
+    }
+
+    .interaction .surveyUnit .fbContainer .fbUnit p {
+        background-color: transparent;
+        margin: 0;
+        padding: 0;
     }
 }
