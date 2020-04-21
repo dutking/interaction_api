@@ -8,6 +8,11 @@ const db = [{
                 correspondingQuestions: {
                     normalScale: [1, 10, 19, 37],
                     reverseScale: [28, 46]
+                },
+                ranges: {
+                    low: [6, 17],
+                    medium: [18, 22],
+                    high: [23, 30]
                 }
             },
             {
@@ -16,6 +21,11 @@ const db = [{
                 correspondingQuestions: {
                     normalScale: [2, 11, 20, 29, 38, 47],
                     reverseScale: []
+                },
+                ranges: {
+                    low: [6, 21],
+                    medium: [22, 25],
+                    high: [26, 30]
                 }
             },
             {
@@ -24,6 +34,11 @@ const db = [{
                 correspondingQuestions: {
                     normalScale: [3, 12, 21, 30, 39, 48],
                     reverseScale: []
+                },
+                ranges: {
+                    low: [6, 20],
+                    medium: [21, 24],
+                    high: [25, 30]
                 }
             },
             {
@@ -32,6 +47,11 @@ const db = [{
                 correspondingQuestions: {
                     normalScale: [4, 13, 22, 31, 40, 49],
                     reverseScale: []
+                },
+                ranges: {
+                    low: [6, 17],
+                    medium: [18, 23],
+                    high: [24, 30]
                 }
             },
             {
@@ -40,6 +60,11 @@ const db = [{
                 correspondingQuestions: {
                     normalScale: [5, 14, 23, 32, 41],
                     reverseScale: [50]
+                },
+                ranges: {
+                    low: [6, 17],
+                    medium: [18, 19],
+                    high: [20, 30]
                 }
             },
             {
@@ -48,6 +73,11 @@ const db = [{
                 correspondingQuestions: {
                     normalScale: [6, 15, 24, 33, 42, 51],
                     reverseScale: []
+                },
+                ranges: {
+                    low: [6, 13],
+                    medium: [14, 17],
+                    high: [18, 30]
                 }
             },
             {
@@ -56,6 +86,11 @@ const db = [{
                 correspondingQuestions: {
                     normalScale: [7, 16, 25, 34, 43, 52],
                     reverseScale: []
+                },
+                ranges: {
+                    low: [6, 16],
+                    medium: [17, 23],
+                    high: [24, 30]
                 }
             },
             {
@@ -64,6 +99,11 @@ const db = [{
                 correspondingQuestions: {
                     normalScale: [8, 17, 26, 35, 44, 53],
                     reverseScale: []
+                },
+                ranges: {
+                    low: [6, 14],
+                    medium: [15, 19],
+                    high: [20, 30]
                 }
             },
             {
@@ -72,6 +112,11 @@ const db = [{
                 correspondingQuestions: {
                     normalScale: [9, 18, 27, 36, 45, 54],
                     reverseScale: []
+                },
+                ranges: {
+                    low: [6, 13],
+                    medium: [14, 18],
+                    high: [19, 30]
                 }
             }
         ],
@@ -133,7 +178,7 @@ const db = [{
         ],
         fbs: {}
     },
-    {
+    /* {
         metrics: [{
             id: 'conservative',
             nameRus: 'Консервативный стиль',
@@ -179,7 +224,7 @@ const db = [{
             ['Я с удовольствием принимаю новые идеи и возможности, которые они мне могут дать', 'Я являюсь сдерживающей силой для энтузиазма других и часто вижу последствия, о которых другие не говорят'],
             ['В ситуации неприятных для меня изменений, я нахожу личную выгоду и принимаю их', 'В ситуации неприятных для меня изменений вначале я внутренне сопротивляюсь и стараюсь находить возможности действовать по-старому']
         ]
-    },
+    }, */
     // empty for longread, rating and comment
     [{}],
     [{}],
