@@ -62,8 +62,8 @@ const db = [{
                     reverseScale: [50]
                 },
                 ranges: {
-                    low: [6, 17],
-                    medium: [18, 19],
+                    low: [6, 15],
+                    medium: [16, 19],
                     high: [20, 30]
                 }
             },
@@ -88,8 +88,8 @@ const db = [{
                     reverseScale: []
                 },
                 ranges: {
-                    low: [6, 16],
-                    medium: [17, 23],
+                    low: [6, 17],
+                    medium: [18, 23],
                     high: [24, 30]
                 }
             },
