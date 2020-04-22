@@ -95,7 +95,9 @@ class IterableScorableInteraction extends ScorableInteraction {
   getMinScore() {
     if (this.interactionData.min_score.includes('%')) {
       let multiplier = Number(this.interactionData.min_score.slice(0, -1)) / 100
-      return this.unitsToComplete * multiplier
+      return Math.ceil(this.unitsToComplete * multiplier)
+    } else {
+      return Number(this.interactionData.min_score)
     }
   }
 
@@ -452,6 +454,7 @@ class TestInteraction extends IterableScorableInteraction {
 class CaseInteraction extends IterableScorableInteraction {
   constructor(index, renderHook, parent) {
     super(index, renderHook, parent);
+    this.init()
   }
 
   createUnit(num) {
@@ -1007,6 +1010,164 @@ class CmiInteractionUnit extends InteractionUnit {
 
   set result(v) {
     this._result = v;
+  }
+}
+
+class CaseUnit extends CmiInteractionUnit {
+  constructor(index, parent, cssClasses, dbData) {
+    super(index, parent, cssClasses, dbData);
+    this.type = this.dbData.type;
+    this.text = this.dbData.text;
+    this.question = this.dbData.question;
+    this.answers = App.shuffle(this.dbData.answers);
+    this.correctResponsesPattern = this.getCorrectResponsesPattern()
+    this.choices = this.getChoices()
+    Xapi.sendStmt(new Statement(this, "interacted").finalStatement);
+    this.render();
+  }
+
+  render() {
+    // creating unit container
+    this.unitContainer = this.createUnitContainer(this.cssClasses);
+
+    // creating unit header
+    let header = document.createElement("div");
+    header.classList.add("header");
+    header.innerHTML = `Кейс ${this.index + 1} из ${
+      this.parent.amountOfUnits
+    }`;
+
+    //creating unit body
+    let body = this.createBody();
+
+    // appending children to unit container
+    this.unitContainer.appendChild(header);
+    this.unitContainer.appendChild(body);
+  }
+
+  initNextUnit() {
+    if (
+      this.index !== this.parent.unitsToComplete - 1 &&
+      this.index !== this.parent.amountOfUnits - 1
+    ) {
+      this.parent.createUnit(this.index + 1);
+    }
+  }
+
+  getChoices() {
+    let idArr = [];
+    let descArr = [];
+    this.answers.forEach(function (a) {
+      idArr.push(a.aId);
+      descArr.push(a.aText);
+    });
+    return [idArr, descArr];
+  }
+
+  getCorrectResponsesPattern() {
+    let resp = this.answers.filter(function (a) {
+      return a.aCorrect === true
+    }).map(function (a) {
+      return a.aId
+    })
+    return resp.join()
+  }
+
+
+  createBody() {
+    let that = this;
+    let body = document.createElement("div");
+    body.className = "body";
+
+    let caseText = document.createElement("p");
+    caseText.className = "text";
+    caseText.innerText = this.text;
+    body.appendChild(caseText);
+
+    let caseQuestion = document.createElement("p");
+    caseQuestion.className = "question";
+    caseQuestion.innerText = this.question;
+    body.appendChild(caseQuestion);
+
+    /*     let qHelp = document.createElement("p");
+        qHelp.className = "help";
+        body.appendChild(qHelp); */
+
+    let answersContainer = document.createElement("div");
+    answersContainer.className = "answersContainer";
+
+    this.answers.forEach(function (ans, i) {
+
+      // create container for particular answer
+      let answerContainer = document.createElement("div");
+      answerContainer.classList.add("answerContainer");
+
+      // create answer <input> and <label>
+      let input = document.createElement("input");
+      input.id = ans.aId;
+      input.setAttribute("value", ans.aId);
+
+      let label = document.createElement("label");
+      label.className = 'leftBorderMarker'
+      label.setAttribute("for", ans.aId);
+      if (ans.aText[ans.aText.length - 1] !== ".") {
+        label.innerHTML = ans.aText + ".";
+      } else {
+        label.innerHTML = ans.aText;
+      }
+
+      if (that.type === "mc") {
+        input.setAttribute("type", "radio");
+        input.setAttribute("name", `group_${that.index}`);
+        /* qHelp.innerHTML = "Выберите правильный ответ."; */
+      } else if (that.type === "mr") {
+        input.type = "checkbox";
+        /* qHelp.innerHTML = "Выберите все правильные варианты ответов."; */
+      }
+
+      answerContainer.appendChild(input);
+      answerContainer.appendChild(label);
+
+      // create particular feedback
+      let feedback
+      if (ans.aFeedback !== "") {
+        feedback = document.createElement("div");
+        feedback.className = 'feedback leftBorderMarker off'
+        feedback.dataset.for = ans.aId;
+        feedback.innerHTML = ans.aFeedback;
+        answerContainer.appendChild(feedback);
+      }
+
+      answersContainer.appendChild(answerContainer);
+
+      input.addEventListener("change", function (e) {
+        that.response = e.currentTarget.getAttribute('value')
+        if (e.currentTarget.checked = true) {
+          if (ans.aCorrect === true) {
+            that.score = that.score + 1
+            that.result = true
+            that.completed = true
+            that.parent.completed = true
+            that.initNextUnit(this.index + 1)
+            feedback.classList.remove('off')
+            feedback.classList.add('correct')
+            label.classList.add('correct')
+          } else if (ans.aCorrect === false) {
+            that.result = false
+            feedback.classList.remove('off')
+            feedback.classList.add('incorrect')
+            label.classList.add('incorrect')
+          }
+        }
+        e.currentTarget.classList.add('disabled')
+        label.classList.add('disabled')
+        Xapi.sendStmt(new Statement(that, "answered").finalStatement);
+      });
+    });
+
+    body.appendChild(answersContainer);
+
+    return body;
   }
 }
 
@@ -2052,7 +2213,7 @@ class Statement {
         },
       },
     };
-    if (this.obj instanceof SubUnit || this.obj instanceof TestUnit) {
+    if (this.obj instanceof SubUnit || this.obj instanceof TestUnit || this.obj instanceof CaseUnit) {
       let extraDefinitionProperties = {
         type: "http://adlnet.gov/expapi/activities/cmi.interaction",
         // interactionType: "choice",
@@ -2065,7 +2226,8 @@ class Statement {
       if (
         this.obj._parent instanceof LangExerciseUnit ||
         this.obj._parent instanceof DictantUnit ||
-        this.obj instanceof TestUnit
+        this.obj instanceof TestUnit ||
+        this.obj instanceof CaseUnit
       ) {
         Object.assign(extraDefinitionProperties, {
           interactionType: "choice",
@@ -2356,7 +2518,8 @@ class Xapi {
 
   static getResponse(item) {
     if (Array.isArray(item)) {
-      return item.join();
+      return item.join('[,]');
+      // or item.join()
     } else {
       return item;
     }

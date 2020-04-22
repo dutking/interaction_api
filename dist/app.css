@@ -57,6 +57,22 @@
     --max-width: 960px;
 }
 
+@font-face {
+    font-family: 'bebas_neueregular';
+    src: url('assets/fonts/bebasneueregular.woff2') format('woff2'),
+        url('assets/fonts/bebasneueregular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'bebas_neuebold';
+    src: url('assets/fonts/bebasneuebold.woff2') format('woff2'),
+        url('assets/fonts/bebasneuebold.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
 .interaction * {
     box-sizing: border-box;
     margin: 0;
@@ -71,6 +87,48 @@
     font-family: 'Open Sans', sans-serif;
     font-size: var(--font-size);
     color: var(--color-primary-darkgray);
+}
+
+.interaction .caseUnit .header {
+    font-size: calc(var(--font-size) * 1.1);
+    font-family: 'bebas_neuebold', sans-serif;
+    color: var(--color-primary-orange);
+    font-weight: 600;
+    background-color: white;
+    padding: 1rem;
+}
+
+.interaction .caseUnit .body {
+    box-sizing: border-box;
+    padding: 1rem;
+}
+
+.interaction .caseUnit .body .text {
+    font-size: var(--font-size);
+    font-weight: normal;
+    margin-bottom: 1rem;
+}
+
+.interaction .caseUnit .body .question {
+    font-size: var(--font-size);
+    font-weight: bold;
+    margin-bottom: 2rem;
+}
+
+
+.interaction .caseUnit .body .answersContainer .answerContainer:not(:last-of-type) {
+    margin-bottom: 2rem;
+}
+
+.interaction .caseUnit .body .answersContainer .answerContainer input {
+    display: none;
+}
+
+.interaction .caseUnit .body .answersContainer .answerContainer label {
+    display: flex;
+    cursor: pointer;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
 }
 
 .interaction .pointsDistributionUnit {
@@ -473,7 +531,7 @@
     padding: 2rem 0 3rem 0;
 }
 
-.interaction .header {
+.interaction .langExerciseUnit .header {
     display: flex;
     flex-direction: row;
     color: var(--color-primary-lightgray);
