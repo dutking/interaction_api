@@ -883,6 +883,7 @@
 }
 
 button.btn {
+    box-sizing: border-box;
     font-size: var(--font-size);
     display: flex;
     align-content: center;
@@ -938,7 +939,7 @@ button.btn.disabled {
     flex-direction: column;
     flex-wrap: wrap;
     /* padding: 3rem 0 0 0; */
-    margin-top: 3rem;
+    /* margin-top: 3rem; */
     background: var(--footer-bg);
 }
 
@@ -1107,6 +1108,15 @@ button.btn.disabled {
         grid-column: 1 / -1;
         grid-template-columns: 1fr;
         padding: 1rem;
+    }
+
+    .interaction .pointsDistributionUnit .fbContainer {
+        grid-template-columns: 1fr;
+    }
+
+    .interaction .pointsDistributionUnit .fbContainer .fbUnit {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
     }
 
     .interaction .surveyUnit .fbContainer .fbUnit p {

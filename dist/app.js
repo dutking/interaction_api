@@ -89,11 +89,19 @@ class IterableScorableInteraction extends ScorableInteraction {
     this.amountOfUnits = this.getAmountOfUnits();
     this.unitsToComplete = this.getUnitsToComplete();
     this.unitsList = this.getUnitsList();
+    this.minScore = this.getMinScore()
+  }
+
+  getMinScore() {
+    if (this.interactionData.min_score.includes('%')) {
+      let multiplier = Number(this.interactionData.min_score.slice(0, -1)) / 100
+      return this.unitsToComplete * multiplier
+    }
   }
 
   getUnitsToComplete() {
     if (this.interactionData.units_to_complete === "0") {
-      return this.amountOfUnits;
+      return this.amountOfUnits
     } else {
       return Number(this.interactionData.units_to_complete);
     }
@@ -444,6 +452,17 @@ class TestInteraction extends IterableScorableInteraction {
 class CaseInteraction extends IterableScorableInteraction {
   constructor(index, renderHook, parent) {
     super(index, renderHook, parent);
+  }
+
+  createUnit(num) {
+    if (num < this.unitsList.length) {
+      let unit = new CaseUnit(num, this, "caseUnit", this.unitsList[num]);
+      this.interactionUnits.push(unit);
+    }
+  }
+
+  init() {
+    this.createUnit(0);
   }
 }
 
@@ -911,7 +930,7 @@ class SurveyUnit extends InteractionUnit {
       if (that.surveyMetricsRanges.length > 0) {
         let range = document.createElement('p')
         range.className = 'range'
-        range.innerHTML = 'Это ' + that.getRange(m, resultNum) + ' показатель'
+        range.innerHTML = 'Это ' + that.getRange(m, resultNum)
         fbUnit.appendChild(range)
       }
       fbContainer.appendChild(fbUnit)
@@ -2626,6 +2645,8 @@ class App {
       return "Опросник";
     } else if (i instanceof PointsDistributionInteraction) {
       return "Задание на распределение баллов";
+    } else if (i instanceof CaseInteraction) {
+      return "Кейс";
     }
   }
 }
