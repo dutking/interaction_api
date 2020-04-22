@@ -1001,16 +1001,16 @@ class SurveyUnit extends InteractionUnit {
 class CmiInteractionUnit extends InteractionUnit {
   constructor(index, parent, cssClasses, dbData) {
     super(index, parent, cssClasses, dbData);
-    this._result = 0;
+    /* this._result = 0; */
   }
 
-  get result() {
+  /* get result() {
     return this._result;
   }
 
   set result(v) {
     this._result = v;
-  }
+  } */
 }
 
 class CaseUnit extends CmiInteractionUnit {
@@ -1022,6 +1022,7 @@ class CaseUnit extends CmiInteractionUnit {
     this.answers = App.shuffle(this.dbData.answers);
     this.correctResponsesPattern = this.getCorrectResponsesPattern()
     this.choices = this.getChoices()
+    this._result = false
     Xapi.sendStmt(new Statement(this, "interacted").finalStatement);
     this.render();
   }
@@ -1073,6 +1074,13 @@ class CaseUnit extends CmiInteractionUnit {
     return resp.join()
   }
 
+  get result() {
+    return this._result
+  }
+
+  set result(v) {
+    this._result = v
+  }
 
   createBody() {
     let that = this;
@@ -1200,6 +1208,14 @@ class TestUnit extends CmiInteractionUnit {
     return [idArr, descArr];
   }
 
+  get result() {
+    return this._result
+  }
+
+  set result(v) {
+    this._result = v
+  }
+
   render() {
     // creating unit container
     this.unitContainer = this.createUnitContainer(this.cssClasses);
@@ -1315,6 +1331,8 @@ class TestUnit extends CmiInteractionUnit {
       this.index !== this.parent.amountOfUnits - 1
     ) {
       this.parent.createUnit(this.index + 1);
+    } else {
+      this.showFb()
     }
   }
 
@@ -1387,6 +1405,15 @@ class TestUnit extends CmiInteractionUnit {
     body.appendChild(answersContainer);
 
     return body;
+  }
+
+  showFb() {
+    let finalFb = document.createElement("div");
+    finalFb.classList.add("finalFb");
+    finalFb.innerHTML = `
+    <p>Проходной балл: ${this.parent.minScore}. Ваш результат: ${this.parent.score}.</p>    
+    <p ${this.parent.result ? 'class="text correct"' : 'class="text incorrect"'}>${this.parent.result ? 'Поздравляем, вы прошли тест.' : 'К сожалению, вы не прошли тест.'}<p>`
+    this.unitContainer.appendChild(finalFb)
   }
 }
 
@@ -2361,7 +2388,7 @@ class Course {
     let overallResult = 0;
     let requiredResult = 0;
     this.interactions.forEach(function (i) {
-      if (i.required === "true") {
+      if (i.required === true) {
         requiredResult++;
         if (i.result) {
           overallResult++;

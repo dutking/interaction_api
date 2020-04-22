@@ -505,6 +505,14 @@
     color: var(--color-primary-red, darkred);
 }
 
+.interaction .testUnit .finalFb {
+    display: flex;
+    flex-direction: column;
+    margin-top: 3rem;
+    font-size: calc(var(--font-size) * 1.5);
+    font-weight: bold;
+}
+
 .interaction iframe {
     width: 100%;
 }
