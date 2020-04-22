@@ -1118,10 +1118,11 @@ class CaseUnit extends CmiInteractionUnit {
       let label = document.createElement("label");
       label.className = 'leftBorderMarker'
       label.setAttribute("for", ans.aId);
-      if (ans.aText[ans.aText.length - 1] !== ".") {
-        label.innerHTML = ans.aText + ".";
+      let txt = ans.aText.trim()
+      if (txt[txt.length - 1] !== ".") {
+        label.innerHTML = txt + ".";
       } else {
-        label.innerHTML = ans.aText;
+        label.innerHTML = txt;
       }
 
       if (that.type === "mc") {
