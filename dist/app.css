@@ -807,6 +807,10 @@
     cursor: pointer;
 }
 
+.interaction .ratingUnit {
+    margin-top: 3rem;
+}
+
 .interaction .ratingUnit,
 .interaction .commentUnit {
     display: flex;
