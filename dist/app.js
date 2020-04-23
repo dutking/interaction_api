@@ -931,10 +931,10 @@ class SurveyUnit extends InteractionUnit {
       fbUnit.appendChild(result)
 
       if (that.surveyMetricsRanges.length > 0) {
-        let range = document.createElement('p')
-        range.className = 'range'
-        range.innerHTML = 'Это ' + that.getRange(m, resultNum)
-        fbUnit.appendChild(range)
+        let rangeDescription = document.createElement('p')
+        rangeDescription.className = 'rangeDescription'
+        rangeDescription.innerHTML = that.getRange(m, resultNum)
+        fbUnit.appendChild(rangeDescription)
       }
       fbContainer.appendChild(fbUnit)
     })

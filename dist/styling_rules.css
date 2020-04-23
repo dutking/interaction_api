@@ -1,0 +1,46 @@
+:root {
+    /*Максимальная ширина блока с интерактивом*/
+    --max-width: 960px;
+    /*Размер шрифта*/
+    --font-size: 20px;
+    /*Межстрочный интервал*/
+    --line-height: 1.5;
+}
+
+/*Общее оформление*/
+
+/*Обнуление отступов*/
+.interaction * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    line-height: 1;
+}
+
+.interaction {
+    max-width: var(--max-width);
+    line-height: var(--line-height);
+}
+
+/*Стили для размера окна меньше 1200пикс*/
+@media screen and (max-width: 1200px) {
+    :root {
+        --max-width: 780px;
+        --font-size: 18px;
+    }
+}
+
+/*Стили для размера окна меньше 690пикс*/
+@media screen and (max-width: 960px) {
+    :root {
+        --max-width: 630px;
+        --font-size: 16px;
+    }
+}
+
+/*Стили для размера окна меньше 630пикс*/
+@media screen and (max-width: 630px) {
+    :root {
+        --max-width: 100%;
+    }
+}
