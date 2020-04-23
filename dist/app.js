@@ -1344,7 +1344,7 @@ class TestUnit extends CmiInteractionUnit {
 
     let questionContainer = document.createElement("p");
     questionContainer.className = "qText";
-    questionContainer.innerText = this.question;
+    questionContainer.innerHTML = this.question;
     body.appendChild(questionContainer);
 
     let qHelp = document.createElement("p");

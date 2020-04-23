@@ -393,6 +393,12 @@
     padding: 2rem 0 2rem 0;
 }
 
+.interaction .testUnit .header {
+    font-size: var(--font-size);
+    color: var(--color-primary-lightgray, gray);
+    margin-bottom: 2rem;
+}
+
 .interaction .testUnit .header.correct::after {
     content: 'Верно!';
     color: var(--color-correct);
@@ -411,6 +417,14 @@
     font-size: var(--font-size);
     font-weight: normal;
     margin-bottom: 1rem;
+}
+
+.interaction .testUnit .qText ol {
+    padding: 1rem 0 1rem 0;
+}
+
+.interaction .testUnit .qText li {
+    list-style-position: inside;
 }
 
 .interaction .testUnit .qHelp {
