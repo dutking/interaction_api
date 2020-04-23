@@ -2462,14 +2462,9 @@ class Xapi {
       endpoint: queryParams.endpoint,
       auth: queryParams.auth,
       actor: JSON.parse(queryParams.actor),
-      grouping: Xapi.activityId,
+      grouping: queryParams.grouping,
       registration: queryParams.registration,
-      context: {
-        registration: queryParams.registration,
-        contextActivities: {
-          grouping: Xapi.activityId,
-        },
-      },
+      context: queryParams.context
     };
 
     // SCORM Cloud patch

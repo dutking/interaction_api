@@ -1,10 +1,98 @@
 :root {
+    /*Первичные переменные*/
+
+    /*Палитра проекта*/
+    /*Трек Гравитация*/
+    --color-white: #FFFFFF;
+    --color-black: #000000;
+    --color-gravity-gray-light: #EEEDED;
+    --color-gravity-gray-dark: #333333;
+    --color-gravity-gray: #999999;
+    --color-gravity-yellow: #F9DF66;
+    --color-gravity-yellow-pale: #FDF4CA;
+    --color-gravity-yellow-pale-dark: #e9e1ba;
+    --color-gravity-yellow-pale-darker: #D5CDAB;
+    --color-gravity-yellow-dark: #FBCE65;
+    --color-gravity-orange: #F08A48;
+    --color-gravity-peach: #77354C;
+    --color-gravity-blue-light: #77354C;
+    --color-gravity-blue-dark: #42396E;
+    --color-gravity-blue-pale: #FCFEFF;
+    --color-gravity-pink: #F3B9A7;
+    --color-gravity-purple: #b2aad3;
+    --color-gravity-purple-dark: #a69ec5;
+    --color-gravity-purple-darker: #9992b4;
+    --color-gravity-blue-darker1: #1D1A2F;
+    --color-gravity-blue-darker2: #2A2543;
+
     /*Максимальная ширина блока с интерактивом*/
     --max-width: 960px;
+
+    /*Шрифт*/
     /*Размер шрифта*/
     --font-size: 20px;
     /*Межстрочный интервал*/
     --line-height: 1.5;
+    /*Шрифт*/
+    --font-family: 'Open Sans', sans-serif;
+
+    /*Вторичные переменные*/
+
+    /*Цвет шрифта*/
+    --font-color: var(--color-gravity-gray-dark);
+
+    /*Цвет активного элемента*/
+    --color-active: #0066FF;
+    /*Цвет Верно*/
+    --color-correct: #00BA56;
+    /*Цвет Неверно*/
+    --color-incorrect: #FF0000;
+
+    /*1rem = 16px при 100% масштабе. При изменении масштаба соотношение меняется.*/
+
+    /*Оформление кнопок*/
+    /*Минимальная ширина кнопки*/
+    --btn-min-width: 0;
+    /*Внутренние отступы: верх-право-низ-лево*/
+    --btn-padding: 1rem 1.5rem 1rem 1.5rem;
+    /*Жирность шрифта кнопки*/
+    --btn-font-weight: bold;
+    /*Цвет шрифта кнопки*/
+    --btn-font-color: var(--color-black);
+    /*Цвет фона кнопки*/
+    --btn-bg-color: var(--color-gravity-yellow-pale);
+    /*Цвет шрифта кнопки при наведении*/
+    --btn-hover-font-color: var(--color-black);
+    /*Цвет фона кнопки при наведении*/
+    --btn-hover-bg-color: var(--color-gravity-yellow);
+    /*Величина скругления углов (360px для полного скругления)*/
+    --btn-border-radius: 360px;
+    /*Обводка кнопки: толщина-стиль-цвет*/
+    --btn-border-width: 2px;
+    --btn-border-style: solid;
+    --btn-border-color: var(--btn-bg-color);
+    /*Обводка кнопки при наведении: цвет*/
+    --btn-hover-border-color: var(--btn-hover-bg-color);
+
+    /*Оформление неактивной кнопки*/
+    /*Цвет шрифта неактивной кнопки*/
+    --btn-disabled-font-color: var(--color-white);
+    /*Цвет фона неактивной кнопки*/
+    --btn-disabled-bg-color: var(--color-gravity-gray);
+    /*Обводка неактивной кнопки: толщина-стиль-цвет*/
+    --btn-disabled-border-color: var(--btn-disabled-bg-color);
+
+    /*Оформление футера*/
+    /*Фон блока*/
+    --footer-bg: var(--color-gravity-blue-dark);
+    /*Фон кнопки Далее*/
+    --footer-btn-bg: var(--color-gravity-blue-darker1);
+    /*Цвет шрифта кнопки Далее*/
+    --footer-btn-font-color: white;
+    /*Фон кнопки Далее при наведении*/
+    --footer-btn-bg-hover: var(--color-gravity-blue-darker2);
+    /*Цвет шрифта кнопки Далее при наведении*/
+    --footer-btn-font-color-hover: var(--color-gravity-yellow);
 }
 
 /*Общее оформление*/
@@ -14,12 +102,123 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    line-height: 1;
 }
 
 .interaction {
     max-width: var(--max-width);
     line-height: var(--line-height);
+    color: var(--font-color);
+}
+
+/*Скрыть все окошки ввода*/
+.interaction input[type=radio],
+.interaction input[type=checkbox] {
+    display: none;
+}
+
+.interaction .leftBorderMarker {
+    border: 0;
+    border-left-width: 5px;
+    border-style: solid;
+    border-color: var(--color-primary-lightgray);
+    padding: 1rem;
+    transition: all 0.3s ease-in;
+}
+
+/*Оформление левой границы элементов типа всплывающих подсказок, фидбеков к кейсам, упражнениям*/
+.interaction .leftBorderMarker.correct {
+    border-color: var(--color-correct);
+}
+
+.interaction .leftBorderMarker.incorrect {
+    border-color: var(--color-incorrect);
+}
+
+.interaction .leftBorderMarker.selected {
+    border-color: var(--color-primary-orange);
+}
+
+.interaction .leftBorderMarker.letterBox {
+    border-color: #F9E6C8;
+}
+
+/*Оформление кнопок*/
+.interaction .btn {
+    box-sizing: border-box;
+    display: flex;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+    min-width: var(--btn-min-width);
+    padding: var(--btn-padding);
+    font-size: var(--font-size);
+    font-family: var(--font-family);
+    font-weight: var(--btn-font-weight);
+    color: var(--btn-font-color);
+    background-color: var(--btn-bg-color);
+    border: var(--btn-border-width) var(--btn-border-style) var(--btn-border-color);
+    border-radius: var(--btn-border-radius);
+    cursor: pointer;
+    outline: none;
+    transition: all 0.3s ease-in;
+}
+
+.interaction .btn:hover {
+    /* filter: saturate(200%); */
+    color: var(--btn-hover-font-color);
+    background-color: var(--btn-hover-bg-color);
+    border-color: var(--btn-hover-border-color);
+}
+
+.interaction .btn.disabled {
+    /* filter: grayscale(100%); */
+    color: var(--btn-disabled-font-color);
+    background-color: var(--btn-disabled-bg-color);
+    border-color: var(--btn-disabled-border-color);
+}
+
+/*Активный элемент*/
+.interaction .active {
+    pointer-events: visible;
+    cursor: pointer;
+}
+
+/*Дезактивация элемента*/
+.interaction .disabled {
+    pointer-events: none;
+}
+
+/*Скрыть элемент*/
+.interaction .off {
+    display: none !important;
+}
+
+/*Футер*/
+#pagefooter {
+    font-size: var(--font-size);
+    display: flex;
+    align-items: center;
+    align-content: flex-end;
+    justify-content: center;
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    flex-direction: column;
+    flex-wrap: wrap;
+    background: var(--footer-bg);
+}
+
+#pagefooter #nextBtn {
+    width: 100%;
+    border-radius: initial;
+    border: 0;
+    color: var(--footer-btn-font-color);
+    background: var(--footer-btn-bg);
+}
+
+#pagefooter #nextBtn:hover {
+    color: var(--footer-btn-font-color-hover);
+    background: var(--footer-btn-bg-hover);
 }
 
 /*Стили для размера окна меньше 1200пикс*/
