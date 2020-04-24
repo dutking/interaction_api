@@ -1373,10 +1373,11 @@ class TestUnit extends CmiInteractionUnit {
 
       let label = document.createElement("label");
       label.setAttribute("for", a.aId);
-      if (a.aText[a.aText.length - 1] !== ".") {
-        label.innerHTML = a.aText + ".";
-      } else {
-        label.innerHTML = a.aText;
+      let txt = a.aText.trim()
+      if (txt[txt.length - 1] !== ".") {
+        label.innerHTML = txt;
+      } else if (txt[txt.length - 1] === ".") {
+        label.innerHTML = txt.slice(0, -1);
       }
 
       if (that.type === "mc") {
