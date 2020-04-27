@@ -50,6 +50,14 @@
     /*Цвет Неактивно (disabled)*/
     --color-disabled: var(--color-gravity-gray);
 
+    /*Рейтинг*/
+    /*Форма (clip-path)*/
+    --rating-unit-form: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    /*Исходный цвет*/
+    --rating-unit-color-initial: var(--color-white);
+    /*Выделенный цвет*/
+    --rating-unit-color-selected: var(--color-gravity-yellow);
+
 
     /*Вторичные переменные*/
 
@@ -98,13 +106,17 @@
 
     /*Оформление футера*/
     /*Фон блока*/
-    --footer-bg: var(--color-gravity-blue-dark);
+    /* --footer-bg: var(--color-gravity-blue-dark); */
+    --footer-bg: linear-gradient(to bottom, var(--color-gravity-blue-dark), var(--color-gravity-blue-darker1));
+    ;
+    /*Высота кнопки Далее*/
+    --footer-btn-height: 5rem;
     /*Фон кнопки Далее*/
-    --footer-btn-bg: var(--color-gravity-blue-darker1);
+    --footer-btn-bg: transparent;
     /*Цвет шрифта кнопки Далее*/
     --footer-btn-font-color: white;
     /*Фон кнопки Далее при наведении*/
-    --footer-btn-bg-hover: var(--color-gravity-blue-darker2);
+    --footer-btn-bg-hover: rgba(255, 255, 255, .1);
     /*Цвет шрифта кнопки Далее при наведении*/
     --footer-btn-font-color-hover: var(--color-gravity-yellow);
 }
@@ -657,6 +669,58 @@
     text-decoration: none;
 }
 
+/*Рейтинг и Комментарий*/
+.interaction .ratingUnit,
+.interaction .commentUnit {
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 3rem;
+}
+
+.interaction .ratingUnit {
+    margin-top: 3rem;
+}
+
+.interaction .ratingUnit .starsContainer {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 2rem;
+    max-width: var(--max-width);
+    justify-items: center;
+    align-items: center;
+    justify-content: space-evenly;
+    align-content: start;
+    margin-bottom: 2rem;
+}
+
+.interaction .ratingUnit .starsContainer .ratingStar {
+    width: 3rem;
+    height: 3rem;
+    cursor: pointer;
+    background-color: var(--rating-unit-color-initial);
+    clip-path: var(--rating-unit-form);
+}
+
+.interaction .ratingUnit .starsContainer .ratingStar.selected {
+    background-color: var(--rating-unit-color-selected);
+}
+
+.interaction .commentUnit {
+    width: var(--max-width);
+}
+
+.interaction .commentUnit textarea {
+    box-sizing: border-box;
+    width: var(--max-width);
+    margin-bottom: 2rem;
+    font-size: var(--font-size);
+    padding: 1rem;
+    resize: none;
+}
+
 /*Футер*/
 #pagefooter {
     font-size: var(--font-size);
@@ -674,6 +738,10 @@
 
 #pagefooter #nextBtn {
     width: 100%;
+    font-family: var(--font-family);
+    font-size: var(--font-size);
+    font-weight: 600;
+    height: var(--footer-btn-height);
     border-radius: initial;
     border: 0;
     color: var(--footer-btn-font-color);
@@ -772,5 +840,9 @@
 @media screen and (max-width: 630px) {
     :root {
         --max-width: 100%;
+    }
+
+    .interaction .ratingUnit .starsContainer {
+        justify-content: space-around;
     }
 }

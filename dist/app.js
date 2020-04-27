@@ -2026,8 +2026,12 @@ class RatingUnit extends InteractionUnit {
     let starsContainer = document.createElement("div");
     starsContainer.className = "starsContainer";
     for (let i = 0; i < 5; i++) {
-      let star = document.createElement("img");
+      /* let star = document.createElement("img");
       star.setAttribute("src", "./dist/assets/starEmpty.svg");
+      star.className = "ratingStar";
+      star.dataset.value = i + 1;
+      star.addEventListener("click", this.setRating.bind(this)); */
+      let star = document.createElement("div");
       star.className = "ratingStar";
       star.dataset.value = i + 1;
       star.addEventListener("click", this.setRating.bind(this));
@@ -2051,9 +2055,11 @@ class RatingUnit extends InteractionUnit {
     stars.forEach(function (s) {
       let val = Number(s.dataset.value);
       if (val <= that.rating) {
-        s.setAttribute("src", "./dist/assets/starFull.svg");
+        /* s.setAttribute("src", "./dist/assets/starFull.svg"); */
+        s.classList.add('selected')
       } else {
-        s.setAttribute("src", "./dist/assets/starEmpty.svg");
+        /* s.setAttribute("src", "./dist/assets/starEmpty.svg"); */
+        s.classList.remove('selected')
       }
     });
   }
