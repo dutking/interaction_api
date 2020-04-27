@@ -733,7 +733,6 @@
 }
 
 .interaction .fb .fbUnit {
-    margin-bottom: 1rem;
     transform-origin: top center;
     transform: scaleY(0);
     animation-name: scale;

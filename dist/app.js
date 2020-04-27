@@ -234,7 +234,7 @@ class SurveyInteraction extends Interaction {
     unit = new SurveyUnit(
       num,
       this,
-      "surveyUnit",
+      "unit surveyUnit",
       db[this.index]
     )
     this.interactionUnits.push(unit);
@@ -1087,15 +1087,20 @@ class CaseUnit extends CmiInteractionUnit {
     let body = document.createElement("div");
     body.className = "body";
 
+    let questionContainer = document.createElement('div')
+    questionContainer.className = 'questionContainer'
+
     let caseText = document.createElement("p");
     caseText.className = "text";
     caseText.innerText = this.text;
-    body.appendChild(caseText);
+    questionContainer.appendChild(caseText);
 
     let caseQuestion = document.createElement("p");
     caseQuestion.className = "question";
     caseQuestion.innerText = this.question;
-    body.appendChild(caseQuestion);
+    questionContainer.appendChild(caseQuestion);
+
+    body.appendChild(questionContainer);
 
     /*     let qHelp = document.createElement("p");
         qHelp.className = "help";
@@ -1243,7 +1248,7 @@ class TestUnit extends CmiInteractionUnit {
     // creating unit button
     let submitBtn = document.createElement("button");
     submitBtn.setAttribute("type", "button");
-    submitBtn.className = "btn continue regular disabled";
+    submitBtn.className = "btn disabled";
     submitBtn.innerHTML = "Ответить";
 
     // appending children to unit container
@@ -1266,6 +1271,7 @@ class TestUnit extends CmiInteractionUnit {
     let responseCorrectness = [];
 
     let inputs = Array.from(this.unitContainer.querySelectorAll("input"));
+    let labels = Array.from(this.unitContainer.querySelectorAll("label"));
 
     let checked = [];
     inputs.forEach(function (i) {
@@ -1281,9 +1287,7 @@ class TestUnit extends CmiInteractionUnit {
       .map(function (i) {
         return i.id;
       });
-    if (this.response.length === 0) {
-      /* warning.innerText = 'Необходимо ответить на вопрос!' */
-    } else if (this.response.length > 0) {
+    if (this.response.length === 0) {} else if (this.response.length > 0) {
       checked.forEach(function (i) {
         let answer = that.answers.filter(function (a) {
           if (i[0] === a.aId) {
@@ -1303,9 +1307,15 @@ class TestUnit extends CmiInteractionUnit {
             .classList.add("incorrect");
         }
       });
-      Array.from(that.unitContainer.querySelectorAll("input")).forEach(
+      inputs.forEach(
         function (i) {
           i.disabled = true;
+        }
+      );
+
+      labels.forEach(
+        function (l) {
+          l.classList.remove('active')
         }
       );
 
@@ -1320,7 +1330,7 @@ class TestUnit extends CmiInteractionUnit {
       }
 
       Xapi.sendStmt(new Statement(this, "answered").finalStatement);
-      this.unitContainer.querySelector(".continue").classList.add("off");
+      this.unitContainer.querySelector(".btn").classList.add("off");
       this.parent.completed = true;
       this.initNextUnit();
     }
@@ -1342,14 +1352,19 @@ class TestUnit extends CmiInteractionUnit {
     let body = document.createElement("div");
     body.className = "body";
 
-    let questionContainer = document.createElement("p");
-    questionContainer.className = "qText";
-    questionContainer.innerHTML = this.question;
-    body.appendChild(questionContainer);
+    let questionContainer = document.createElement("div");
+    questionContainer.className = "questionContainer";
+
+    let qText = document.createElement('p')
+    qText.className = "qText";
+    qText.innerHTML = this.question;
+    questionContainer.appendChild(qText);
 
     let qHelp = document.createElement("p");
     qHelp.className = "qHelp";
-    body.appendChild(qHelp);
+    questionContainer.appendChild(qHelp);
+
+    body.appendChild(questionContainer);
 
     let answersContainer = document.createElement("div");
     answersContainer.className = "answersContainer";
@@ -1365,13 +1380,14 @@ class TestUnit extends CmiInteractionUnit {
       input.setAttribute("value", a.aId);
 
       input.addEventListener("change", function (e) {
-        let btn = that.unitContainer.querySelector(".continue");
+        let btn = that.unitContainer.querySelector(".btn");
         if (btn.classList.contains("disabled")) {
           btn.classList.remove("disabled");
         }
       });
 
       let label = document.createElement("label");
+      label.classList.add('active')
       label.setAttribute("for", a.aId);
       let txt = a.aText.trim()
       if (txt[txt.length - 1] !== ".") {
@@ -1469,6 +1485,7 @@ class FillInDropDownUnit extends CmiInteractionUnit {
     super(index, parent, cssClasses, dbData);
     this.parent = parent;
     this.text = dbData.text;
+    this._result = []
     this.getData();
     this.createHTMLElements();
     this.getSubUnits();
@@ -1873,7 +1890,7 @@ class LangExerciseUnit extends FillInDropDownUnit {
 
     // creating unit tip
     let tip = document.createElement("div");
-    tip.className = "tip off";
+    tip.className = "leftBorderMarker tip off";
     tip.innerHTML = `<p>${this.tip}</p>`;
 
     //creating unit body
