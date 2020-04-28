@@ -1,10 +1,10 @@
 :root {
-    /*Первичные переменные*/
+    /*1rem = 16px при 100% масштабе. При изменении масштаба соотношение меняется.*/
 
     /*Палитра проекта*/
-    /*Трек Гравитация*/
     --color-white: #FFFFFF;
     --color-black: #000000;
+    /*Трек Гравитация*/
     --color-gravity-gray-light: #EEEDED;
     --color-gravity-gray-dark: #333333;
     --color-gravity-gray: #999999;
@@ -25,16 +25,25 @@
     --color-gravity-blue-darker1: #1D1A2F;
     --color-gravity-blue-darker2: #2A2543;
 
+    /*Вторичные цвета*/
+    --color-main-dark: var(--color-gravity-blue-dark);
+    --color-main-light: var(--color-gravity-yellow-pale);
+    --color-main-highlight: var(--color-gravity-pink);
+
     /*Максимальная ширина блока с интерактивом*/
     --max-width: 960px;
 
     /*Шрифт*/
+    --font-family: 'Open Sans', sans-serif;
     /*Размер шрифта*/
     --font-size: 20px;
+    /*Цвет шрифта*/
+    --font-color: var(--color-gravity-gray-dark);
+    /*Цвет шрифта второстепенных элементов*/
+    --font-color-secondary: var(--color-gravity-gray);
     /*Межстрочный интервал*/
     --line-height: 1.5;
-    /*Шрифт*/
-    --font-family: 'Open Sans', sans-serif;
+
 
     /*Цвета интерактива*/
     /*Цвет активного элемента (active)*/
@@ -43,34 +52,22 @@
     --color-correct: #00BA56;
     /*Цвет Неверно (incorrect)*/
     --color-incorrect: #FF0000;
-    /*Цвет Нейтральный (normal)*/
-    --color-neutral: var(--color-gravity-gray);
-    /*Цвет Выделено (selected) (для диктанта, цвет кнопки при открытом попапе)*/
+    /*Цвет Посещено (visited)*/
+    --color-visited: var(--color-gravity-gray-light);
+    /*Цвет Выделено (selected)*/
     --color-selected: var(--color-gravity-orange);
     /*Цвет Неактивно (disabled)*/
     --color-disabled: var(--color-gravity-gray);
 
+
     /*Рейтинг*/
-    /*Форма (clip-path)*/
+    /*Форма (Звезда) (clip-path)*/
     --rating-unit-form: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
     /*Исходный цвет*/
     --rating-unit-color-initial: var(--color-white);
     /*Выделенный цвет*/
     --rating-unit-color-selected: var(--color-gravity-yellow);
 
-
-    /*Вторичные переменные*/
-
-    /*Цвет шрифта*/
-    --font-color: var(--color-gravity-gray-dark);
-
-    /*Цвет шрифта шапки элемента: Вопрос 1 из 20*/
-    --font-color-header: var(--color-gravity-gray);
-
-
-    /*Чекбоксы и радио*/
-
-    /*1rem = 16px при 100% масштабе. При изменении масштаба соотношение меняется.*/
 
     /*Оформление кнопок*/
     /*Минимальная ширина кнопки*/
@@ -87,7 +84,7 @@
     --btn-hover-font-color: var(--color-black);
     /*Цвет фона кнопки при наведении*/
     --btn-hover-bg-color: var(--color-gravity-yellow);
-    /*Величина скругления углов (360px для полного скругления)*/
+    /*Величина скругления углов (360px для полного скругления по бокам)*/
     --btn-border-radius: 360px;
     /*Обводка кнопки: толщина-стиль-цвет*/
     --btn-border-width: 2px;
@@ -104,7 +101,8 @@
     /*Обводка: толщина-стиль-цвет*/
     --disabled-border-color: var(--color-disabled);
 
-    /*Оформление футера*/
+
+    /*Оформление футера страницы*/
     /*Фон блока*/
     /* --footer-bg: var(--color-gravity-blue-dark); */
     --footer-bg: linear-gradient(to bottom, var(--color-gravity-blue-dark), var(--color-gravity-blue-darker1));
@@ -120,6 +118,7 @@
     /*Цвет шрифта кнопки Далее при наведении*/
     --footer-btn-font-color-hover: var(--color-gravity-yellow);
 }
+
 
 /*Общее оформление*/
 
@@ -145,6 +144,7 @@
     width: 100%;
 }
 
+/*Оформление элементов списка*/
 .interaction li {
     list-style-position: inside;
 }
@@ -156,7 +156,7 @@
 }
 
 .interaction .header {
-    color: var(--font-color-header);
+    color: var(--font-color-secondary);
     margin-bottom: 2rem;
 }
 
@@ -174,14 +174,19 @@
     margin-left: 1rem;
 }
 
+.interaction .body {
+    margin-bottom: 2rem;
+}
+
 /*Оформление левой границы элементов типа всплывающих подсказок, фидбеков к кейсам, упражнениям*/
 .interaction .leftBorderMarker {
+    display: flex;
+    flex-direction: column;
     border: 0;
     border-left-width: 5px;
     border-style: solid;
-    border-color: var(--font-color-header);
+    border-color: var(--font-color-secondary);
     padding: 1rem;
-    margin-bottom: 2rem;
     transition: all 0.3s ease-in;
 }
 
@@ -195,9 +200,9 @@
     border-color: var(--color-incorrect);
 }
 
-/*Оформление левой границы элементов. Подсказка для выделенного элемента*/
+/*Оформление левой границы элементов. Выделено*/
 .interaction .leftBorderMarker.selected {
-    border-color: var(--color-primary-orange);
+    border-color: var(--color-selected);
 }
 
 /*Оформление левой границы элементов. Для коробки в треке Русский язык*/
@@ -248,6 +253,8 @@
 
 .interaction .unit {
     margin-bottom: 3rem;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /*Для тестов и кейсов*/
@@ -376,11 +383,270 @@
     border-color: var(--color-incorrect);
 }
 
-/*Упражнение и диктант*/
-.interaction .body {
-    margin-bottom: 2rem;
+.interaction .testUnit .finalFb {
+    font-size: calc(var(--font-size) * 1.5);
+    font-weight: bold;
 }
 
+/*Задание на распределение баллов*/
+
+.interaction .pointsDistributionUnit {
+    display: grid;
+    grid-template-columns: 1fr;
+    row-gap: 2rem;
+}
+
+.interaction .pointsDistributionUnit .group {
+    width: 100%;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: 1fr;
+    row-gap: 1rem;
+}
+
+.interaction .pointsDistributionUnit .groupHeader {
+    box-sizing: border-box;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    background-color: var(--color-main-dark);
+    color: white;
+    padding: 1rem;
+    border-radius: 2px;
+}
+
+.interaction .pointsDistributionUnit .groupHeader.done {
+    background-color: var(--color-visited);
+    color: var(--font-color);
+}
+
+.interaction .pointsDistributionUnit .row {
+    box-sizing: border-box;
+    position: relative;
+    display: grid;
+    grid-template-columns: 4fr 1fr 1fr;
+    column-gap: 1rem;
+    justify-items: start;
+    align-items: center;
+    grid-template-areas: 'stmt button options';
+}
+
+.interaction .pointsDistributionUnit .row .stmt {
+    grid-area: stmt;
+    min-height: 60px;
+    padding-left: 1rem;
+    display: flex;
+    align-content: center;
+    align-items: center;
+}
+
+.interaction .pointsDistributionUnit .btnPrimary,
+.interaction .pointsDistributionUnit .btnSecondary {
+    border: 0;
+    outline: none;
+    background-color: white;
+    font-size: var(--font-size);
+    border-radius: 2px;
+    cursor: pointer;
+    display: flex;
+    min-height: 2rem;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    padding-left: .5rem;
+    padding-right: .5rem;
+    border-radius: 2px;
+}
+
+.interaction .pointsDistributionUnit button:hover {
+    background-color: var(--color-gravity-pink);
+}
+
+.interaction .pointsDistributionUnit .row>button {
+    grid-area: button;
+    justify-self: stretch;
+    align-self: stretch;
+}
+
+.interaction .pointsDistributionUnit .row .options {
+    display: grid;
+    box-sizing: border-box;
+    top: 0;
+    grid-area: options;
+    position: absolute;
+    z-index: 100;
+    grid-template-columns: 1fr;
+    gap: .5rem;
+    background-color: white;
+    padding: 1rem;
+    border-radius: 2px;
+    box-shadow: 5px 5px 10px rgba(153, 153, 153, 0.8);
+}
+
+.interaction .pointsDistributionUnit .options button {
+    width: 100%;
+}
+
+.interaction .pointsDistributionUnit .fbContainer {
+    box-sizing: border-box;
+    margin-top: 3rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    row-gap: 1rem;
+    column-gap: 2rem;
+}
+
+.interaction .pointsDistributionUnit .fbContainer .fbUnit {
+    display: flex;
+    flex-direction: column;
+    font-size: var(--font-size);
+    color: var(--font-color);
+}
+
+.interaction .pointsDistributionUnit .fbContainer .fbUnit .metricName,
+.interaction .pointsDistributionUnit .fbContainer .fbUnit .result {
+    font-weight: bold;
+}
+
+.pointsDistributionUnit button.btn:hover {
+    background-color: var(--color-main-highlight);
+    border-color: var(--color-main-highlight);
+}
+
+/*Опросник*/
+.interaction .surveyUnit {
+    --columns: 0;
+    display: grid;
+    box-sizing: border-box;
+    grid-template-columns: 4fr repeat(var(--columns), 1fr);
+    width: var(--max-width);
+}
+
+.interaction .surveyUnit .fbContainer {
+    grid-column: 1 / span calc(var(--columns) + 1);
+    box-sizing: border-box;
+    margin-top: 3rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    row-gap: 1rem;
+    column-gap: 2rem;
+}
+
+.interaction .surveyUnit .fbContainer .fbUnit {
+    display: flex;
+    flex-direction: column;
+    font-size: var(--font-size);
+    color: var(--font-color);
+}
+
+.interaction .surveyUnit .fbContainer .fbUnit p {
+    padding: 0;
+    min-height: initial;
+}
+
+.interaction .surveyUnit .fbContainer .fbUnit .metricName,
+.interaction .surveyUnit .fbContainer .fbUnit .result {
+    font-weight: bold;
+}
+
+.interaction .surveyUnit .btn {
+    grid-column: 1 / span calc(var(--columns) + 1);
+    margin-top: 3rem;
+}
+
+.interaction .surveyUnit p,
+.interaction .surveyUnit label {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    padding: 1rem 1rem 1rem 1rem;
+    min-height: 92px;
+}
+
+.interaction .surveyUnit p.color,
+.interaction .surveyUnit label.color {
+    background-color: var(--color-gravity-yellow-pale);
+}
+
+.interaction .surveyUnit p {
+    color: var(--font-color);
+    align-items: center;
+    justify-content: flex-start;
+    align-content: center;
+}
+
+.interaction .surveyUnit p.header {
+    color: var(--font-color-secondary);
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    font-size: calc(var(--font-size)*0.6);
+    font-weight: bold;
+    background-color: white;
+    z-index: 100;
+}
+
+.interaction .surveyUnit p.header:not(:first-of-type) {
+    min-width: 5.6rem;
+    border-left: 1px solid var(--color-disabled);
+}
+
+.interaction .surveyUnit input {
+    display: none;
+}
+
+.interaction .surveyUnit label {
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+    cursor: pointer;
+    border-left: 1px solid var(--color-disabled);
+}
+
+.interaction .surveyUnit label:hover::after {
+    content: '';
+    display: block;
+    width: 1rem;
+    height: 1rem;
+    border: 1px solid var(--color-active);
+    border-radius: 50%;
+    transform-origin: center center;
+    transform: scale(0);
+    animation-name: scale;
+    animation-duration: 0.3s;
+    animation-timing-function: ease;
+    animation-delay: 0s;
+    animation-iteration-count: 1;
+    animation-direction: normal;
+    animation-fill-mode: forwards;
+    animation-play-state: running;
+
+}
+
+.interaction .surveyUnit input:checked+label::after {
+    content: '';
+    display: block;
+    width: 1rem;
+    height: 1rem;
+    background-color: var(--color-active);
+    border-radius: 50%;
+    transform-origin: center center;
+    transform: scale(0);
+    animation-name: scale;
+    animation-duration: 0.3s;
+    animation-timing-function: ease;
+    animation-delay: 0s;
+    animation-iteration-count: 1;
+    animation-direction: normal;
+    animation-fill-mode: forwards;
+    animation-play-state: running;
+}
+
+/*Упражнение и диктант*/
 .interaction .body .word {
     position: relative;
     white-space: nowrap;
@@ -420,7 +686,6 @@
     display: grid;
     background-color: rgba(255, 255, 255, 0.8);
     box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.8);
-    /*     max-width: 105px; */
     grid-template-columns: 1fr;
     gap: 0.3rem;
     margin-left: 2px;
@@ -462,7 +727,11 @@
     color: white;
 }
 
-.interaction .fb .fbUnit {
+.interaction .fb {
+    margin-bottom: 2rem;
+}
+
+.interaction .fb .fbUnit:not(:last-of-type) {
     margin-bottom: 1rem;
     transform-origin: top center;
     transform: scaleY(0);
@@ -482,8 +751,8 @@
     border-width: 3px;
     border-style: solid;
     border-radius: 2px;
-    border-color: var(--color-neutral);
-    color: var(--color-neutral);
+    border-color: var(--color-visited);
+    color: var(--color-visited);
     transition: background-color 0.3s ease-in, border-color 0.3s ease-in, color 0.1s ease-in;
 }
 
@@ -530,7 +799,7 @@
     /* height: 0; */
     border-style: solid;
     border-width: 0 16px 8px 16px;
-    border-color: transparent transparent var(--color-neutral) transparent;
+    border-color: transparent transparent var(--color-visited) transparent;
     transform: translateY(-3px);
 }
 
@@ -639,9 +908,9 @@
     background-color: white;
     border-radius: 2px;
     border-width: 1px;
-    border-top-color: var(--color-neutral);
-    border-left-color: var(--color-neutral);
-    box-shadow: 3px 3px 3px var(--color-neutral);
+    border-top-color: var(--color-visited);
+    border-left-color: var(--color-visited);
+    box-shadow: 3px 3px 3px var(--color-visited);
     padding: 1rem;
     opacity: 0;
     transform: scale(0);
@@ -834,6 +1103,15 @@
         --max-width: 630px;
         --font-size: 16px;
     }
+
+    .interaction .letterBox {
+        grid-template-columns: 1fr;
+        grid-template-areas: 'left ''right''extra';
+    }
+
+    .interaction .letterBox .right .img {
+        transform: scale(0.7) translateY(1rem);
+    }
 }
 
 /*Стили для размера окна меньше 630пикс*/
@@ -844,5 +1122,90 @@
 
     .interaction .ratingUnit .starsContainer {
         justify-content: space-around;
+    }
+
+    .interaction .pointsDistributionUnit .fbContainer {
+        grid-template-columns: 1fr;
+    }
+
+    .interaction .pointsDistributionUnit .fbContainer .fbUnit {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+
+    .interaction .surveyUnit {
+        grid-template-columns: repeat(var(--columns), 1fr);
+    }
+
+    .interaction .surveyUnit .header:first-child {
+        display: none;
+    }
+
+    .interaction div.surveyUnit p.header:nth-of-type(2) {
+        border-left: 0;
+    }
+
+    .interaction div.surveyUnit p.header {
+        min-width: initial !important;
+    }
+
+    .interaction .surveyUnit .statement {
+        grid-column: 1 / -1;
+        padding: 1rem;
+    }
+
+    .interaction .surveyUnit p,
+    .interaction .surveyUnit label {
+        --color-active: var(--color-main-light);
+        padding: .3rem;
+        min-height: 3rem;
+        margin-bottom: 2rem;
+        background-color: var(--color-main-dark);
+        color: var(--color-white);
+    }
+
+    .interaction .surveyUnit p.color,
+    .interaction .surveyUnit label.color {
+        --color-active: var(--color-main-dark);
+        background-color: var(--color-main-light);
+        color: var(--font-color);
+    }
+
+    .interaction .surveyUnit label {
+        border: 0;
+    }
+
+    .interaction .surveyUnit div.answerBox:nth-of-type(odd) label.color {
+        /* background-color: var(--color-gravity-yellow-pale-dark); */
+        filter: brightness(90%);
+    }
+
+    .interaction .surveyUnit div.answerBox:nth-of-type(even) label.color {
+        /* background-color: var(--color-gravity-yellow-pale-darker); */
+        filter: brightness(95%);
+    }
+
+    .interaction .surveyUnit div.answerBox:nth-of-type(odd) label:not(.color) {
+        filter: brightness(110%);
+    }
+
+    .interaction .surveyUnit div.answerBox:nth-of-type(even) label:not(.color) {
+        filter: brightness(120%);
+    }
+
+    .interaction .surveyUnit .btn {
+        grid-column: 1 / -1;
+    }
+
+    .interaction .surveyUnit .fbContainer {
+        grid-column: 1 / -1;
+        grid-template-columns: 1fr;
+        padding: 1rem;
+    }
+
+    .interaction .surveyUnit .fbContainer .fbUnit p {
+        background-color: transparent;
+        margin: 0;
+        padding: 0;
     }
 }

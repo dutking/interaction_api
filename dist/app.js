@@ -1121,7 +1121,7 @@ class CaseUnit extends CmiInteractionUnit {
       input.setAttribute("value", ans.aId);
 
       let label = document.createElement("label");
-      label.className = 'leftBorderMarker'
+      label.className = 'leftBorderMarker active'
       label.setAttribute("for", ans.aId);
       let txt = ans.aText.trim()
       if (txt[txt.length - 1] !== ".") {
@@ -1172,6 +1172,7 @@ class CaseUnit extends CmiInteractionUnit {
             feedback.classList.add('incorrect')
             label.classList.add('incorrect')
           }
+          label.classList.remove('active')
         }
         e.currentTarget.classList.add('disabled')
         label.classList.add('disabled')

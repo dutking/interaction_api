@@ -1193,6 +1193,12 @@ button.btn.disabled {
         padding: 1rem;
     }
 
+    .interaction .surveyUnit .fbContainer .fbUnit p {
+        background-color: transparent;
+        margin: 0;
+        padding: 0;
+    }
+
     .interaction .pointsDistributionUnit .fbContainer {
         grid-template-columns: 1fr;
     }
@@ -1202,9 +1208,4 @@ button.btn.disabled {
         padding-right: 0.5rem;
     }
 
-    .interaction .surveyUnit .fbContainer .fbUnit p {
-        background-color: transparent;
-        margin: 0;
-        padding: 0;
-    }
 }
