@@ -429,6 +429,7 @@ class LetterBox {
       }
     }
     e.currentTarget.classList.add("disabled");
+    e.currentTarget.parentNode.classList.add("disabled");
   }
 }
 
@@ -2025,7 +2026,7 @@ class RatingUnit extends InteractionUnit {
   init() {
     this.unitContainer = this.createUnitContainer(this.cssClasses);
     let starsContainer = document.createElement("div");
-    starsContainer.className = "starsContainer";
+    starsContainer.classList.add("starsContainer");
     for (let i = 0; i < 5; i++) {
       /* let star = document.createElement("img");
       star.setAttribute("src", "./dist/assets/starEmpty.svg");
