@@ -51,7 +51,7 @@
     --color-main-light: var(--color-gravity-yellow-pale);
     --color-main-highlight: var(--color-gravity-pink);
 
-    /*Максимальная ширина блока с интерактивом*/
+    /*Максимальная ширина блока с интерактивом при окне больше 1200px*/
     --max-width: 960px;
 
     /*Шрифт*/
@@ -143,13 +143,13 @@
 /*Общее оформление*/
 
 /*Обнуление отступов*/
-.interaction * {
+#allrecords .interaction * {
     box-sizing: border-box !important;
     margin: 0;
     padding: 0;
 }
 
-.interaction {
+#allrecords .interaction {
     margin: 0 auto;
     font-family: var(--font-family);
     font-size: var(--font-size);
@@ -160,46 +160,46 @@
 
 
 /*Для ютуб видео*/
-.interaction iframe {
+#allrecords .interaction iframe {
     width: 100%;
 }
 
 /*Оформление элементов списка*/
-.interaction li {
+#allrecords .interaction li {
     list-style-position: inside;
 }
 
 /*Скрыть все окошки ввода*/
-.interaction input[type=radio],
-.interaction input[type=checkbox] {
+#allrecords .interaction input[type=radio],
+#allrecords .interaction input[type=checkbox] {
     display: none;
 }
 
-.interaction .header {
+#allrecords .interaction .header {
     color: var(--font-color-secondary);
     margin-bottom: 2rem;
 }
 
-.interaction .header.correct::after {
+#allrecords .interaction .header.correct::after {
     content: 'Верно!';
     color: var(--color-correct);
     font-weight: bold;
     margin-left: 1rem;
 }
 
-.interaction .header.incorrect::after {
+#allrecords .interaction .header.incorrect::after {
     content: 'Неверно!';
     color: var(--color-incorrect);
     font-weight: bold;
     margin-left: 1rem;
 }
 
-.interaction .body {
+#allrecords .interaction .body {
     margin-bottom: 2rem;
 }
 
 /*Оформление левой границы элементов типа всплывающих подсказок, фидбеков к кейсам, упражнениям*/
-.interaction .leftBorderMarker {
+#allrecords .interaction .leftBorderMarker {
     display: flex;
     flex-direction: column;
     border: 0;
@@ -211,27 +211,27 @@
 }
 
 /*Оформление левой границы элементов. Верно*/
-.interaction .leftBorderMarker.correct {
+#allrecords .interaction .leftBorderMarker.correct {
     border-color: var(--color-correct);
 }
 
 /*Оформление левой границы элементов. Неверно*/
-.interaction .leftBorderMarker.incorrect {
+#allrecords .interaction .leftBorderMarker.incorrect {
     border-color: var(--color-incorrect);
 }
 
 /*Оформление левой границы элементов. Выделено*/
-.interaction .leftBorderMarker.selected {
+#allrecords .interaction .leftBorderMarker.selected {
     border-color: var(--color-selected);
 }
 
 /*Оформление левой границы элементов. Для коробки в треке Русский язык*/
-.interaction .leftBorderMarker.letterBox {
+#allrecords .interaction .leftBorderMarker.letterBox {
     border-color: #F9E6C8;
 }
 
 /*Оформление кнопок*/
-.interaction .btn {
+#allrecords .interaction .btn {
     box-sizing: border-box;
     display: flex;
     align-content: center;
@@ -251,14 +251,14 @@
     transition: color 0.3s ease-in, background-color 0.3s ease-in, border-color 0.3s ease-in;
 }
 
-.interaction .btn:hover {
+#allrecords .interaction .btn:hover {
     /* filter: saturate(200%); */
     color: var(--btn-hover-font-color);
     background-color: var(--btn-hover-bg-color);
     border-color: var(--btn-hover-border-color);
 }
 
-.interaction .btn.disabled {
+#allrecords .interaction .btn.disabled {
     /* filter: grayscale(100%); */
     color: var(--disabled-font-color);
     background-color: var(--disabled-bg-color);
@@ -266,12 +266,12 @@
 }
 
 /*Активный элемент*/
-.interaction .active {
+#allrecords .interaction .active {
     pointer-events: visible;
     cursor: pointer;
 }
 
-.interaction .unit {
+#allrecords .interaction .unit {
     margin-bottom: 3rem;
     width: 100%;
     box-sizing: border-box;
@@ -279,14 +279,14 @@
 
 /*Для тестов и кейсов*/
 
-.interaction .unit .questionContainer {
+#allrecords .interaction .unit .questionContainer {
     margin-bottom: 2rem;
     display: grid;
     grid-template-columns: 1fr;
     row-gap: 1rem;
 }
 
-.interaction .unit .answersContainer {
+#allrecords .interaction .unit .answersContainer {
     margin-bottom: 2rem;
     display: grid;
     grid-template-columns: 1fr;
@@ -295,15 +295,15 @@
 
 
 /*Иконка (рука) в строке*/
-.interaction span.icon {
+#allrecords .interaction span.icon {
     display: inline;
 }
 
-.interaction span.icon i {
+#allrecords .interaction span.icon i {
     white-space: pre;
 }
 
-.interaction span.icon i::after {
+#allrecords .interaction span.icon i::after {
     content: url(assets/hand.svg);
     line-height: 1.5;
     display: inline-flex;
@@ -319,17 +319,17 @@
 
 /*Частные настройки для элементов*/
 /*Тест*/
-.interaction .testUnit .qHelp {
+#allrecords .interaction .testUnit .qHelp {
     font-size: var(--font-size);
     color: var(--font-color-secondary);
 }
 
-.interaction .testUnit input[type=radio]+label,
-.interaction .testUnit input[type=checkbox]+label {
+#allrecords .interaction .testUnit input[type=radio]+label,
+#allrecords .interaction .testUnit input[type=checkbox]+label {
     display: inline-flex;
 }
 
-.interaction .testUnit label {
+#allrecords .interaction .testUnit label {
     position: relative;
     display: inline-flex;
     align-content: center;
@@ -338,8 +338,8 @@
     align-items: center;
 }
 
-.interaction .testUnit label::before,
-.interaction .testUnit input:checked+label::after {
+#allrecords .interaction .testUnit label::before,
+#allrecords .interaction .testUnit input:checked+label::after {
     content: '';
     display: inline-flex;
     align-items: center;
@@ -352,71 +352,71 @@
     border: 2px solid var(--color-active);
 }
 
-.interaction .testUnit label::after {
+#allrecords .interaction .testUnit label::after {
     position: absolute;
     left: 0;
 }
 
-.interaction .testUnit label::before {
+#allrecords .interaction .testUnit label::before {
     position: relative;
     margin-right: 1em;
     border-radius: 2px;
 }
 
-.interaction .testUnit label.active:hover::before {
+#allrecords .interaction .testUnit label.active:hover::before {
     border-width: 3px;
 }
 
-.interaction .testUnit input[type=radio]+label::before {
+#allrecords .interaction .testUnit input[type=radio]+label::before {
     border-radius: 360px;
 }
 
-.interaction .testUnit input:checked+label::after {
+#allrecords .interaction .testUnit input:checked+label::after {
     background-color: var(--color-active);
 }
 
-.interaction .testUnit input[type=radio]:checked+label::after {
+#allrecords .interaction .testUnit input[type=radio]:checked+label::after {
     clip-path: circle(30% at 50% 50%);
 }
 
-.interaction .testUnit input[type=checkbox]:checked+label::after {
+#allrecords .interaction .testUnit input[type=checkbox]:checked+label::after {
     clip-path: polygon(25% 25%, 75% 25%, 75% 75%, 25% 75%);
 }
 
-.interaction .testUnit input:disabled+label::before {
+#allrecords .interaction .testUnit input:disabled+label::before {
     border-color: var(--color-disabled);
 }
 
-.interaction .testUnit input:checked+label.correct::after {
+#allrecords .interaction .testUnit input:checked+label.correct::after {
     background-color: var(--color-correct);
 }
 
-.interaction .testUnit input:checked+label.correct::before {
+#allrecords .interaction .testUnit input:checked+label.correct::before {
     border-color: var(--color-correct);
 }
 
-.interaction .testUnit input:checked+label.incorrect::after {
+#allrecords .interaction .testUnit input:checked+label.incorrect::after {
     background-color: var(--color-incorrect);
 }
 
-.interaction .testUnit input:checked+label.incorrect::before {
+#allrecords .interaction .testUnit input:checked+label.incorrect::before {
     border-color: var(--color-incorrect);
 }
 
-.interaction .testUnit .finalFb {
+#allrecords .interaction .testUnit .finalFb {
     font-size: calc(var(--font-size) * 1.5);
     font-weight: bold;
 }
 
 /*Задание на распределение баллов*/
 
-.interaction .pointsDistributionUnit {
+#allrecords .interaction .pointsDistributionUnit {
     display: grid;
     grid-template-columns: 1fr;
     row-gap: 2rem;
 }
 
-.interaction .pointsDistributionUnit .group {
+#allrecords .interaction .pointsDistributionUnit .group {
     width: 100%;
     box-sizing: border-box;
     display: grid;
@@ -424,7 +424,7 @@
     row-gap: 1rem;
 }
 
-.interaction .pointsDistributionUnit .groupHeader {
+#allrecords .interaction .pointsDistributionUnit .groupHeader {
     box-sizing: border-box;
     width: 100%;
     display: flex;
@@ -436,12 +436,12 @@
     border-radius: 2px;
 }
 
-.interaction .pointsDistributionUnit .groupHeader.done {
+#allrecords .interaction .pointsDistributionUnit .groupHeader.done {
     background-color: var(--color-visited);
     color: var(--font-color);
 }
 
-.interaction .pointsDistributionUnit .row {
+#allrecords .interaction .pointsDistributionUnit .row {
     box-sizing: border-box;
     position: relative;
     display: grid;
@@ -452,7 +452,7 @@
     grid-template-areas: 'stmt button options';
 }
 
-.interaction .pointsDistributionUnit .row .stmt {
+#allrecords .interaction .pointsDistributionUnit .row .stmt {
     grid-area: stmt;
     min-height: 60px;
     padding-left: 1rem;
@@ -461,8 +461,8 @@
     align-items: center;
 }
 
-.interaction .pointsDistributionUnit .btnPrimary,
-.interaction .pointsDistributionUnit .btnSecondary {
+#allrecords .interaction .pointsDistributionUnit .btnPrimary,
+#allrecords .interaction .pointsDistributionUnit .btnSecondary {
     border: 0;
     outline: none;
     background-color: white;
@@ -479,17 +479,17 @@
     border-radius: 2px;
 }
 
-.interaction .pointsDistributionUnit button:not(.btn):hover {
+#allrecords .interaction .pointsDistributionUnit button:not(.btn):hover {
     background-color: var(--color-main-highlight);
 }
 
-.interaction .pointsDistributionUnit .row>button {
+#allrecords .interaction .pointsDistributionUnit .row>button {
     grid-area: button;
     justify-self: stretch;
     align-self: stretch;
 }
 
-.interaction .pointsDistributionUnit .row .options {
+#allrecords .interaction .pointsDistributionUnit .row .options {
     display: grid;
     box-sizing: border-box;
     top: 0;
@@ -504,11 +504,11 @@
     box-shadow: 5px 5px 10px rgba(153, 153, 153, 0.8);
 }
 
-.interaction .pointsDistributionUnit .options button {
+#allrecords .interaction .pointsDistributionUnit .options button {
     width: 100%;
 }
 
-.interaction .pointsDistributionUnit .fbContainer {
+#allrecords .interaction .pointsDistributionUnit .fbContainer {
     box-sizing: border-box;
     margin-top: 3rem;
     display: grid;
@@ -517,20 +517,20 @@
     column-gap: 2rem;
 }
 
-.interaction .pointsDistributionUnit .fbContainer .fbUnit {
+#allrecords .interaction .pointsDistributionUnit .fbContainer .fbUnit {
     display: flex;
     flex-direction: column;
     font-size: var(--font-size);
     color: var(--font-color);
 }
 
-.interaction .pointsDistributionUnit .fbContainer .fbUnit .metricName,
-.interaction .pointsDistributionUnit .fbContainer .fbUnit .result {
+#allrecords .interaction .pointsDistributionUnit .fbContainer .fbUnit .metricName,
+#allrecords .interaction .pointsDistributionUnit .fbContainer .fbUnit .result {
     font-weight: bold;
 }
 
 /*Опросник*/
-.interaction .surveyUnit {
+#allrecords .interaction .surveyUnit {
     --columns: 0;
     display: grid;
     box-sizing: border-box;
@@ -538,7 +538,7 @@
     width: var(--max-width);
 }
 
-.interaction .surveyUnit .fbContainer {
+#allrecords .interaction .surveyUnit .fbContainer {
     grid-column: 1 / span calc(var(--columns) + 1);
     box-sizing: border-box;
     margin-top: 3rem;
@@ -548,30 +548,30 @@
     column-gap: 2rem;
 }
 
-.interaction .surveyUnit .fbContainer .fbUnit {
+#allrecords .interaction .surveyUnit .fbContainer .fbUnit {
     display: flex;
     flex-direction: column;
     font-size: var(--font-size);
     color: var(--font-color);
 }
 
-.interaction .surveyUnit .fbContainer .fbUnit p {
+#allrecords .interaction .surveyUnit .fbContainer .fbUnit p {
     padding: 0;
     min-height: initial;
 }
 
-.interaction .surveyUnit .fbContainer .fbUnit .metricName,
-.interaction .surveyUnit .fbContainer .fbUnit .result {
+#allrecords .interaction .surveyUnit .fbContainer .fbUnit .metricName,
+#allrecords .interaction .surveyUnit .fbContainer .fbUnit .result {
     font-weight: bold;
 }
 
-.interaction .surveyUnit .btn {
+#allrecords .interaction .surveyUnit .btn {
     grid-column: 1 / span calc(var(--columns) + 1);
     margin-top: 3rem;
 }
 
-.interaction .surveyUnit p,
-.interaction .surveyUnit label {
+#allrecords .interaction .surveyUnit p,
+#allrecords .interaction .surveyUnit label {
     display: flex;
     width: 100%;
     height: 100%;
@@ -579,19 +579,19 @@
     min-height: 92px;
 }
 
-.interaction .surveyUnit p.color,
-.interaction .surveyUnit label.color {
+#allrecords .interaction .surveyUnit p.color,
+#allrecords .interaction .surveyUnit label.color {
     background-color: var(--color-gravity-yellow-pale);
 }
 
-.interaction .surveyUnit p {
+#allrecords .interaction .surveyUnit p {
     color: var(--font-color);
     align-items: center;
     justify-content: flex-start;
     align-content: center;
 }
 
-.interaction .surveyUnit p.header {
+#allrecords .interaction .surveyUnit p.header {
     color: var(--font-color-secondary);
     align-items: center;
     justify-content: center;
@@ -605,16 +605,16 @@
     z-index: 100;
 }
 
-.interaction .surveyUnit p.header:not(:first-of-type) {
+#allrecords .interaction .surveyUnit p.header:not(:first-of-type) {
     min-width: 5.6rem;
     border-left: 1px solid var(--color-disabled);
 }
 
-.interaction .surveyUnit input {
+#allrecords .interaction .surveyUnit input {
     display: none;
 }
 
-.interaction .surveyUnit label {
+#allrecords .interaction .surveyUnit label {
     align-items: center;
     justify-content: center;
     align-content: center;
@@ -622,7 +622,7 @@
     border-left: 1px solid var(--color-disabled);
 }
 
-.interaction .surveyUnit label:hover::after {
+#allrecords .interaction .surveyUnit label:hover::after {
     content: '';
     display: block;
     width: 1rem;
@@ -642,7 +642,7 @@
 
 }
 
-.interaction .surveyUnit input:checked+label::after {
+#allrecords .interaction .surveyUnit input:checked+label::after {
     content: '';
     display: block;
     width: 1rem;
@@ -662,22 +662,22 @@
 }
 
 /*Упражнение и диктант*/
-.interaction .body .word {
+#allrecords .interaction .body .word {
     position: relative;
     white-space: nowrap;
 }
 
-.interaction .body .subtask {
+#allrecords .interaction .body .subtask {
     position: relative;
 }
 
-.interaction .body .subtask.nospace {
+#allrecords .interaction .body .subtask.nospace {
     position: absolute;
     transform: translateX(-1rem);
 }
 
-.interaction .body .space,
-.interaction .body .icon {
+#allrecords .interaction .body .space,
+#allrecords .interaction .body .icon {
     display: inline-flex;
     align-items: center;
     align-content: center;
@@ -689,12 +689,12 @@
     white-space: pre;
 }
 
-.interaction .body .subtask .space.helper:before {
+#allrecords .interaction .body .subtask .space.helper:before {
     content: 'x';
     color: rgba(0, 0, 0, 0);
 }
 
-.interaction .body .subtask .popupAnsContainer {
+#allrecords .interaction .body .subtask .popupAnsContainer {
     position: absolute;
     left: 0;
     top: 2.3rem;
@@ -707,7 +707,7 @@
     z-index: 1000;
 }
 
-.interaction .body .subtask .popupAnsContainer .answer {
+#allrecords .interaction .body .subtask .popupAnsContainer .answer {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -732,20 +732,20 @@
     animation-play-state: running;
 }
 
-.interaction .body .subtask .popupAnsContainer .answer.long {
+#allrecords .interaction .body .subtask .popupAnsContainer .answer.long {
     min-width: initial;
 }
 
-.interaction .body .subtask .popupAnsContainer .answer:hover {
+#allrecords .interaction .body .subtask .popupAnsContainer .answer:hover {
     background-color: var(--color-active);
     color: white;
 }
 
-.interaction .fb {
+#allrecords .interaction .fb {
     margin-bottom: 2rem;
 }
 
-.interaction .fb .fbUnit:not(:last-of-type) {
+#allrecords .interaction .fb .fbUnit:not(:last-of-type) {
     margin-bottom: 1rem;
     transform-origin: top center;
     transform: scaleY(0);
@@ -759,7 +759,7 @@
     animation-play-state: running;
 }
 
-.interaction .box {
+#allrecords .interaction .box {
     display: inline-block;
     background-color: transparent;
     border-width: 3px;
@@ -770,48 +770,48 @@
     transition: background-color 0.3s ease-in, border-color 0.3s ease-in, color 0.1s ease-in;
 }
 
-.interaction .box.empty {
+#allrecords .interaction .box.empty {
     background-color: transparent;
     color: rgba(0, 0, 0, 0);
     border-color: var(--color-active);
 }
 
-.interaction .box.icon {
+#allrecords .interaction .box.icon {
     color: var(--color-active);
 }
 
-.interaction .box.selected {
+#allrecords .interaction .box.selected {
     background-color: var(--color-selected);
     border-color: var(--color-selected);
     color: var(--color-selected);
 }
 
-.interaction .box.disabled {
+#allrecords .interaction .box.disabled {
     border-color: var(--color-disabled);
     color: var(--font-color);
     border-width: 1px;
     z-index: -10;
 }
 
-.interaction .box.correct {
+#allrecords .interaction .box.correct {
     color: white;
     background-color: var(--color-correct);
     border-color: var(--color-correct);
     z-index: -10;
 }
 
-.interaction .box.incorrect {
+#allrecords .interaction .box.incorrect {
     color: white;
     background-color: var(--color-incorrect);
     border-color: var(--color-incorrect);
     z-index: -10;
 }
 
-.interaction .box:hover {
+#allrecords .interaction .box:hover {
     background-color: var(--color-main-highlight);
 }
 
-.interaction .space.tri {
+#allrecords .interaction .space.tri {
     display: inline-block;
     width: 2rem;
     /* height: 0; */
@@ -821,33 +821,33 @@
     transform: translateY(-3px);
 }
 
-.interaction .tri.empty {
+#allrecords .interaction .tri.empty {
     border-color: transparent transparent var(--color-active) transparent;
 }
 
-.interaction .tri.disabled {
+#allrecords .interaction .tri.disabled {
     border-color: transparent transparent var(--color-disabled) transparent;
 }
 
-.interaction .tri.incorrect {
+#allrecords .interaction .tri.incorrect {
     border-color: transparent transparent var(--color-incorrect) transparent;
 }
 
-.interaction .tri.correct {
+#allrecords .interaction .tri.correct {
     border-color: transparent transparent var(--color-correct) transparent;
 }
 
-.interaction .text.correct {
+#allrecords .interaction .text.correct {
     color: var(--color-correct);
 }
 
-.interaction .text.incorrect {
+#allrecords .interaction .text.incorrect {
     color: var(--color-incorrect);
 }
 
 /*Коробка с буквами*/
 
-.interaction .letterBox {
+#allrecords .interaction .letterBox {
     display: grid;
     grid-template-columns: 2fr 1fr;
     grid-template-areas:
@@ -859,19 +859,19 @@
     padding: 2rem 0 2rem 1rem;
 }
 
-.interaction .letterBox .extra {
+#allrecords .interaction .letterBox .extra {
     grid-area: extra;
 }
 
-.interaction .letterBox .left {
+#allrecords .interaction .letterBox .left {
     grid-area: left;
 }
 
-.interaction .letterBox .left h2 {
+#allrecords .interaction .letterBox .left h2 {
     margin-bottom: 2rem;
 }
 
-.interaction .letterBox .right {
+#allrecords .interaction .letterBox .right {
     grid-area: right;
     position: relative;
     display: flex;
@@ -882,9 +882,8 @@
     width: 100%;
 }
 
-.interaction .letterBox .right .letter {
+#allrecords .interaction .letterBox .right .letter {
     display: flex;
-    width: 100%;
     height: 100%;
     align-items: center;
     justify-content: center;
@@ -894,7 +893,7 @@
     color: var(--color-primary-darkgraye);
 }
 
-.interaction .letterBox .right .img {
+#allrecords .interaction .letterBox .right .img {
     position: absolute;
     top: 0;
     left: 0;
@@ -910,7 +909,7 @@
 
 /*Для диктанта*/
 /*Попап с фидбеком*/
-.interaction .dictantUnit .fbPopup {
+#allrecords .interaction .dictantUnit .fbPopup {
     position: absolute;
     background-color: transparent;
     top: 2rem;
@@ -919,7 +918,7 @@
     cursor: pointer;
 }
 
-.interaction .dictantUnit .fbPopup span {
+#allrecords .interaction .dictantUnit .fbPopup span {
     display: block;
     width: 300px;
     white-space: normal;
@@ -944,7 +943,7 @@
 
 /*Для упражнений*/
 /*Ссылка Показать подсказку*/
-.interaction .langExerciseUnit .header a.showTip {
+#allrecords .interaction .langExerciseUnit .header a.showTip {
     display: inline-block;
     margin-left: 2rem;
     font-weight: 600;
@@ -952,21 +951,21 @@
     color: var(--color-active);
 }
 
-.interaction .langExerciseUnit .header a.showTip .icon {
+#allrecords .interaction .langExerciseUnit .header a.showTip .icon {
     margin-left: .5rem;
 }
 
-.interaction .langExerciseUnit .header a.showTip:hover {
+#allrecords .interaction .langExerciseUnit .header a.showTip:hover {
     text-decoration: none;
 }
 
-.interaction .langExerciseUnit .tip {
+#allrecords .interaction .langExerciseUnit .tip {
     margin-bottom: 2rem;
 }
 
 /*Рейтинг и Комментарий*/
-.interaction .ratingUnit,
-.interaction .commentUnit {
+#allrecords .interaction .ratingUnit,
+#allrecords .interaction .commentUnit {
     display: flex;
     flex-direction: column;
     align-content: center;
@@ -975,11 +974,11 @@
     margin-bottom: 3rem;
 }
 
-.interaction .commentUnit {
+#allrecords .interaction .commentUnit {
     width: var(--max-width);
 }
 
-.interaction .commentUnit textarea {
+#allrecords .interaction .commentUnit textarea {
     box-sizing: border-box;
     width: 100%;
     margin-bottom: 2rem;
@@ -988,11 +987,11 @@
     resize: none;
 }
 
-.interaction .ratingUnit {
+#allrecords .interaction .ratingUnit {
     margin-top: 3rem;
 }
 
-.interaction .ratingUnit .starsContainer {
+#allrecords .interaction .ratingUnit .starsContainer {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 2rem;
@@ -1004,7 +1003,7 @@
     margin-bottom: 2rem;
 }
 
-.interaction .ratingUnit .starsContainer .ratingStar {
+#allrecords .interaction .ratingUnit .starsContainer .ratingStar {
     width: 3rem;
     height: 3rem;
     cursor: pointer;
@@ -1013,11 +1012,11 @@
     transition: background .3s linear;
 }
 
-.interaction .ratingUnit .starsContainer .ratingStar.selected {
+#allrecords .interaction .ratingUnit .starsContainer .ratingStar.selected {
     background: var(--rating-unit-color-selected);
 }
 
-.interaction .ratingUnit .starsContainer .ratingStar:hover {
+#allrecords .interaction .ratingUnit .starsContainer .ratingStar:hover {
     background: var(--color-main-highlight);
 }
 
@@ -1056,13 +1055,13 @@
 }
 
 /*Дезактивация элемента*/
-.interaction .disabled {
+#allrecords .interaction .disabled {
     pointer-events: none;
     cursor: none;
 }
 
 /*Скрытие элемент*/
-.interaction .off {
+#allrecords .interaction .off {
     display: none !important;
 }
 
@@ -1136,12 +1135,12 @@
         --font-size: 1rem;
     }
 
-    .interaction .letterBox {
+    #allrecords .interaction .letterBox {
         grid-template-columns: 1fr;
         grid-template-areas: 'left ''right''extra';
     }
 
-    .interaction .letterBox .right .img {
+    #allrecords .interaction .letterBox .right .img {
         transform: scale(0.7) translateY(1rem);
     }
 }
@@ -1152,46 +1151,51 @@
         --max-width: 100%;
     }
 
-    .interaction .commentUnit textarea {
+    #allrecords .interaction {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    #allrecords .interaction .commentUnit textarea {
         width: 80vw;
     }
 
-    .interaction .ratingUnit .starsContainer {
+    #allrecords .interaction .ratingUnit .starsContainer {
         justify-content: space-around;
     }
 
-    .interaction .pointsDistributionUnit .fbContainer {
+    #allrecords .interaction .pointsDistributionUnit .fbContainer {
         grid-template-columns: 1fr;
     }
 
-    .interaction .pointsDistributionUnit .fbContainer .fbUnit {
+    #allrecords .interaction .pointsDistributionUnit .fbContainer .fbUnit {
         padding-left: 0.5rem;
         padding-right: 0.5rem;
     }
 
-    .interaction .surveyUnit {
+    #allrecords .interaction .surveyUnit {
         grid-template-columns: repeat(var(--columns), 1fr);
     }
 
-    .interaction .surveyUnit .header:first-child {
+    #allrecords .interaction .surveyUnit .header:first-child {
         display: none;
     }
 
-    .interaction div.surveyUnit p.header:nth-of-type(2) {
+    #allrecords .interaction div.surveyUnit p.header:nth-of-type(2) {
         border-left: 0;
     }
 
-    .interaction div.surveyUnit p.header {
+    #allrecords .interaction div.surveyUnit p.header {
         min-width: initial !important;
     }
 
-    .interaction .surveyUnit .statement {
+    #allrecords .interaction .surveyUnit .statement {
         grid-column: 1 / -1;
         padding: 1rem;
     }
 
-    .interaction .surveyUnit p,
-    .interaction .surveyUnit label {
+    #allrecords .interaction .surveyUnit p,
+    #allrecords .interaction .surveyUnit label {
         --color-active: var(--color-main-light);
         padding: .3rem;
         min-height: 3rem;
@@ -1200,46 +1204,46 @@
         color: var(--color-white);
     }
 
-    .interaction .surveyUnit p.color,
-    .interaction .surveyUnit label.color {
+    #allrecords .interaction .surveyUnit p.color,
+    #allrecords .interaction .surveyUnit label.color {
         --color-active: var(--color-main-dark);
         background-color: var(--color-main-light);
         color: var(--font-color);
     }
 
-    .interaction .surveyUnit label {
+    #allrecords .interaction .surveyUnit label {
         border: 0;
     }
 
-    .interaction .surveyUnit div.answerBox:nth-of-type(odd) label.color {
+    #allrecords .interaction .surveyUnit div.answerBox:nth-of-type(odd) label.color {
         /* background-color: var(--color-gravity-yellow-pale-dark); */
         filter: brightness(90%);
     }
 
-    .interaction .surveyUnit div.answerBox:nth-of-type(even) label.color {
+    #allrecords .interaction .surveyUnit div.answerBox:nth-of-type(even) label.color {
         /* background-color: var(--color-gravity-yellow-pale-darker); */
         filter: brightness(95%);
     }
 
-    .interaction .surveyUnit div.answerBox:nth-of-type(odd) label:not(.color) {
+    #allrecords .interaction .surveyUnit div.answerBox:nth-of-type(odd) label:not(.color) {
         filter: brightness(110%);
     }
 
-    .interaction .surveyUnit div.answerBox:nth-of-type(even) label:not(.color) {
+    #allrecords .interaction .surveyUnit div.answerBox:nth-of-type(even) label:not(.color) {
         filter: brightness(120%);
     }
 
-    .interaction .surveyUnit .btn {
+    #allrecords .interaction .surveyUnit .btn {
         grid-column: 1 / -1;
     }
 
-    .interaction .surveyUnit .fbContainer {
+    #allrecords .interaction .surveyUnit .fbContainer {
         grid-column: 1 / -1;
         grid-template-columns: 1fr;
         padding: 1rem;
     }
 
-    .interaction .surveyUnit .fbContainer .fbUnit p {
+    #allrecords .interaction .surveyUnit .fbContainer .fbUnit p {
         background-color: transparent;
         margin: 0;
         padding: 0;
