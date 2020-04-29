@@ -1,24 +1,12 @@
 :root {
-    --color-primary-lightgray: #99a4ae;
-    --color-primary-darkgray: #435363;
-    --color-primary-bluegreen: #00adbb;
-    --color-primary-orange: #efab21;
-    --color-primary-red: #b52253;
-    --color-primary-purple: #4a0d66;
-    --color-secondary-lightgreen: #c4da00;
-    --color-secondary-lightorange: #ffcb00;
-    --color-secondary-green: #25ab8d;
-    --color-secondary-yellow: #edd000;
-    --color-secondary-lightpurple: #86278c;
-    --color-secondary-lightblue: #1580b3;
-    --color-secondary-rasp: #972571;
-    --color-secondary-lilac: #5a499b;
-    --color-secondary-ink: #3a2785;
-    --color-secondary-darkblue: #0e6aa9;
-    --color-secondary-indigo: #214495;
-    --color-secondary-darkpurple: #3c1a76;
+    /*1rem = 16px при 100% масштабе. При изменении масштаба соотношение меняется.*/
 
+    /*Палитра проекта*/
+    --color-white: #FFFFFF;
+    --color-black: #000000;
+    /*Трек Гравитация*/
     --color-gravity-gray-light: #EEEDED;
+    --color-gravity-gray-light2: #cccccc;
     --color-gravity-gray-dark: #333333;
     --color-gravity-gray: #999999;
     --color-gravity-yellow: #F9DF66;
@@ -38,102 +26,391 @@
     --color-gravity-blue-darker1: #1D1A2F;
     --color-gravity-blue-darker2: #2A2543;
 
-    --text-color: var(--color-gravity-gray-dark, #435363);
+    /*Русский язык*/
+    --color-primary-lightgray: #99a4ae;
+    --color-primary-darkgray: #435363;
+    --color-primary-bluegreen: #00adbb;
+    --color-primary-orange: #efab21;
+    --color-primary-red: #b52253;
+    --color-primary-purple: #4a0d66;
+    --color-secondary-lightgreen: #c4da00;
+    --color-secondary-lightorange: #ffcb00;
+    --color-secondary-green: #25ab8d;
+    --color-secondary-yellow: #edd000;
+    --color-secondary-lightpurple: #86278c;
+    --color-secondary-lightblue: #1580b3;
+    --color-secondary-rasp: #972571;
+    --color-secondary-lilac: #5a499b;
+    --color-secondary-ink: #3a2785;
+    --color-secondary-darkblue: #0e6aa9;
+    --color-secondary-indigo: #214495;
+    --color-secondary-darkpurple: #3c1a76;
 
-    --color-active: #0066FF;
-    --color-correct: #00BA56;
-    --color-incorrect: #FF0000;
+    /*Вторичные цвета*/
+    --color-main-dark: var(--color-gravity-blue-dark);
+    --color-main-light: var(--color-gravity-yellow-pale);
+    --color-main-highlight: var(--color-gravity-pink);
 
-    --footer-bg: var(--color-gravity-blue-dark);
-    --footer-btn-bg: var(--color-gravity-blue-darker1);
-    --footer-btn-font-color: white;
-    --footer-btn-bg-hover: var(--color-gravity-blue-darker2);
-    --footer-btn-font-color-hover: var(--color-gravity-yellow);
-
-    --font-size: 20px;
-    --font-weight: normal;
-
-    --min-col-size: 35px;
+    /*Максимальная ширина блока с интерактивом*/
     --max-width: 960px;
+
+    /*Шрифт*/
+    --font-family: 'Open Sans', sans-serif;
+    /*Размер шрифта*/
+    --font-size: 1.25rem;
+    /*Цвет шрифта*/
+    --font-color: var(--color-gravity-gray-dark);
+    /*Цвет шрифта второстепенных элементов*/
+    --font-color-secondary: var(--color-gravity-gray);
+    /*Межстрочный интервал*/
+    --line-height: 1.5;
+
+
+    /*Цвета интерактива*/
+    /*Цвет активного элемента (active)*/
+    --color-active: #0066FF;
+    /*Цвет Верно (correct)*/
+    --color-correct: #00BA56;
+    /*Цвет Неверно (incorrect)*/
+    --color-incorrect: #FF0000;
+    /*Цвет Посещено (visited)*/
+    --color-visited: var(--color-gravity-gray-light2);
+    /*Цвет Выделено (selected)*/
+    --color-selected: var(--color-gravity-orange);
+    /*Цвет Неактивно (disabled)*/
+    --color-disabled: var(--color-gravity-gray);
+
+
+    /*Рейтинг*/
+    /*Форма (Звезда) (clip-path)*/
+    --rating-unit-form: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    /*Исходный цвет*/
+    --rating-unit-color-initial: var(--color-white);
+    /*Выделенный цвет*/
+    --rating-unit-color-selected: var(--color-gravity-yellow);
+
+
+    /*Оформление кнопок*/
+    /*Минимальная ширина кнопки*/
+    --btn-min-width: 0;
+    /*Внутренние отступы: верх-право-низ-лево*/
+    --btn-padding: 1rem 1.5rem 1rem 1.5rem;
+    /*Жирность шрифта кнопки*/
+    --btn-font-weight: bold;
+    /*Цвет шрифта кнопки*/
+    --btn-font-color: var(--color-black);
+    /*Цвет фона кнопки*/
+    --btn-bg-color: var(--color-gravity-yellow-pale);
+    /*Цвет шрифта кнопки при наведении*/
+    --btn-hover-font-color: var(--color-black);
+    /*Цвет фона кнопки при наведении*/
+    --btn-hover-bg-color: var(--color-gravity-yellow);
+    /*Величина скругления углов (360px для полного скругления по бокам)*/
+    --btn-border-radius: 360px;
+    /*Обводка кнопки: толщина-стиль-цвет*/
+    --btn-border-width: 2px;
+    --btn-border-style: solid;
+    --btn-border-color: var(--btn-bg-color);
+    /*Обводка кнопки при наведении: цвет*/
+    --btn-hover-border-color: var(--btn-hover-bg-color);
+
+    /*Оформление неактивной кнопки*/
+    /*Цвет шрифта*/
+    --disabled-font-color: var(--color-white);
+    /*Цвет фона*/
+    --disabled-bg-color: var(--color-disabled);
+    /*Обводка: толщина-стиль-цвет*/
+    --disabled-border-color: var(--color-disabled);
+
+
+    /*Оформление футера страницы*/
+    /*Фон блока*/
+    /* --footer-bg: var(--color-gravity-blue-dark); */
+    --footer-bg: linear-gradient(to bottom, var(--color-gravity-blue-dark), var(--color-gravity-blue-darker1));
+    /*Высота кнопки Далее*/
+    --footer-btn-height: 5rem;
+    /*Фон кнопки Далее*/
+    --footer-btn-bg: transparent;
+    /*Цвет шрифта кнопки Далее*/
+    --footer-btn-font-color: white;
+    /*Фон кнопки Далее при наведении*/
+    --footer-btn-bg-hover: rgba(255, 255, 255, .1);
+    /*Цвет шрифта кнопки Далее при наведении*/
+    --footer-btn-font-color-hover: var(--color-gravity-yellow);
 }
 
-@font-face {
-    font-family: 'bebas_neueregular';
-    src: url('assets/fonts/bebasneueregular.woff2') format('woff2'),
-        url('assets/fonts/bebasneueregular.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-}
 
-@font-face {
-    font-family: 'bebas_neuebold';
-    src: url('assets/fonts/bebasneuebold.woff2') format('woff2'),
-        url('assets/fonts/bebasneuebold.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-}
+/*Общее оформление*/
 
+/*Обнуление отступов*/
 .interaction * {
-    box-sizing: border-box;
+    box-sizing: border-box !important;
     margin: 0;
     padding: 0;
 }
 
 .interaction {
-    line-height: 1.5;
-    box-sizing: border-box;
     margin: 0 auto;
+    font-family: var(--font-family);
+    font-size: var(--font-size);
     max-width: var(--max-width);
-    font-family: 'Open Sans', sans-serif;
-    font-size: var(--font-size);
-    color: var(--color-primary-darkgray);
-}
-
-.interaction .caseUnit .header {
-    font-size: calc(var(--font-size) * 1.1);
-    font-family: 'bebas_neuebold', sans-serif;
-    color: var(--color-primary-orange);
-    font-weight: 600;
-    background-color: white;
-    padding: 1rem;
-}
-
-.interaction .caseUnit .body {
-    box-sizing: border-box;
-    padding: 1rem;
-}
-
-.interaction .caseUnit .body .text {
-    font-size: var(--font-size);
-    font-weight: normal;
-    margin-bottom: 1rem;
-}
-
-.interaction .caseUnit .body .question {
-    font-size: var(--font-size);
-    font-weight: bold;
-    margin-bottom: 2rem;
+    line-height: var(--line-height);
+    color: var(--font-color);
 }
 
 
-.interaction .caseUnit .body .answersContainer .answerContainer:not(:last-of-type) {
-    margin-bottom: 2rem;
+/*Для ютуб видео*/
+.interaction iframe {
+    width: 100%;
 }
 
-.interaction .caseUnit .body .answersContainer .answerContainer input {
+/*Оформление элементов списка*/
+.interaction li {
+    list-style-position: inside;
+}
+
+/*Скрыть все окошки ввода*/
+.interaction input[type=radio],
+.interaction input[type=checkbox] {
     display: none;
 }
 
-.interaction .caseUnit .body .answersContainer .answerContainer label {
-    display: flex;
-    cursor: pointer;
-    padding-top: 1rem;
-    padding-bottom: 1rem;
+.interaction .header {
+    color: var(--font-color-secondary);
+    margin-bottom: 2rem;
 }
 
-.interaction .pointsDistributionUnit {
+.interaction .header.correct::after {
+    content: 'Верно!';
+    color: var(--color-correct);
+    font-weight: bold;
+    margin-left: 1rem;
+}
+
+.interaction .header.incorrect::after {
+    content: 'Неверно!';
+    color: var(--color-incorrect);
+    font-weight: bold;
+    margin-left: 1rem;
+}
+
+.interaction .body {
+    margin-bottom: 2rem;
+}
+
+/*Оформление левой границы элементов типа всплывающих подсказок, фидбеков к кейсам, упражнениям*/
+.interaction .leftBorderMarker {
+    display: flex;
+    flex-direction: column;
+    border: 0;
+    border-left-width: 5px;
+    border-style: solid;
+    border-color: var(--font-color-secondary);
+    padding: 1rem;
+    transition: border-color 0.3s ease-in;
+}
+
+/*Оформление левой границы элементов. Верно*/
+.interaction .leftBorderMarker.correct {
+    border-color: var(--color-correct);
+}
+
+/*Оформление левой границы элементов. Неверно*/
+.interaction .leftBorderMarker.incorrect {
+    border-color: var(--color-incorrect);
+}
+
+/*Оформление левой границы элементов. Выделено*/
+.interaction .leftBorderMarker.selected {
+    border-color: var(--color-selected);
+}
+
+/*Оформление левой границы элементов. Для коробки в треке Русский язык*/
+.interaction .leftBorderMarker.letterBox {
+    border-color: #F9E6C8;
+}
+
+/*Оформление кнопок*/
+.interaction .btn {
+    box-sizing: border-box;
+    display: flex;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+    min-width: var(--btn-min-width);
+    padding: var(--btn-padding);
+    font-size: var(--font-size);
+    font-family: var(--font-family);
+    font-weight: var(--btn-font-weight);
+    color: var(--btn-font-color);
+    background-color: var(--btn-bg-color);
+    border: var(--btn-border-width) var(--btn-border-style) var(--btn-border-color);
+    border-radius: var(--btn-border-radius);
+    cursor: pointer;
+    outline: none;
+    transition: color 0.3s ease-in, background-color 0.3s ease-in, border-color 0.3s ease-in;
+}
+
+.interaction .btn:hover {
+    /* filter: saturate(200%); */
+    color: var(--btn-hover-font-color);
+    background-color: var(--btn-hover-bg-color);
+    border-color: var(--btn-hover-border-color);
+}
+
+.interaction .btn.disabled {
+    /* filter: grayscale(100%); */
+    color: var(--disabled-font-color);
+    background-color: var(--disabled-bg-color);
+    border-color: var(--disabled-border-color);
+}
+
+/*Активный элемент*/
+.interaction .active {
+    pointer-events: visible;
+    cursor: pointer;
+}
+
+.interaction .unit {
+    margin-bottom: 3rem;
     width: 100%;
     box-sizing: border-box;
+}
+
+/*Для тестов и кейсов*/
+
+.interaction .unit .questionContainer {
+    margin-bottom: 2rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    row-gap: 1rem;
+}
+
+.interaction .unit .answersContainer {
+    margin-bottom: 2rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    row-gap: 1rem;
+}
+
+
+/*Иконка (рука) в строке*/
+.interaction span.icon {
+    display: inline;
+}
+
+.interaction span.icon i {
+    white-space: pre;
+}
+
+.interaction span.icon i::after {
+    content: url(assets/hand.svg);
+    line-height: 1.5;
+    display: inline-flex;
+    position: relative;
+    left: -10px;
+    top: 3px;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    height: 15px;
+    width: 15px;
+}
+
+/*Частные настройки для элементов*/
+/*Тест*/
+.interaction .testUnit .qHelp {
+    font-size: var(--font-size);
+    color: var(--font-color-secondary);
+}
+
+.interaction .testUnit input[type=radio]+label,
+.interaction .testUnit input[type=checkbox]+label {
+    display: inline-flex;
+}
+
+.interaction .testUnit label {
+    position: relative;
+    display: inline-flex;
+    align-content: center;
+    justify-content: center;
+    justify-items: center;
+    align-items: center;
+}
+
+.interaction .testUnit label::before,
+.interaction .testUnit input:checked+label::after {
+    content: '';
+    display: inline-flex;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    justify-items: center;
+    box-sizing: border-box;
+    width: 1.5em;
+    height: 1.5em;
+    border: 2px solid var(--color-active);
+}
+
+.interaction .testUnit label::after {
+    position: absolute;
+    left: 0;
+}
+
+.interaction .testUnit label::before {
+    position: relative;
+    margin-right: 1em;
+    border-radius: 2px;
+}
+
+.interaction .testUnit label.active:hover::before {
+    border-width: 3px;
+}
+
+.interaction .testUnit input[type=radio]+label::before {
+    border-radius: 360px;
+}
+
+.interaction .testUnit input:checked+label::after {
+    background-color: var(--color-active);
+}
+
+.interaction .testUnit input[type=radio]:checked+label::after {
+    clip-path: circle(30% at 50% 50%);
+}
+
+.interaction .testUnit input[type=checkbox]:checked+label::after {
+    clip-path: polygon(25% 25%, 75% 25%, 75% 75%, 25% 75%);
+}
+
+.interaction .testUnit input:disabled+label::before {
+    border-color: var(--color-disabled);
+}
+
+.interaction .testUnit input:checked+label.correct::after {
+    background-color: var(--color-correct);
+}
+
+.interaction .testUnit input:checked+label.correct::before {
+    border-color: var(--color-correct);
+}
+
+.interaction .testUnit input:checked+label.incorrect::after {
+    background-color: var(--color-incorrect);
+}
+
+.interaction .testUnit input:checked+label.incorrect::before {
+    border-color: var(--color-incorrect);
+}
+
+.interaction .testUnit .finalFb {
+    font-size: calc(var(--font-size) * 1.5);
+    font-weight: bold;
+}
+
+/*Задание на распределение баллов*/
+
+.interaction .pointsDistributionUnit {
     display: grid;
     grid-template-columns: 1fr;
     row-gap: 2rem;
@@ -153,15 +430,15 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    background-color: var(--color-gravity-blue-dark);
+    background-color: var(--color-main-dark);
     color: white;
     padding: 1rem;
     border-radius: 2px;
 }
 
 .interaction .pointsDistributionUnit .groupHeader.done {
-    background-color: var(--color-gravity-gray-light);
-    color: var(--color-gravity-gray-dark);
+    background-color: var(--color-visited);
+    color: var(--font-color);
 }
 
 .interaction .pointsDistributionUnit .row {
@@ -202,8 +479,8 @@
     border-radius: 2px;
 }
 
-.interaction .pointsDistributionUnit button:hover {
-    background-color: var(--color-gravity-pink);
+.interaction .pointsDistributionUnit button:not(.btn):hover {
+    background-color: var(--color-main-highlight);
 }
 
 .interaction .pointsDistributionUnit .row>button {
@@ -227,7 +504,7 @@
     box-shadow: 5px 5px 10px rgba(153, 153, 153, 0.8);
 }
 
-.options button {
+.interaction .pointsDistributionUnit .options button {
     width: 100%;
 }
 
@@ -244,7 +521,7 @@
     display: flex;
     flex-direction: column;
     font-size: var(--font-size);
-    color: var(--color-gravity-blue-darker1);
+    color: var(--font-color);
 }
 
 .interaction .pointsDistributionUnit .fbContainer .fbUnit .metricName,
@@ -252,6 +529,7 @@
     font-weight: bold;
 }
 
+/*Опросник*/
 .interaction .surveyUnit {
     --columns: 0;
     display: grid;
@@ -274,7 +552,7 @@
     display: flex;
     flex-direction: column;
     font-size: var(--font-size);
-    color: var(--color-gravity-blue-darker1);
+    color: var(--font-color);
 }
 
 .interaction .surveyUnit .fbContainer .fbUnit p {
@@ -307,14 +585,14 @@
 }
 
 .interaction .surveyUnit p {
-    color: var(--text-color, black);
+    color: var(--font-color);
     align-items: center;
     justify-content: flex-start;
     align-content: center;
 }
 
 .interaction .surveyUnit p.header {
-    color: var(--color-gravity-gray-dark);
+    color: var(--font-color-secondary);
     align-items: center;
     justify-content: center;
     align-content: center;
@@ -329,7 +607,7 @@
 
 .interaction .surveyUnit p.header:not(:first-of-type) {
     min-width: 5.6rem;
-    border-left: 1px solid var(--color-gravity-gray);
+    border-left: 1px solid var(--color-disabled);
 }
 
 .interaction .surveyUnit input {
@@ -341,7 +619,7 @@
     justify-content: center;
     align-content: center;
     cursor: pointer;
-    border-left: 1px solid var(--color-gravity-gray);
+    border-left: 1px solid var(--color-disabled);
 }
 
 .interaction .surveyUnit label:hover::after {
@@ -349,7 +627,7 @@
     display: block;
     width: 1rem;
     height: 1rem;
-    border: 1px solid var(--color-gravity-blue-dark);
+    border: 1px solid var(--color-active);
     border-radius: 50%;
     transform-origin: center center;
     transform: scale(0);
@@ -369,7 +647,7 @@
     display: block;
     width: 1rem;
     height: 1rem;
-    background-color: var(--color-gravity-blue-dark);
+    background-color: var(--color-active);
     border-radius: 50%;
     transform-origin: center center;
     transform: scale(0);
@@ -383,274 +661,7 @@
     animation-play-state: running;
 }
 
-/* .interaction .testUnit:only-of-type,
-.interaction .testUnit:last-of-type {
-    border: none;
-} */
-
-.interaction .testUnit {
-    /* margin: 1rem 0 1rem 0; */
-    padding: 2rem 0 2rem 0;
-}
-
-.interaction .testUnit .header {
-    font-size: var(--font-size);
-    color: var(--color-primary-lightgray, gray);
-    margin-bottom: 2rem;
-}
-
-.interaction .testUnit .header.correct::after {
-    content: 'Верно!';
-    color: var(--color-correct);
-    font-weight: bold;
-    margin-left: 1rem;
-}
-
-.interaction .testUnit .header.incorrect::after {
-    content: 'Неверно!';
-    color: var(--color-incorrect);
-    font-weight: bold;
-    margin-left: 1rem;
-}
-
-.interaction .testUnit .qText {
-    font-size: var(--font-size);
-    font-weight: normal;
-    margin-bottom: 1rem;
-}
-
-.interaction .testUnit .qText ol {
-    padding: 1rem 0 1rem 0;
-}
-
-.interaction .testUnit .qText li {
-    list-style-position: inside;
-}
-
-.interaction .testUnit .qHelp {
-    font-size: var(--font-size);
-    color: var(--color-primary-lightgray, gray);
-    margin-bottom: 3rem;
-}
-
-.interaction .testUnit .answersContainer {
-    margin-bottom: 2rem;
-}
-
-.interaction .testUnit .answersContainer .answerContainer {
-    position: relative;
-}
-
-.interaction .testUnit .answersContainer .answerContainer:not(:last-of-type) {
-    margin-bottom: 1rem;
-}
-
-.interaction .testUnit .answersContainer input {
-    /* position: absolute;
-    top: 5px; */
-    display: none;
-}
-
-.interaction .testUnit .answersContainer input,
-.interaction .testUnit .answersContainer label {
-    cursor: pointer;
-}
-
-.interaction .testUnit .answersContainer input+label {
-    position: relative;
-    display: block;
-    width: calc(100% - 2rem);
-    padding-left: 2.2rem;
-}
-
-.interaction .testUnit .answersContainer input+label::before {
-    content: '';
-    display: block;
-    background-size: contain;
-    width: 25px;
-    height: 25px;
-    position: absolute;
-    left: -0.4rem;
-}
-
-.interaction .testUnit .answersContainer input[type='radio']+label::before {
-    background-image: url(assets/radio_empty.png);
-}
-
-.interaction .testUnit .answersContainer input[type='radio']:checked+label::before {
-    background-image: url(assets/radio_checked.png);
-}
-
-.interaction .testUnit .answersContainer input[type='radio']:checked+label.correct::before {
-    background-image: url(assets/radio_correct.png);
-}
-
-.interaction .testUnit .answersContainer input[type='radio']:checked+label.incorrect::before {
-    background-image: url(assets/radio_incorrect.png);
-}
-
-.interaction .testUnit .answersContainer input[type='checkbox']+label::before {
-    background-image: url(assets/checkbox_empty.png);
-}
-
-.interaction .testUnit .answersContainer input[type='checkbox']:checked+label::before {
-    background-image: url(assets/checkbox_checked.png);
-}
-
-.interaction .testUnit .answersContainer input[type='checkbox']:checked+label.correct::before {
-    background-image: url(assets/checkbox_correct.png);
-}
-
-.interaction .testUnit .answersContainer input[type='checkbox']:checked+label.incorrect::before {
-    background-image: url(assets/checkbox_incorrect.png);
-}
-
-.interaction .testUnit .answersContainer input+label:hover::before {
-    opacity: 0.5;
-}
-
-.interaction .testUnit .answersContainer input:disabled+label {
-    pointer-events: none;
-}
-
-.interaction .testUnit .warning {
-    margin-bottom: 2.5rem;
-    font-weight: normal;
-    color: var(--color-primary-red, darkred);
-}
-
-.interaction .testUnit .finalFb {
-    display: flex;
-    flex-direction: column;
-    margin-top: 3rem;
-    font-size: calc(var(--font-size) * 1.5);
-    font-weight: bold;
-}
-
-.interaction iframe {
-    width: 100%;
-}
-
-.interaction .unit {
-    box-sizing: border-box;
-    width: var(--max-width);
-    opacity: 0;
-    animation-name: opa;
-    animation-duration: 1s;
-    animation-timing-function: ease;
-    animation-delay: 0s;
-    animation-iteration-count: 1;
-    animation-direction: normal;
-    animation-fill-mode: forwards;
-    animation-play-state: running;
-}
-
-.interaction .unit:not(:first-of-type) {
-    border-top: 1px solid var(--color-primary-lightgray);
-}
-
-.interaction .langExerciseUnit {
-    padding: 2rem 0 3rem 0;
-}
-
-.interaction .langExerciseUnit .header {
-    display: flex;
-    flex-direction: row;
-    color: var(--color-primary-lightgray);
-    margin-bottom: 2rem;
-}
-
-.interaction .langExerciseUnit .header a.showTip {
-    display: inline-block;
-    margin-left: 2rem;
-    font-weight: 600;
-    cursor: pointer;
-    color: var(--color-primary-darkgray) !important;
-}
-
-.interaction .langExerciseUnit .header a.showTip:hover {
-    text-decoration: none;
-}
-
-/* .interaction .box.icon i {
-    white-space: pre;
-} */
-
-.interaction span.icon {
-    display: inline;
-}
-
-.interaction span.icon i {
-    white-space: pre;
-}
-
-.interaction span.icon i::after {
-    content: url(assets/hand.svg);
-    line-height: 1.5;
-    display: inline-flex;
-    position: relative;
-    left: -10px;
-    top: 3px;
-    align-items: center;
-    align-content: center;
-    justify-content: center;
-    height: 15px;
-    width: 15px;
-}
-
-.interaction .langExerciseUnit .tip {
-    color: var(--color-primary-lightgray);
-    padding: 0.5rem 0 1rem 1rem;
-    border-left: 5px solid var(--color-primary-lightgray);
-    margin-bottom: 2rem;
-}
-
-.interaction .langExerciseUnit .tip p {
-    transform-origin: top center;
-    transform: scaleY(0);
-    animation-name: scale;
-    animation-duration: 0.3s;
-    animation-timing-function: ease;
-    animation-delay: 0s;
-    animation-iteration-count: 1;
-    animation-direction: normal;
-    animation-fill-mode: forwards;
-    animation-play-state: running;
-}
-
-.interaction .dictantUnit .fbPopup {
-    position: absolute;
-    background-color: transparent;
-    top: 2rem;
-    left: 0;
-    z-index: 1000;
-    cursor: pointer;
-}
-
-.interaction .dictantUnit .fbPopup span {
-    display: block;
-    width: 300px;
-    white-space: normal;
-    background-color: white;
-    border: 2px solid var(--color-primary-lightgray);
-    border-radius: 2px;
-    padding: 1rem;
-    opacity: 0;
-    transform: scale(0);
-    animation-name: popup;
-    animation-duration: 0.3s;
-    animation-timing-function: ease;
-    animation-delay: 0s;
-    animation-iteration-count: 1;
-    animation-direction: normal;
-    animation-fill-mode: forwards;
-    animation-play-state: running;
-}
-
-.interaction .body {
-    margin-bottom: 2rem;
-}
-
+/*Упражнение и диктант*/
 .interaction .body .word {
     position: relative;
     white-space: nowrap;
@@ -690,7 +701,6 @@
     display: grid;
     background-color: rgba(255, 255, 255, 0.8);
     box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.8);
-    max-width: 105px;
     grid-template-columns: 1fr;
     gap: 0.3rem;
     margin-left: 2px;
@@ -709,7 +719,6 @@
     height: 2rem;
     padding: 0.5rem;
     cursor: pointer;
-    transition: all 0.3s ease-in;
     opacity: 0;
     z-index: 1100;
     transform: scale(0);
@@ -732,7 +741,12 @@
     color: white;
 }
 
-.interaction .fb .fbUnit {
+.interaction .fb {
+    margin-bottom: 2rem;
+}
+
+.interaction .fb .fbUnit:not(:last-of-type) {
+    margin-bottom: 1rem;
     transform-origin: top center;
     transform: scaleY(0);
     animation-name: scale;
@@ -744,6 +758,94 @@
     animation-fill-mode: forwards;
     animation-play-state: running;
 }
+
+.interaction .box {
+    display: inline-block;
+    background-color: transparent;
+    border-width: 3px;
+    border-style: solid;
+    border-radius: 2px;
+    border-color: var(--color-visited);
+    color: var(--color-visited);
+    transition: background-color 0.3s ease-in, border-color 0.3s ease-in, color 0.1s ease-in;
+}
+
+.interaction .box.empty {
+    background-color: transparent;
+    color: rgba(0, 0, 0, 0);
+    border-color: var(--color-active);
+}
+
+.interaction .box.icon {
+    color: var(--color-active);
+}
+
+.interaction .box.selected {
+    background-color: var(--color-selected);
+    border-color: var(--color-selected);
+    color: var(--color-selected);
+}
+
+.interaction .box.disabled {
+    border-color: var(--color-disabled);
+    color: var(--font-color);
+    border-width: 1px;
+    z-index: -10;
+}
+
+.interaction .box.correct {
+    color: white;
+    background-color: var(--color-correct);
+    border-color: var(--color-correct);
+    z-index: -10;
+}
+
+.interaction .box.incorrect {
+    color: white;
+    background-color: var(--color-incorrect);
+    border-color: var(--color-incorrect);
+    z-index: -10;
+}
+
+.interaction .box:hover {
+    background-color: var(--color-main-highlight);
+}
+
+.interaction .space.tri {
+    display: inline-block;
+    width: 2rem;
+    /* height: 0; */
+    border-style: solid;
+    border-width: 0 16px 8px 16px;
+    border-color: transparent transparent var(--color-visited) transparent;
+    transform: translateY(-3px);
+}
+
+.interaction .tri.empty {
+    border-color: transparent transparent var(--color-active) transparent;
+}
+
+.interaction .tri.disabled {
+    border-color: transparent transparent var(--color-disabled) transparent;
+}
+
+.interaction .tri.incorrect {
+    border-color: transparent transparent var(--color-incorrect) transparent;
+}
+
+.interaction .tri.correct {
+    border-color: transparent transparent var(--color-correct) transparent;
+}
+
+.interaction .text.correct {
+    color: var(--color-correct);
+}
+
+.interaction .text.incorrect {
+    color: var(--color-incorrect);
+}
+
+/*Коробка с буквами*/
 
 .interaction .letterBox {
     display: grid;
@@ -806,10 +908,63 @@
     cursor: pointer;
 }
 
-.interaction .ratingUnit {
-    margin-top: 3rem;
+/*Для диктанта*/
+/*Попап с фидбеком*/
+.interaction .dictantUnit .fbPopup {
+    position: absolute;
+    background-color: transparent;
+    top: 2rem;
+    left: 0;
+    z-index: 1000;
+    cursor: pointer;
 }
 
+.interaction .dictantUnit .fbPopup span {
+    display: block;
+    width: 300px;
+    white-space: normal;
+    background-color: white;
+    border-radius: 2px;
+    border-width: 1px;
+    border-top-color: var(--color-visited);
+    border-left-color: var(--color-visited);
+    box-shadow: 3px 3px 3px var(--color-visited);
+    padding: 1rem;
+    opacity: 0;
+    transform: scale(0);
+    animation-name: popup;
+    animation-duration: 0.3s;
+    animation-timing-function: ease;
+    animation-delay: 0s;
+    animation-iteration-count: 1;
+    animation-direction: normal;
+    animation-fill-mode: forwards;
+    animation-play-state: running;
+}
+
+/*Для упражнений*/
+/*Ссылка Показать подсказку*/
+.interaction .langExerciseUnit .header a.showTip {
+    display: inline-block;
+    margin-left: 2rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--color-active);
+}
+
+.interaction .langExerciseUnit .header a.showTip .icon {
+    margin-left: .5rem;
+}
+
+.interaction .langExerciseUnit .header a.showTip:hover {
+    text-decoration: none;
+}
+
+.interaction .langExerciseUnit .tip {
+    margin-bottom: 2rem;
+}
+
+/*Рейтинг и Комментарий*/
 .interaction .ratingUnit,
 .interaction .commentUnit {
     display: flex;
@@ -818,6 +973,23 @@
     justify-content: center;
     align-items: center;
     margin-bottom: 3rem;
+}
+
+.interaction .commentUnit {
+    width: var(--max-width);
+}
+
+.interaction .commentUnit textarea {
+    box-sizing: border-box;
+    width: 100%;
+    margin-bottom: 2rem;
+    font-size: var(--font-size);
+    padding: 1rem;
+    resize: none;
+}
+
+.interaction .ratingUnit {
+    margin-top: 3rem;
 }
 
 .interaction .ratingUnit .starsContainer {
@@ -836,179 +1008,21 @@
     width: 3rem;
     height: 3rem;
     cursor: pointer;
+    background: var(--rating-unit-color-initial);
+    clip-path: var(--rating-unit-form);
+    transition: background .3s linear;
 }
 
-.interaction .commentUnit textarea {
-    box-sizing: border-box;
-    width: var(--max-width);
-    margin-bottom: 2rem;
-    font-size: var(--font-size);
-    padding: 1rem;
+.interaction .ratingUnit .starsContainer .ratingStar.selected {
+    background: var(--rating-unit-color-selected);
 }
 
-.interaction .box {
-    display: inline-block;
-    background-color: transparent;
-    border-width: 3px;
-    border-style: solid;
-    border-radius: 2px;
-    border-color: var(--color-primary-lightgray);
-    color: var(--color-primary-lightgray);
-    transition: background-color 0.3s ease-in, border-color 0.3s ease-in, color 0.1s ease-in;
+.interaction .ratingUnit .starsContainer .ratingStar:hover {
+    background: var(--color-main-highlight);
 }
 
-.interaction .box.empty {
-    background-color: transparent;
-    color: rgba(0, 0, 0, 0);
-    border-color: var(--color-active);
-}
 
-.interaction .box.icon {
-    color: var(--color-active);
-}
-
-.interaction .box.selected {
-    background-color: var(--color-primary-orange);
-    border-color: var(--color-primary-orange);
-    color: black;
-}
-
-.interaction .box.disabled {
-    border-color: var(--color-primary-lightgray);
-    color: var(--color-primary-lightgray);
-    border-width: 1px;
-    z-index: -10;
-}
-
-.interaction .box.correct {
-    color: white;
-    background-color: var(--color-correct);
-    border-color: var(--color-correct);
-    z-index: -10;
-}
-
-.interaction .box.incorrect {
-    color: white;
-    background-color: var(--color-incorrect);
-    border-color: var(--color-incorrect);
-    z-index: -10;
-}
-
-.interaction .space.tri {
-    display: inline-block;
-    width: 2rem;
-    /* height: 0; */
-    border-style: solid;
-    border-width: 0 16px 8px 16px;
-    border-color: transparent transparent var(--color-primary-lightgray) transparent;
-    transform: translateY(-3px);
-}
-
-.interaction .tri.empty {
-    border-color: transparent transparent var(--color-active) transparent;
-}
-
-.interaction .tri.disabled {
-    border-color: transparent transparent var(--color-primary-lightgray) transparent;
-}
-
-.interaction .tri.incorrect {
-    border-color: transparent transparent var(--color-incorrect) transparent;
-}
-
-.interaction .tri.correct {
-    border-color: transparent transparent var(--color-correct) transparent;
-}
-
-.interaction .text.correct {
-    color: var(--color-correct);
-}
-
-.interaction .text.incorrect {
-    color: var(--color-incorrect);
-}
-
-.interaction .leftBorderMarker {
-    border: 0;
-    border-left-width: 5px;
-    border-style: solid;
-    border-color: var(--color-primary-lightgray);
-    padding: 1rem;
-    transition: all 0.3s ease-in;
-}
-
-.interaction .leftBorderMarker.correct {
-    border-color: var(--color-correct);
-}
-
-.interaction .leftBorderMarker.incorrect {
-    border-color: var(--color-incorrect);
-}
-
-.interaction .leftBorderMarker.selected {
-    border-color: var(--color-primary-orange);
-}
-
-.interaction .leftBorderMarker.letterBox {
-    border-color: #F9E6C8;
-}
-
-.interaction .off {
-    display: none !important;
-}
-
-.interaction .active {
-    pointer-events: visible;
-}
-
-.interaction .disabled {
-    pointer-events: none;
-}
-
-button.btn {
-    box-sizing: border-box;
-    font-size: var(--font-size);
-    display: flex;
-    align-content: center;
-    justify-content: center;
-    align-items: center;
-    padding-left: 1rem;
-    padding-right: 1rem;
-    min-width: 10rem;
-    height: 60px;
-    font-family: 'Open Sans', sans-serif;
-    font-weight: 600;
-    color: white;
-    background-color: var(--color-primary-darkgray);
-    border: 2px solid var(--color-primary-darkgray);
-    border-radius: 360px;
-    cursor: pointer;
-    outline: none;
-    transition: all 0.3s ease-in;
-}
-
-.interaction .btn.continue {
-    margin-top: 3rem;
-    margin-left: 0;
-}
-
-button.btn:hover {
-    background-color: #556e87;
-    border-color: #556e87;
-    color: white;
-}
-
-.pointsDistributionUnit button.btn:hover {
-    background-color: var(--color-gravity-pink);
-    border-color: var(--color-gravity-pink);
-}
-
-button.btn.disabled {
-    background-color: var(--color-primary-lightgray);
-    border-color: var(--color-primary-lightgray);
-    pointer-events: none;
-}
-
+/*Футер*/
 #pagefooter {
     font-size: var(--font-size);
     display: flex;
@@ -1018,21 +1032,22 @@ button.btn.disabled {
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
-    /* min-height: 5rem; */
     flex-direction: column;
     flex-wrap: wrap;
-    /* padding: 3rem 0 0 0; */
-    /* margin-top: 3rem; */
     background: var(--footer-bg);
 }
 
 #pagefooter #nextBtn {
-    /* margin-top: 5rem; */
     width: 100%;
+    font-family: var(--font-family);
+    font-size: var(--font-size);
+    font-weight: 600;
+    height: var(--footer-btn-height);
     border-radius: initial;
     border: 0;
     color: var(--footer-btn-font-color);
     background: var(--footer-btn-bg);
+    cursor: pointer;
 }
 
 #pagefooter #nextBtn:hover {
@@ -1040,6 +1055,18 @@ button.btn.disabled {
     background: var(--footer-btn-bg-hover);
 }
 
+/*Дезактивация элемента*/
+.interaction .disabled {
+    pointer-events: none;
+    cursor: none;
+}
+
+/*Скрытие элемент*/
+.interaction .off {
+    display: none !important;
+}
+
+/*Анимация*/
 @keyframes scale {
     from {
         transform: scaleY(0);
@@ -1094,19 +1121,19 @@ button.btn.disabled {
     }
 }
 
+/*Стили для размера окна меньше 1200пикс*/
 @media screen and (max-width: 1200px) {
     :root {
-        --font-size: 18px;
-        --font-weight: 300px;
         --max-width: 780px;
+        --font-size: 1.125rem;
     }
 }
 
+/*Стили для размера окна меньше 690пикс*/
 @media screen and (max-width: 960px) {
     :root {
-        --font-size: 16px;
-        --font-weight: normal;
-        --max-width: 600px;
+        --max-width: 630px;
+        --font-size: 1rem;
     }
 
     .interaction .letterBox {
@@ -1119,14 +1146,27 @@ button.btn.disabled {
     }
 }
 
+/*Стили для размера окна меньше 630пикс*/
 @media screen and (max-width: 630px) {
     :root {
         --max-width: 100%;
     }
 
-    .interaction {
-        padding-left: 0;
-        padding-right: 0;
+    .interaction .commentUnit textarea {
+        width: 80vw;
+    }
+
+    .interaction .ratingUnit .starsContainer {
+        justify-content: space-around;
+    }
+
+    .interaction .pointsDistributionUnit .fbContainer {
+        grid-template-columns: 1fr;
+    }
+
+    .interaction .pointsDistributionUnit .fbContainer .fbUnit {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
     }
 
     .interaction .surveyUnit {
@@ -1152,15 +1192,19 @@ button.btn.disabled {
 
     .interaction .surveyUnit p,
     .interaction .surveyUnit label {
+        --color-active: var(--color-main-light);
         padding: .3rem;
         min-height: 3rem;
         margin-bottom: 2rem;
-        background-color: var(--color-gravity-purple);
+        background-color: var(--color-main-dark);
+        color: var(--color-white);
     }
 
     .interaction .surveyUnit p.color,
     .interaction .surveyUnit label.color {
-        background-color: var(--color-gravity-yellow-pale);
+        --color-active: var(--color-main-dark);
+        background-color: var(--color-main-light);
+        color: var(--font-color);
     }
 
     .interaction .surveyUnit label {
@@ -1168,19 +1212,21 @@ button.btn.disabled {
     }
 
     .interaction .surveyUnit div.answerBox:nth-of-type(odd) label.color {
-        background-color: var(--color-gravity-yellow-pale-dark);
+        /* background-color: var(--color-gravity-yellow-pale-dark); */
+        filter: brightness(90%);
     }
 
     .interaction .surveyUnit div.answerBox:nth-of-type(even) label.color {
-        background-color: var(--color-gravity-yellow-pale-darker);
+        /* background-color: var(--color-gravity-yellow-pale-darker); */
+        filter: brightness(95%);
     }
 
     .interaction .surveyUnit div.answerBox:nth-of-type(odd) label:not(.color) {
-        background-color: var(--color-gravity-purple-dark);
+        filter: brightness(110%);
     }
 
     .interaction .surveyUnit div.answerBox:nth-of-type(even) label:not(.color) {
-        background-color: var(--color-gravity-purple-darker);
+        filter: brightness(120%);
     }
 
     .interaction .surveyUnit .btn {
@@ -1198,14 +1244,4 @@ button.btn.disabled {
         margin: 0;
         padding: 0;
     }
-
-    .interaction .pointsDistributionUnit .fbContainer {
-        grid-template-columns: 1fr;
-    }
-
-    .interaction .pointsDistributionUnit .fbContainer .fbUnit {
-        padding-left: 0.5rem;
-        padding-right: 0.5rem;
-    }
-
 }
