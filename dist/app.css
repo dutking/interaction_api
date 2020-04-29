@@ -324,31 +324,22 @@
     color: var(--font-color-secondary);
 }
 
-#allrecords .interaction .testUnit input[type=radio]+label,
-#allrecords .interaction .testUnit input[type=checkbox]+label {
-    display: inline-flex;
-}
-
 #allrecords .interaction .testUnit label {
     position: relative;
-    display: inline-flex;
+    display: grid;
+    grid-template-columns: 1.5rem auto;
+    column-gap: .5rem;
     align-content: center;
-    justify-content: center;
-    justify-items: center;
     align-items: center;
 }
 
 #allrecords .interaction .testUnit label::before,
 #allrecords .interaction .testUnit input:checked+label::after {
     content: '';
-    display: inline-flex;
-    align-items: center;
-    align-content: center;
-    justify-content: center;
-    justify-items: center;
+    display: block;
     box-sizing: border-box;
-    width: 1.5em;
-    height: 1.5em;
+    width: 1.5rem;
+    height: 1.5rem;
     border: 2px solid var(--color-active);
 }
 
@@ -358,8 +349,7 @@
 }
 
 #allrecords .interaction .testUnit label::before {
-    position: relative;
-    margin-right: 1em;
+    margin-right: 1rem;
     border-radius: 2px;
 }
 
@@ -1022,7 +1012,7 @@
 
 
 /*Футер*/
-#pagefooter {
+#allrecords #pagefooter {
     font-size: var(--font-size);
     display: flex;
     align-items: center;
@@ -1036,7 +1026,7 @@
     background: var(--footer-bg);
 }
 
-#pagefooter #nextBtn {
+#allrecords #pagefooter #nextBtn {
     width: 100%;
     font-family: var(--font-family);
     font-size: var(--font-size);
@@ -1049,7 +1039,7 @@
     cursor: pointer;
 }
 
-#pagefooter #nextBtn:hover {
+#allrecords #pagefooter #nextBtn:hover {
     color: var(--footer-btn-font-color-hover);
     background: var(--footer-btn-bg-hover);
 }
