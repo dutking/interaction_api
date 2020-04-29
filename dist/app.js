@@ -2719,7 +2719,7 @@ class App {
   }
 
   static addFooter() {
-    let body = document.querySelector("body");
+    let body = document.querySelector("#allrecords");
 
     let footer = document.createElement("footer");
     footer.id = "pagefooter";
