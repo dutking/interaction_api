@@ -204,6 +204,10 @@ class PointsDistributionInteraction extends Interaction {
   constructor(index, renderHook, parent) {
     super(index, renderHook, parent);
     this.totalPoints = Number(this.interactionData.total_points)
+    this.minPoint = Number(this.interactionData.min_point)
+    this.maxPoint = Number(this.interactionData.max_point)
+    this.repeat = this.interactionData.repeat === 'true' ? true : false
+    this.autocomplete = this.interactionData.autocomplete === 'true' ? true : false
     this.init();
   }
 
@@ -582,8 +586,8 @@ class PointsDistributionUnit extends InteractionUnit {
 
     let submitBtn = document.createElement('button')
     submitBtn.setAttribute('type', 'button')
-    submitBtn.className = 'btn disabled'
-    submitBtn.innerHTML = `Принять ответы`
+    submitBtn.className = 'btn disabled submit'
+    submitBtn.innerHTML = `Вы ответили на 0 из ${this.groups.length}`
     this.unitContainer.appendChild(submitBtn)
 
     submitBtn.addEventListener('click', this.getResults.bind(this))
@@ -593,6 +597,22 @@ class PointsDistributionUnit extends InteractionUnit {
     this.unitContainer.appendChild(fbContainer)
   }
 
+  updateCounter() {
+    console.log(this.unitContainer)
+    console.log(this.unitContainer.querySelector('.submit'))
+    let btn = this.unitContainer.querySelector('.submit')
+    let groupsCompleted = this.groupObj.filter(function (g) {
+      return g.result
+    })
+    if (groupsCompleted.length !== this.groups.length) {
+      btn.classList.add('disabled')
+      btn.innerHTML = `Вы ответили на ${groupsCompleted.length} из ${this.groups.length}`
+    } else {
+      btn.classList.remove('disabled')
+      btn.innerHTML = `Принять ответы`
+    }
+  }
+
   get values() {
     let values = this.groupObj.map(function (g) {
       return g.values
@@ -600,7 +620,7 @@ class PointsDistributionUnit extends InteractionUnit {
     return values
   }
 
-  get done() {
+  /* get done() {
     if (!this.values.includes('')) {
       return true
     }
@@ -612,7 +632,7 @@ class PointsDistributionUnit extends InteractionUnit {
     } else {
       this.unitContainer.querySelector('.btn').classList.add('disabled')
     }
-  }
+  } */
 
   getResults(e) {
     e.currentTarget.classList.add('disabled')
@@ -639,27 +659,55 @@ class PointsDistributionUnit extends InteractionUnit {
 
   showFb() {
     let that = this
-    let fbContainer = this.unitContainer.querySelector('.fbContainer')
+    let fbArray = []
+    let fbContainer = that.unitContainer.querySelector('.fbContainer')
     this.metrics.forEach(function (m) {
       let resultNum = that.PDresults[m.id]
-
       let fbUnit = document.createElement('div')
       fbUnit.className = 'fbUnit'
+
+      let metricInfo = document.createElement('div')
+      metricInfo.className = 'metricInfo leftBorderMarker highlight'
 
       let metricName = document.createElement('p')
       metricName.className = 'metricName'
       metricName.innerHTML = m.nameRus
-      fbUnit.appendChild(metricName)
+      metricInfo.appendChild(metricName)
 
       let result = document.createElement('p')
       result.className = 'result'
       result.innerHTML = 'Результат: ' + resultNum
-      fbUnit.appendChild(result)
+      metricInfo.appendChild(result)
 
-      fbContainer.appendChild(fbUnit)
+      fbUnit.appendChild(metricInfo)
+
+      if (m.description) {
+        fbContainer.classList.add('withDescriptions')
+        let metricDescription = document.createElement('div')
+        metricDescription.className = 'metricDescription'
+        metricDescription.innerHTML = m.description
+        fbUnit.appendChild(metricDescription)
+      }
+
+      fbArray.push({
+        result: resultNum,
+        element: fbUnit
+      })
+    })
+
+    fbArray.sort(that.sortFb).forEach(function (fb) {
+      fbContainer.appendChild(fb.element)
     })
   }
 
+  sortFb(a, b) {
+    if (a.result > b.result) {
+      return -1
+    } else if (a.result < b.result) {
+      return 1
+    }
+    return 0
+  }
 }
 
 class PointsDistributionGroup {
@@ -668,6 +716,10 @@ class PointsDistributionGroup {
     this.index = index
     this.group = group
     this.totalPoints = this.parent.parent.totalPoints
+    this.minPoint = this.parent.parent.minPoint
+    this.maxPoint = this.parent.parent.maxPoint
+    this.repeat = this.parent.parent.repeat
+    this.autocomplete = this.parent.parent.autocomplete
     this.render()
   }
 
@@ -694,9 +746,20 @@ class PointsDistributionGroup {
     return points
   }
 
+  get result() {
+    if (this.pointsLeft === 0) {
+      return true
+    }
+  }
+
+  set result(v) {
+    this.parent.updateCounter()
+  }
+
   updateCounter() {
+    this.result = true
     this.groupContainer.querySelector('span.counter').innerHTML = this.pointsLeft
-    this.parent.done = true
+    /* this.parent.done = true */
     if (this.pointsLeft === 0 && !this.values.includes('')) {
       this.groupContainer.querySelector('.groupHeader').classList.add('done')
     } else if (this.pointsLeft > 0 || this.values.includes('')) {
@@ -711,13 +774,13 @@ class PointsDistributionGroup {
     let header = document.createElement('div')
     header.className = 'groupHeader'
     let title = document.createElement('p')
-    title.innerHTML = `${this.index + 1}/${this.parent.dbData.groups.length}`
+    title.innerHTML = `${this.index + 1}/${this.parent.dbData.groups.length} <span class='groupName'>${this.group.name}</span>`
     let counter = document.createElement('p')
     counter.innerHTML = `Необходимо распределить: <span class='counter'>${this.totalPoints}</span>`
     header.appendChild(title)
     header.appendChild(counter)
     this.groupContainer.appendChild(header)
-    this.group.forEach(function (stmt, ind) {
+    this.group.content.forEach(function (stmt, ind) {
       let row = document.createElement('div')
       row.className = 'row'
       let statement = document.createElement('p')
@@ -730,7 +793,7 @@ class PointsDistributionGroup {
       primaryBtn.id = `group${that.index}_stmt${ind}`
       primaryBtn.className = 'btnPrimary'
       primaryBtn.value = ''
-      primaryBtn.innerHTML = 'Не выбрано'
+      primaryBtn.innerHTML = primaryBtn.value
       row.appendChild(primaryBtn)
 
       let options = document.createElement('div')
@@ -739,7 +802,7 @@ class PointsDistributionGroup {
       row.appendChild(options)
 
       primaryBtn.addEventListener('click', function (e) {
-        let allOptions = that.groupContainer.querySelectorAll('.options')
+        let allOptions = that.parent.unitContainer.querySelectorAll('.options')
         allOptions.forEach(function (o) {
           if (o.parentNode === e.currentTarget.parentNode) {
             o.classList.remove('off')
@@ -749,7 +812,7 @@ class PointsDistributionGroup {
         })
       })
 
-      for (let i = 0; i <= that.totalPoints; i++) {
+      for (let i = that.minPoint; i <= that.maxPoint; i++) {
         let secondaryBtn = document.createElement('button')
         secondaryBtn.setAttribute('type', 'button')
         secondaryBtn.className = 'btnSecondary'
@@ -767,31 +830,51 @@ class PointsDistributionGroup {
     this.parent.unitContainer.appendChild(this.groupContainer)
   }
 
+  isRepeated(v) {
+    let that = this
+    let primaryBtns = Array.from(that.groupContainer.querySelectorAll('.btnPrimary'))
+    let repeat = primaryBtns.filter(b => b.value === v)
+    if (repeat.lenght > 0) {
+      return true
+    } else {
+      return false
+    }
+  }
+
   setValue(event) {
     let that = this
     let newValue = event.currentTarget.value
     let primaryBtn = event.currentTarget.parentNode.parentNode.querySelector('.btnPrimary')
-    primaryBtn.value = newValue
 
-    if (newValue === '') {
-      primaryBtn.innerHTML = 'Не выбрано'
+    if (that.repeat === false) {
+      let primaryBtns = Array.from(that.groupContainer.querySelectorAll('.btnPrimary'))
+      primaryBtns.forEach(function (b) {
+        if (newValue !== '' && b.value === newValue) {
+          b.value = ''
+          b.innerHTML = ''
+        }
+      })
+      primaryBtn.value = newValue
+      primaryBtn.innerHTML = newValue
     } else {
+      primaryBtn.value = newValue
       primaryBtn.innerHTML = newValue
     }
 
-    let btns = this.groupContainer.querySelectorAll('.btnPrimary')
-    btns.forEach(function (b) {
-      if (b !== primaryBtn) {
-        if (newValue !== '') {
-          b.value = that.totalPoints - newValue
-          b.innerHTML = b.value
+    if (that.autocomplete === true) {
+      let btns = this.groupContainer.querySelectorAll('.btnPrimary')
+      btns.forEach(function (b) {
+        if (b !== primaryBtn) {
+          if (newValue !== '') {
+            b.value = that.totalPoints - newValue
+            b.innerHTML = b.value
+          }
         }
-      }
-    })
+      })
+    }
 
     this.updateCounter()
     event.currentTarget.parentNode.classList.add('off')
-
   }
 }
 

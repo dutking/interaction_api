@@ -230,6 +230,10 @@
     border-color: #F9E6C8;
 }
 
+#allrecords .interaction .leftBorderMarker.highlight {
+    border-color: var(--color-main-highlight);
+}
+
 /*Оформление кнопок*/
 #allrecords .interaction .btn {
     box-sizing: border-box;
@@ -431,6 +435,11 @@
     color: var(--font-color);
 }
 
+#allrecords .interaction .pointsDistributionUnit .groupHeader .groupName {
+    font-weight: bold;
+    margin-left: 1rem;
+}
+
 #allrecords .interaction .pointsDistributionUnit .row {
     box-sizing: border-box;
     position: relative;
@@ -467,6 +476,17 @@
     padding-left: .5rem;
     padding-right: .5rem;
     border-radius: 2px;
+    transition: background-color .2s linear;
+}
+
+#allrecords .interaction .pointsDistributionUnit .btnPrimary:empty::after {
+    content: '';
+    display: block;
+    width: 1rem;
+    height: 1rem;
+    border: 1px solid var(--color-active);
+    background-color: var(--color-active);
+    border-radius: 50%;
 }
 
 #allrecords .interaction .pointsDistributionUnit button:not(.btn):hover {
@@ -507,6 +527,24 @@
     column-gap: 2rem;
 }
 
+#allrecords .interaction .pointsDistributionUnit .fbContainer.withDescriptions {
+    grid-template-columns: 1fr;
+    row-gap: 3rem;
+}
+
+#allrecords .interaction .pointsDistributionUnit .fbContainer.withDescriptions .metricDescription h3 {
+    margin-top: 2rem;
+}
+
+#allrecords .interaction .pointsDistributionUnit .fbContainer.withDescriptions .metricDescription ul {
+    padding-left: 1.5rem;
+}
+
+#allrecords .interaction .pointsDistributionUnit .fbContainer.withDescriptions .metricDescription li {
+    margin-top: 1rem;
+    list-style-position: initial;
+}
+
 #allrecords .interaction .pointsDistributionUnit .fbContainer .fbUnit {
     display: flex;
     flex-direction: column;
@@ -517,6 +555,11 @@
 #allrecords .interaction .pointsDistributionUnit .fbContainer .fbUnit .metricName,
 #allrecords .interaction .pointsDistributionUnit .fbContainer .fbUnit .result {
     font-weight: bold;
+}
+
+#allrecords .interaction .pointsDistributionUnit .fbContainer.withDescriptions .fbUnit .metricName,
+#allrecords .interaction .pointsDistributionUnit .fbContainer.withDescriptions .fbUnit .result {
+    font-size: calc(var(--font-size)*1.5);
 }
 
 /*Опросник*/
@@ -1152,6 +1195,10 @@
 
     #allrecords .interaction .ratingUnit .starsContainer {
         justify-content: space-around;
+    }
+
+    #allrecords .interaction .pointsDistributionUnit .groupHeader {
+        flex-direction: column;
     }
 
     #allrecords .interaction .pointsDistributionUnit .fbContainer {
