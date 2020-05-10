@@ -439,8 +439,8 @@ class LetterBox {
 
 class TestInteraction extends IterableScorableInteraction {
   constructor(index, renderHook, parent) {
-    super(index, renderHook, parent);
-    this.fb = db[this.index].fb;
+    super(index, renderHook, parent)
+    this.fb = db[this.index].fb
     this.init();
   }
 
@@ -598,8 +598,6 @@ class PointsDistributionUnit extends InteractionUnit {
   }
 
   updateCounter() {
-    console.log(this.unitContainer)
-    console.log(this.unitContainer.querySelector('.submit'))
     let btn = this.unitContainer.querySelector('.submit')
     let groupsCompleted = this.groupObj.filter(function (g) {
       return g.result
@@ -682,7 +680,7 @@ class PointsDistributionUnit extends InteractionUnit {
       fbUnit.appendChild(metricInfo)
 
       if (m.description) {
-        fbContainer.classList.add('withDescriptions')
+        fbContainer.classList.add('withDescription')
         let metricDescription = document.createElement('div')
         metricDescription.className = 'metricDescription'
         metricDescription.innerHTML = m.description
@@ -887,6 +885,7 @@ class SurveyUnit extends InteractionUnit {
     this.survey = dbData.survey
     this.surveyMetrics = dbData.surveyMetrics
     this.surveyMetricsRanges = dbData.surveyMetricsRanges || []
+    this.fbs = dbData.fbs || []
     this.surveyResults = {}
     this.composeSurveyResultsObj()
     this.render()
@@ -1003,36 +1002,53 @@ class SurveyUnit extends InteractionUnit {
       let fbUnit = document.createElement('div')
       fbUnit.className = 'fbUnit'
 
+      let metricInfo = document.createElement('div')
+      metricInfo.className = 'metricInfo leftBorderMarker highlight'
+
       let metricName = document.createElement('p')
       metricName.className = 'metricName'
       metricName.innerHTML = m.nameRus
-      fbUnit.appendChild(metricName)
+      metricInfo.appendChild(metricName)
 
       let resultNum = that.surveyResults[m.id] < 0 ? 0 : that.surveyResults[m.id]
       let result = document.createElement('p')
       result.className = 'result'
       result.innerHTML = 'Результат: ' + resultNum
-      fbUnit.appendChild(result)
+      metricInfo.appendChild(result)
 
       if (that.surveyMetricsRanges.length > 0) {
         let rangeDescription = document.createElement('p')
         rangeDescription.className = 'rangeDescription'
-        rangeDescription.innerHTML = that.getRange(m, resultNum)
-        fbUnit.appendChild(rangeDescription)
+        rangeDescription.innerHTML = that.surveyMetricsRanges[that.getRangeNum(m, resultNum)]
+        metricInfo.appendChild(rangeDescription)
       }
+
+      fbUnit.appendChild(metricInfo)
+
+      if (that.fbs.length > 0) {
+        that.fbs.forEach(function (fb) {
+          if (fb.type === 'metricsResultsDescription') {
+            fbContainer.classList.add('withDescription')
+            let metricResultDescription = document.createElement('p')
+            metricResultDescription.className = 'metricResultDescription'
+            metricResultDescription.innerText = fb.content[m.id][that.getRangeNum(m, resultNum)]
+            fbUnit.appendChild(metricResultDescription)
+          }
+        })
+      }
+
       fbContainer.appendChild(fbUnit)
     })
   }
 
-  getRange(metric, result) {
-    let that = this
-    let range = ''
+  getRangeNum(metric, result) {
+    let rangeNum = 0
     metric.ranges.forEach(function (r, ind) {
       if (result >= r[0] && result <= r[1]) {
-        range = that.surveyMetricsRanges[ind]
+        rangeNum = ind
       }
     })
-    return range
+    return rangeNum
   }
 
   createItems() {
@@ -1511,12 +1527,32 @@ class TestUnit extends CmiInteractionUnit {
   }
 
   showFb() {
-    let finalFb = document.createElement("div");
-    finalFb.classList.add("finalFb");
-    finalFb.innerHTML = `
-    <p>Проходной балл: ${this.parent.minScore}. Ваш результат: ${this.parent.score}.</p>    
-    <p ${this.parent.result ? 'class="text correct"' : 'class="text incorrect"'}>${this.parent.result ? 'Поздравляем, вы прошли тест.' : 'К сожалению, вы не прошли тест.'}<p>`
-    this.unitContainer.appendChild(finalFb)
+    let testTesult = this.parent.result
+    let finalFbContainer = document.createElement("div");
+    finalFbContainer.classList.add('finalFbContainer');
+
+    let fbHead = document.createElement("div");
+    fbHead.className = `fbHead leftBorderMarker ${testTesult ? 'correct' : 'incorrect'}`
+
+    let score = document.createElement('p')
+    score.innerHTML = `Проходной балл: ${this.parent.minScore}. Ваш результат: ${this.parent.score}.`
+    let result = document.createElement('p')
+    result.className = `${testTesult ? 'text correct' : 'text incorrect'}`
+    result.innerHTML = `${testTesult ? 'Поздравляем, вы прошли тест.' : 'К сожалению, вы не прошли тест.'}`
+
+    fbHead.appendChild(score)
+    fbHead.appendChild(result)
+    finalFbContainer.appendChild(fbHead)
+
+    if (this.parent.fb.passed || this.parent.fb.failed) {
+      let fbBody = document.createElement("p")
+      fbBody.className = 'fbBody'
+      fbBody.innerHTML = this.parent.result ? this.parent.fb.passed : this.parent.fb.failed
+      finalFbContainer.appendChild(fbBody)
+    }
+
+
+    this.unitContainer.appendChild(finalFbContainer)
   }
 }
 
