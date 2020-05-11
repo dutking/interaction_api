@@ -5,7 +5,7 @@
     --color-white: #FFFFFF;
     --color-black: #000000;
     /*Трек Гравитация*/
-    --color-gravity-gray-light: #EEEDED;
+    /* --color-gravity-gray-light: #EEEDED;
     --color-gravity-gray-light2: #cccccc;
     --color-gravity-gray-dark: #333333;
     --color-gravity-gray: #999999;
@@ -24,7 +24,7 @@
     --color-gravity-purple-dark: #a69ec5;
     --color-gravity-purple-darker: #9992b4;
     --color-gravity-blue-darker1: #1D1A2F;
-    --color-gravity-blue-darker2: #2A2543;
+    --color-gravity-blue-darker2: #2A2543; */
 
     /*Русский язык*/
     /* --color-primary-lightgray: #99a4ae;
@@ -964,7 +964,7 @@
     align-content: center;
     font-size: 70px;
     font-weight: bold;
-    color: var(--color-primary-darkgraye);
+    color: var(--color-primary-darkgray);
 }
 
 #allrecords .interaction .letterBox .right .img {

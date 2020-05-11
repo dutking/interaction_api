@@ -1134,9 +1134,13 @@ class CaseUnit extends CmiInteractionUnit {
     // creating unit header
     let header = document.createElement("div");
     header.classList.add("header");
-    header.innerHTML = `Кейс ${this.index + 1} из ${
-      this.parent.amountOfUnits
-    }`;
+    if (this.parent.unitsList.length > 1) {
+      header.innerHTML = `Кейс ${this.index + 1} из ${
+        this.parent.amountOfUnits
+      }`
+    } else if (this.parent.unitsList.length = 1) {
+      header.innerHTML = 'Кейс'
+    }
 
     //creating unit body
     let body = this.createBody();
@@ -1292,6 +1296,7 @@ class TestUnit extends CmiInteractionUnit {
     this.type = this.dbData.type;
     this.question = this.dbData.text;
     this.answers = App.shuffle(this.dbData.answers);
+    this.fb = this.dbData.qFeedback
     Xapi.sendStmt(new Statement(this, "interacted").finalStatement);
     this.render();
   }
@@ -1432,6 +1437,7 @@ class TestUnit extends CmiInteractionUnit {
 
       Xapi.sendStmt(new Statement(this, "answered").finalStatement);
       this.unitContainer.querySelector(".btn").classList.add("off");
+      this.unitContainer.querySelector(".qFb").classList.remove("off");
       this.parent.completed = true;
       this.initNextUnit();
     }
@@ -1522,6 +1528,13 @@ class TestUnit extends CmiInteractionUnit {
     });
 
     body.appendChild(answersContainer);
+
+    if (this.fb && (this.fb.length > 0)) {
+      let qFb = document.createElement('div')
+      qFb.className = 'qFb off'
+      qFb.innerHTML = this.fb
+      body.appendChild(qFb);
+    }
 
     return body;
   }
