@@ -167,6 +167,10 @@
 
 /*Общее оформление*/
 
+html {
+    scroll-behavior: smooth;
+}
+
 /*Обнуление отступов*/
 #allrecords .interaction * {
     box-sizing: border-box !important;

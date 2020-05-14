@@ -126,6 +126,16 @@ class IterableScorableInteraction extends ScorableInteraction {
     return shortList;
   }
 
+  restart() {
+    this.interactionUnits = []
+    this._score = 0
+    this.unitsList = this.getUnitsList()
+    this.renderHook.innerHTML = ''
+    Xapi.sendStmt(new Statement(this, "exited").finalStatement)
+    Xapi.sendStmt(new Statement(this, "interacted").finalStatement)
+    this.init()
+  }
+
   get completed() {
     if (this.interactionUnits.length !== this.unitsToComplete) {
       return false;
@@ -453,13 +463,12 @@ class TestInteraction extends IterableScorableInteraction {
   }
 
   init() {
-    console.log(this)
     this.createUnit(0);
   }
 
   showAllFb() {
-    console.log(this)
-    console.log(this.interactionUnits)
+    let that = this
+    this.interactionUnits[0].unitContainer.scrollIntoView()
     this.interactionUnits.forEach(function (unit, index) {
       unit.checkedStatus.forEach(function (i) {
         let answer = unit.answers.filter(function (a) {
@@ -495,6 +504,10 @@ class TestInteraction extends IterableScorableInteraction {
         unit.unitContainer.querySelector(".header").classList.add("correct");
       } else {
         unit.unitContainer.querySelector(".header").classList.add("incorrect");
+      }
+
+      if (index === that.interactionUnits.length - 1) {
+        unit.unitContainer.querySelector('.showAllFbBtn').classList.add('off')
       }
     })
   }
@@ -1375,6 +1388,9 @@ class TestUnit extends CmiInteractionUnit {
   render() {
     // creating unit container
     this.unitContainer = this.createUnitContainer(this.cssClasses);
+    if (this.parent.immediateFeedback === false) {
+      this.unitContainer.scrollIntoView()
+    }
 
     // creating unit header
     let header = document.createElement("div");
@@ -1630,16 +1646,27 @@ class TestUnit extends CmiInteractionUnit {
     }
 
     if (this.parent.immediateFeedback === false) {
-      let showAnswersBtn = document.createElement('button')
-      showAnswersBtn.className = 'btn showAnswersBtn'
-      showAnswersBtn.setAttribute('type', 'button')
-      showAnswersBtn.innerHTML = 'Посмотреть ответы'
-      finalFbContainer.appendChild(showAnswersBtn)
+      let showAllFbBtn = document.createElement('button')
+      showAllFbBtn.className = 'btn showAllFbBtn'
+      showAllFbBtn.setAttribute('type', 'button')
+      showAllFbBtn.innerHTML = 'Посмотреть ответы'
+      finalFbContainer.appendChild(showAllFbBtn)
 
-      showAnswersBtn.addEventListener('click', that.parent.showAllFb.bind(that.parent))
+      showAllFbBtn.addEventListener('click', that.parent.showAllFb.bind(that.parent))
+
+      let restartBtn = document.createElement('button')
+      restartBtn.className = 'btn restartBtn'
+      restartBtn.setAttribute('type', 'button')
+      restartBtn.innerHTML = 'Пройти тест заново'
+      finalFbContainer.appendChild(restartBtn)
+
+      restartBtn.addEventListener('click', that.parent.restart.bind(that.parent))
     }
 
     this.unitContainer.appendChild(finalFbContainer)
+    if (this.parent.immediateFeedback === false) {
+      finalFbContainer.scrollIntoView()
+    }
   }
 
 }
