@@ -457,7 +457,7 @@ class TestInteraction extends IterableScorableInteraction {
     this.createUnit(0);
   }
 
-  showAnswers() {
+  showAllFb() {
     console.log(this)
     console.log(this.interactionUnits)
     this.interactionUnits.forEach(function (unit, index) {
@@ -1636,7 +1636,7 @@ class TestUnit extends CmiInteractionUnit {
       showAnswersBtn.innerHTML = 'Посмотреть ответы'
       finalFbContainer.appendChild(showAnswersBtn)
 
-      showAnswersBtn.addEventListener('click', that.parent.showAnswers.bind(that.parent))
+      showAnswersBtn.addEventListener('click', that.parent.showAllFb.bind(that.parent))
     }
 
     this.unitContainer.appendChild(finalFbContainer)
