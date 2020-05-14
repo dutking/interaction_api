@@ -441,6 +441,7 @@ class TestInteraction extends IterableScorableInteraction {
   constructor(index, renderHook, parent) {
     super(index, renderHook, parent)
     this.fb = db[this.index].fb
+    this.immediateFeedback = this.interactionData.immediate_feedback === 'true' ? true : false
     this.init();
   }
 
@@ -452,7 +453,50 @@ class TestInteraction extends IterableScorableInteraction {
   }
 
   init() {
+    console.log(this)
     this.createUnit(0);
+  }
+
+  showAnswers() {
+    console.log(this)
+    console.log(this.interactionUnits)
+    this.interactionUnits.forEach(function (unit, index) {
+      unit.checkedStatus.forEach(function (i) {
+        let answer = unit.answers.filter(function (a) {
+          if (i[0] === a.aId) {
+            return a;
+          }
+        });
+
+        if (i[1] === answer[0].aCorrect) {
+          unit.unitContainer
+            .querySelector(`label[for=${i[0]}]`)
+            .classList.add("correct");
+        } else {
+          unit.unitContainer
+            .querySelector(`label[for=${i[0]}]`)
+            .classList.add("incorrect");
+        }
+
+        if (answer[0].aFeedback !== '') {
+          let aFb = unit.unitContainer.querySelector(`.aFeedback[data-for=${i[0]}]`)
+          if (i[1]) {
+            aFb.classList.remove('off')
+            if (i[1] === answer[0].aCorrect) {
+              aFb.classList.add("correct");
+            } else if (i[1] !== answer[0].aCorrect) {
+              aFb.classList.add("incorrect");
+            }
+          }
+        }
+      })
+
+      if (unit.result) {
+        unit.unitContainer.querySelector(".header").classList.add("correct");
+      } else {
+        unit.unitContainer.querySelector(".header").classList.add("incorrect");
+      }
+    })
   }
 }
 
@@ -1379,9 +1423,9 @@ class TestUnit extends CmiInteractionUnit {
     let inputs = Array.from(this.unitContainer.querySelectorAll("input"));
     let labels = Array.from(this.unitContainer.querySelectorAll("label"));
 
-    let checked = [];
+    this.checkedStatus = [];
     inputs.forEach(function (i) {
-      checked.push([i.id, i.checked]);
+      that.checkedStatus.push([i.id, i.checked]);
     });
 
     this.response = inputs
@@ -1394,7 +1438,7 @@ class TestUnit extends CmiInteractionUnit {
         return i.id;
       });
     if (this.response.length === 0) {} else if (this.response.length > 0) {
-      checked.forEach(function (i) {
+      this.checkedStatus.forEach(function (i) {
         let answer = that.answers.filter(function (a) {
           if (i[0] === a.aId) {
             return a;
@@ -1403,14 +1447,31 @@ class TestUnit extends CmiInteractionUnit {
 
         if (i[1] === answer[0].aCorrect) {
           responseCorrectness.push(true);
-          that.unitContainer
-            .querySelector(`label[for=${i[0]}]`)
-            .classList.add("correct");
         } else {
           responseCorrectness.push(false);
-          that.unitContainer
-            .querySelector(`label[for=${i[0]}]`)
-            .classList.add("incorrect");
+        }
+
+        if (that.parent.immediateFeedback === true) {
+          if (i[1] === answer[0].aCorrect) {
+            that.unitContainer
+              .querySelector(`label[for=${i[0]}]`)
+              .classList.add("correct");
+          } else {
+            that.unitContainer
+              .querySelector(`label[for=${i[0]}]`)
+              .classList.add("incorrect");
+          }
+          if (answer[0].aFeedback !== '') {
+            let aFb = that.unitContainer.querySelector(`.aFeedback[data-for=${i[0]}]`)
+            if (i[1]) {
+              aFb.classList.remove('off')
+              if (i[1] === answer[0].aCorrect) {
+                aFb.classList.add("correct");
+              } else if (i[1] !== answer[0].aCorrect) {
+                aFb.classList.add("incorrect");
+              }
+            }
+          }
         }
       });
       inputs.forEach(
@@ -1429,15 +1490,18 @@ class TestUnit extends CmiInteractionUnit {
       this.score += this.correct ? 1 : 0;
       this._completed = true;
 
-      if (this.result) {
-        this.unitContainer.querySelector(".header").classList.add("correct");
-      } else {
-        this.unitContainer.querySelector(".header").classList.add("incorrect");
+      if (this.parent.immediateFeedback === true) {
+        if (this.result) {
+          this.unitContainer.querySelector(".header").classList.add("correct");
+        } else {
+          this.unitContainer.querySelector(".header").classList.add("incorrect");
+        }
+        this.unitContainer.querySelector(".qFb").classList.remove("off");
       }
+
 
       Xapi.sendStmt(new Statement(this, "answered").finalStatement);
       this.unitContainer.querySelector(".btn").classList.add("off");
-      this.unitContainer.querySelector(".qFb").classList.remove("off");
       this.parent.completed = true;
       this.initNextUnit();
     }
@@ -1515,13 +1579,13 @@ class TestUnit extends CmiInteractionUnit {
       answerContainer.appendChild(input);
       answerContainer.appendChild(label);
 
-      // create particular feedback
+      // create particular feedback for this answer option
       if (a.aFeedback !== "") {
-        let feedback = document.createElement("div");
-        feedback.classList.add("feedback");
-        feedback.dataset.for = a.aId;
-        feedback.innerHTML = a.aText;
-        answerContainer.appendChild(feedback);
+        let aFeedback = document.createElement("div");
+        aFeedback.className = "aFeedback leftBorderMarker off";
+        aFeedback.dataset.for = a.aId;
+        aFeedback.innerHTML = a.aFeedback;
+        answerContainer.appendChild(aFeedback);
       }
 
       answersContainer.appendChild(answerContainer);
@@ -1540,6 +1604,7 @@ class TestUnit extends CmiInteractionUnit {
   }
 
   showFb() {
+    let that = this
     let testTesult = this.parent.result
     let finalFbContainer = document.createElement("div");
     finalFbContainer.classList.add('finalFbContainer');
@@ -1564,9 +1629,19 @@ class TestUnit extends CmiInteractionUnit {
       finalFbContainer.appendChild(fbBody)
     }
 
+    if (this.parent.immediateFeedback === false) {
+      let showAnswersBtn = document.createElement('button')
+      showAnswersBtn.className = 'btn showAnswersBtn'
+      showAnswersBtn.setAttribute('type', 'button')
+      showAnswersBtn.innerHTML = 'Посмотреть ответы'
+      finalFbContainer.appendChild(showAnswersBtn)
+
+      showAnswersBtn.addEventListener('click', that.parent.showAnswers.bind(that.parent))
+    }
 
     this.unitContainer.appendChild(finalFbContainer)
   }
+
 }
 
 class SubUnit {

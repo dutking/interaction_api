@@ -426,13 +426,17 @@
     border-color: var(--color-incorrect);
 }
 
+#allrecords .interaction .testUnit .answersContainer .answerContainer .aFeedback {
+    margin-top: 0.5rem;
+}
+
 #allrecords .interaction .testUnit .finalFbContainer .fbHead {
     font-size: calc(var(--font-size) * 1.5);
     font-weight: bold;
 }
 
 #allrecords .interaction .testUnit .finalFbContainer .fbBody {
-    margin-top: 2rem;
+    margin: 2rem 0;
 }
 
 /*Задание на распределение баллов*/
