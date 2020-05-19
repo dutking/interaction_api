@@ -452,6 +452,7 @@ class TestInteraction extends IterableScorableInteraction {
     super(index, renderHook, parent)
     this.fb = db[this.index].fb
     this.immediateFeedback = this.interactionData.immediate_feedback === 'true' ? true : false
+    this.attempt = 0
     this.init();
   }
 
@@ -463,6 +464,7 @@ class TestInteraction extends IterableScorableInteraction {
   }
 
   init() {
+    this.attempt += 1
     this.createUnit(0);
   }
 
@@ -1430,6 +1432,18 @@ class TestUnit extends CmiInteractionUnit {
             .addEventListener("click", this.toggleTip.bind(this)); */
 
     submitBtn.addEventListener("click", this.getResult.bind(this));
+
+    this.scroll()
+  }
+
+  scroll() {
+    if (this.index === 0 && this.parent.attempt > 1) {
+      this.unitContainer.scrollIntoView()
+    }
+
+    if (this.parent.immediateFeedback === false && this.index > 0) {
+      this.unitContainer.scrollIntoView()
+    }
   }
 
   getResult() {
@@ -1512,7 +1526,9 @@ class TestUnit extends CmiInteractionUnit {
         } else {
           this.unitContainer.querySelector(".header").classList.add("incorrect");
         }
-        this.unitContainer.querySelector(".qFb").classList.remove("off");
+        if (this.fb && (this.fb.length > 0)) {
+          this.unitContainer.querySelector(".qFb").classList.remove("off");
+        }
       }
 
 
@@ -1630,12 +1646,8 @@ class TestUnit extends CmiInteractionUnit {
 
     let score = document.createElement('p')
     score.innerHTML = `Проходной балл: ${this.parent.minScore}. Ваш результат: ${this.parent.score}.`
-    let result = document.createElement('p')
-    result.className = `${testTesult ? 'text correct' : 'text incorrect'}`
-    result.innerHTML = `${testTesult ? 'Поздравляем, вы прошли тест.' : 'К сожалению, вы не прошли тест.'}`
 
     fbHead.appendChild(score)
-    fbHead.appendChild(result)
     finalFbContainer.appendChild(fbHead)
 
     if (this.parent.fb.passed || this.parent.fb.failed) {
@@ -1645,23 +1657,28 @@ class TestUnit extends CmiInteractionUnit {
       finalFbContainer.appendChild(fbBody)
     }
 
+    let buttonContainer = document.createElement('div')
+    buttonContainer.className = 'buttonContainer'
+
     if (this.parent.immediateFeedback === false) {
       let showAllFbBtn = document.createElement('button')
       showAllFbBtn.className = 'btn showAllFbBtn'
       showAllFbBtn.setAttribute('type', 'button')
       showAllFbBtn.innerHTML = 'Посмотреть ответы'
-      finalFbContainer.appendChild(showAllFbBtn)
+      buttonContainer.appendChild(showAllFbBtn)
 
       showAllFbBtn.addEventListener('click', that.parent.showAllFb.bind(that.parent))
-
-      let restartBtn = document.createElement('button')
-      restartBtn.className = 'btn restartBtn'
-      restartBtn.setAttribute('type', 'button')
-      restartBtn.innerHTML = 'Пройти тест заново'
-      finalFbContainer.appendChild(restartBtn)
-
-      restartBtn.addEventListener('click', that.parent.restart.bind(that.parent))
     }
+
+    let restartBtn = document.createElement('button')
+    restartBtn.className = 'btn restartBtn'
+    restartBtn.setAttribute('type', 'button')
+    restartBtn.innerHTML = 'Пройти тест заново'
+    buttonContainer.appendChild(restartBtn)
+
+    restartBtn.addEventListener('click', that.parent.restart.bind(that.parent))
+
+    finalFbContainer.appendChild(buttonContainer)
 
     this.unitContainer.appendChild(finalFbContainer)
     if (this.parent.immediateFeedback === false) {

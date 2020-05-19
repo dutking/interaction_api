@@ -121,7 +121,7 @@
     /*Внутренние отступы: верх-право-низ-лево*/
     --btn-padding: 1rem 1.5rem 1rem 1.5rem;
     /*Жирность шрифта кнопки*/
-    --btn-font-weight: bold;
+    --btn-font-weight: normal;
     /*Цвет шрифта кнопки*/
     --btn-font-color: var(--color-white);
     /*Цвет фона кнопки*/
@@ -441,6 +441,13 @@ html {
 
 #allrecords .interaction .testUnit .finalFbContainer .fbBody {
     margin: 2rem 0;
+}
+
+#allrecords .interaction .testUnit .finalFbContainer .buttonContainer {
+    width: 250px;
+    display: grid;
+    grid-template-columns: 1fr;
+    row-gap: 1rem;
 }
 
 /*Задание на распределение баллов*/
