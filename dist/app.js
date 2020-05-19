@@ -1288,7 +1288,7 @@ class CaseUnit extends CmiInteractionUnit {
       label.setAttribute("for", ans.aId);
       let txt = ans.aText.trim()
       if (txt[txt.length - 1] !== ".") {
-        label.innerHTML = txt + ".";
+        label.innerHTML = `${txt}.`;
       } else {
         label.innerHTML = txt;
       }
@@ -1311,7 +1311,7 @@ class CaseUnit extends CmiInteractionUnit {
         feedback = document.createElement("div");
         feedback.className = 'feedback leftBorderMarker off'
         feedback.dataset.for = ans.aId;
-        feedback.innerHTML = ans.aFeedback;
+        feedback.innerHTML = `${ans.aFeedback} ${ans.aCorrect === false ?'<p class="help">Выберите другой ответ.</p>' : ''}`;
         answerContainer.appendChild(feedback);
       }
 
@@ -1390,9 +1390,9 @@ class TestUnit extends CmiInteractionUnit {
   render() {
     // creating unit container
     this.unitContainer = this.createUnitContainer(this.cssClasses);
-    if (this.parent.immediateFeedback === false) {
+    /* if (this.parent.immediateFeedback === false) {
       this.unitContainer.scrollIntoView()
-    }
+    } */
 
     // creating unit header
     let header = document.createElement("div");

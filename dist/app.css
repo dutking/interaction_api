@@ -168,7 +168,7 @@
 /*Общее оформление*/
 
 html {
-    scroll-behavior: smooth;
+    scroll-behavior: smooth !important;
 }
 
 /*Обнуление отступов*/
@@ -448,6 +448,12 @@ html {
     display: grid;
     grid-template-columns: 1fr;
     row-gap: 1rem;
+}
+
+/*Кейс*/
+#allrecords .interaction .caseUnit .help {
+    margin-top: 2rem;
+    color: var(--font-color-secondary);
 }
 
 /*Задание на распределение баллов*/
