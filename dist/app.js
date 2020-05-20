@@ -518,6 +518,7 @@ class TestInteraction extends IterableScorableInteraction {
 class CaseInteraction extends IterableScorableInteraction {
   constructor(index, renderHook, parent) {
     super(index, renderHook, parent);
+    this.fb = db[this.index].fb
     this.init()
   }
 
@@ -1215,6 +1216,12 @@ class CaseUnit extends CmiInteractionUnit {
       this.index !== this.parent.amountOfUnits - 1
     ) {
       this.parent.createUnit(this.index + 1);
+    } else if (this.index === this.parent.unitsToComplete - 1 &&
+      this.index === this.parent.amountOfUnits - 1) {
+      let finalFb = document.createElement('div')
+      finalFb.className = 'finalFb'
+      finalFb.innerHTML = this.result ? this.parent.fb.passed : this.parent.fb.failed
+      this.unitContainer.appendChild(finalFb)
     }
   }
 
@@ -1388,48 +1395,24 @@ class TestUnit extends CmiInteractionUnit {
   }
 
   render() {
-    // creating unit container
     this.unitContainer = this.createUnitContainer(this.cssClasses);
-    /* if (this.parent.immediateFeedback === false) {
-      this.unitContainer.scrollIntoView()
-    } */
 
-    // creating unit header
     let header = document.createElement("div");
     header.classList.add("header");
     header.innerHTML = `Вопрос ${this.index + 1} из ${
       this.parent.amountOfUnits
     }`;
 
-    // creating unit tip
-    /* let tip = document.createElement("div");
-        tip.className = "tip off";
-        tip.innerHTML = `<p>${this.tip}</p>`; */
-
-    //creating unit body
     let body = this.createBody();
 
-    // creting unit feedback
-    /* let fb = document.createElement("div");
-        fb.classList.add("fb"); */
-
-    // creating unit button
     let submitBtn = document.createElement("button");
     submitBtn.setAttribute("type", "button");
     submitBtn.className = "btn disabled";
     submitBtn.innerHTML = "Ответить";
 
-    // appending children to unit container
     this.unitContainer.appendChild(header);
-    /* this.unitContainer.appendChild(tip); */
     this.unitContainer.appendChild(body);
-    /* this.unitContainer.appendChild(fb); */
     this.unitContainer.appendChild(submitBtn);
-
-    // setting event listeners
-    /* this.unitContainer
-            .querySelector("a.showTip")
-            .addEventListener("click", this.toggleTip.bind(this)); */
 
     submitBtn.addEventListener("click", this.getResult.bind(this));
 
