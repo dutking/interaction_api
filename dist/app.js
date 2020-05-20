@@ -3049,7 +3049,7 @@ class App {
         name: i.name,
         type: i.interactionData.type,
         weight: i.required ? 1 : 0,
-        is_leaf: false, // Флаг о том, что у этого элемента нет дочерних сущностей
+        is_leaf: true,
         type_name: App.getRusName(i),
         order: index,
       };
