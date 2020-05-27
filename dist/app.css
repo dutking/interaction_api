@@ -456,6 +456,10 @@ html {
     color: var(--font-color-secondary);
 }
 
+#allrecords .interaction .caseUnit .feedback {
+    color: var(--font-color-secondary);
+}
+
 #allrecords .interaction .caseUnit .finalFb {
     margin-top: 3rem;
     font-size: calc(var(--font-size) * 1.5);
