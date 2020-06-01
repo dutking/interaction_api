@@ -1313,7 +1313,7 @@ class SoftwareEmulationUnit extends InteractionUnit {
   }
 
   changeScreen() {
-    if (this.counter < this.numberOfScreens) {
+    if (this.counter <= this.numberOfScreens) {
       this.screenshot.setAttribute('src', `./dist/assets/screenshots/${this.counter+1}.png`)
       this.selector.style.left = `${this.position[this.counter][0]}px`
       this.selector.style.top = `${this.position[this.counter][1]}px`
