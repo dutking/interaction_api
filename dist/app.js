@@ -1324,8 +1324,8 @@ class SoftwareEmulationUnit extends InteractionUnit {
       this.instructionElement.style.setProperty('align-self', this.instructionPosition[this.counter][1])
 
       this.counter++
-    } else if (this.counter = this.numberOfScreens) {
-      this.instructionElement.innerHTML = '<h2>Вы отлично справились с заданием!<h2>'
+    }
+    if (this.counter === this.numberOfScreens) {
       this.completed = true
       this.parent.completed = true
       this.selector.classList.add('off')
