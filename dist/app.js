@@ -1328,6 +1328,7 @@ class SoftwareEmulationUnit extends InteractionUnit {
       this.instructionElement.innerHTML = '<h2>Вы отлично справились с заданием!<h2>'
       this.completed = true
       this.parent.completed = true
+      this.selector.classList.add('off')
     }
   }
 }
