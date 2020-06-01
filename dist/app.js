@@ -1,3 +1,608 @@
+class Xapi {
+  static parseQuery(queryString) {
+    let query = {};
+    let pairs = (queryString[0] === "?" ?
+      queryString.substr(1) :
+      queryString
+    ).split("&");
+    for (let i = 0; i < pairs.length; i++) {
+      let pair = pairs[i].split("=");
+      query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || "");
+    }
+    return query;
+  }
+
+  static getXapiData() {
+    let queryParams = Xapi.parseQuery(window.location.search);
+    Xapi.activityId = queryParams.activity_id;
+
+    Xapi.data = {
+      endpoint: queryParams.endpoint,
+      auth: queryParams.auth,
+      actor: JSON.parse(queryParams.actor),
+      grouping: queryParams.grouping,
+      registration: queryParams.registration,
+      context: queryParams.context
+    };
+
+    // SCORM Cloud patch
+    if (Array.isArray(Xapi.data.actor.account)) {
+      Xapi.data.actor.account = Xapi.data.actor.account[0];
+    }
+    if (Array.isArray(Xapi.data.actor.name)) {
+      Xapi.data.actor.name = Xapi.data.actor.name[0];
+    }
+    if (
+      Xapi.data.actor.account &&
+      Xapi.data.actor.account.accountServiceHomePage
+    ) {
+      Xapi.data.actor.account.homePage =
+        Xapi.data.actor.account.accountServiceHomePage;
+      Xapi.data.actor.account.name = Xapi.data.actor.account.accountName;
+      delete Xapi.data.actor.account.accountServiceHomePage;
+      delete Xapi.data.actor.account.accountName;
+    }
+    // End SCORM Cloud patch
+
+    return {
+      endpoint: Xapi.data.endpoint,
+      auth: Xapi.data.auth,
+      actor: Xapi.data.actor,
+      grouping: Xapi.data.grouping,
+      registration: Xapi.data.registration,
+      context: Xapi.data.context
+    }
+  }
+
+  static sendStmt(stmt) {
+    App.statements.push(stmt);
+    if (App.testMode === false) {
+      console.log(stmt);
+      ADL.XAPIWrapper.sendStatement(stmt, function (resp, obj) {
+        console.log(resp.status + resp.statusText);
+      });
+    } else if (App.testMode === true) {
+      console.log(stmt);
+    }
+  }
+
+  static getChoices(arr) {
+    let newArr = [];
+    if (arr.length === 1) {
+      newArr = arr[0].map(function (option) {
+        return {
+          id: option,
+          description: {
+            "ru-RU": option,
+          },
+        };
+      });
+    } else if (arr.length === 2) {
+      newArr = arr[0].map(function (option, ind) {
+        return {
+          id: option,
+          description: {
+            "ru-RU": arr[1][ind]
+          },
+        };
+      });
+    }
+    return newArr;
+  }
+
+  static getCorrectResponsesPattern(str) {
+    return [str];
+  }
+
+  static getResponse(item) {
+    if (Array.isArray(item)) {
+      return item.join('[,]');
+      // or item.join()
+    } else {
+      return item;
+    }
+  }
+
+  static getPossibleOptions(words, choices, num = 0) {
+    if (!Array.isArray(words)) {
+      words = [words];
+    }
+
+    if (!Array.isArray(choices[0])) {
+      choices = [choices];
+    }
+
+    let newWords = [];
+
+    if (words[words.length - 1].indexOf("_") === -1) {
+      return words;
+    }
+
+    words.forEach(function (str) {
+      choices[num].forEach(function (c) {
+        newWords.push(str.replace("_", c));
+      });
+    });
+
+    return Xapi.getPossibleOptions(newWords, choices, num + 1);
+  }
+
+  static getCorrectOption(word, correctArr) {
+    let thisWord = word;
+    correctArr.forEach(function (letter) {
+      thisWord = thisWord.replace("_", letter);
+    });
+    return thisWord;
+  }
+}
+
+class Statement {
+  constructor(obj, verb = "experienced") {
+    this.obj = obj;
+    this.verb = verb;
+  }
+
+  get objectObj() {
+    let simpleObject = {
+      object: {
+        id: this.obj.id,
+        definition: {
+          name: {
+            "en-US": this.obj.name ? this.obj.name : this.obj.id,
+          },
+          description: {
+            "en-US": this.obj.description ?
+              this.obj.description : this.obj.name ?
+              this.obj.name : this.obj.id,
+          },
+        },
+      },
+    };
+    if (this.obj instanceof SubUnit || this.obj instanceof TestUnit || this.obj instanceof CaseUnit) {
+      let extraDefinitionProperties = {
+        type: "http://adlnet.gov/expapi/activities/cmi.interaction",
+        // interactionType: "choice",
+        correctResponsesPattern: Xapi.getCorrectResponsesPattern(
+          this.obj.correctResponsesPattern
+        ),
+        choices: Xapi.getChoices(this.obj.choices),
+      };
+
+      if (
+        this.obj._parent instanceof LangExerciseUnit ||
+        this.obj._parent instanceof DictantUnit ||
+        this.obj instanceof TestUnit ||
+        this.obj instanceof CaseUnit
+      ) {
+        Object.assign(extraDefinitionProperties, {
+          interactionType: "choice",
+        });
+      }
+
+      Object.assign(simpleObject.object.definition, extraDefinitionProperties);
+    }
+    return simpleObject;
+  }
+
+  get actorObj() {
+    return {
+      actor: Xapi.data.actor ? Xapi.data.actor : "User",
+    };
+  }
+
+  get verbObj() {
+    return {
+      verb: verbs[this.verb],
+    };
+  }
+
+  get resultObj() {
+    let resultObj = {};
+    if (this.verb === "completed") {
+      resultObj["result"] = {
+        completion: this.obj.completed,
+      };
+    } else if (this.verb === "answered") {
+      resultObj["result"] = {
+        success: this.obj.result,
+        response: Xapi.getResponse(this.obj.response),
+      };
+    } else if (this.verb === "passed" || this.verb === "failed") {
+      resultObj["result"] = {
+        score: {
+          raw: this.obj.score,
+        },
+        success: this.obj.result,
+      };
+    } else if (this.verb === "commented") {
+      resultObj["result"] = {
+        response: '{' + `"title":"${this.obj.title}","text":"${this.obj.text}","tag":"${this.obj.tag}"` + '}'
+      };
+    } else if (this.verb === "rated") {
+      resultObj["result"] = {
+        score: {
+          raw: this.obj.rating,
+        },
+      };
+    }
+    return resultObj;
+  }
+
+  get contextObj() {
+    let contextObj = {};
+    if (this.obj.parent) {
+      contextObj["context"] = {
+        contextActivities: {
+          parent: [{
+            id: this.obj.parent.id,
+            objectType: "Activity",
+          }, ],
+        },
+      };
+      return contextObj;
+    }
+  }
+
+  get finalStatement() {
+    let stmt = Object.assign({},
+      this.actorObj,
+      this.verbObj,
+      this.objectObj,
+      this.contextObj,
+      this.resultObj
+    );
+    return stmt;
+  }
+}
+
+class App {
+  constructor() {}
+
+  static isTestMode() {
+    App.testMode =
+      document
+      .querySelector('meta[content^="testmode"]')
+      .getAttribute("content")
+      .split("testmode:")[1] === "true" ?
+      true :
+      false;
+  }
+
+  static getId() {
+    let prefix = document
+      .querySelector('meta[content^="prefix"]')
+      .getAttribute("content")
+      .split("prefix:")[1];
+    let course = document
+      .querySelector('meta[content^="course"]')
+      .getAttribute("content")
+      .split("course:")[1];
+    App.id = prefix + course;
+  }
+
+  static getRenderHooks() {
+    App.renderHooks = Array.from(document.querySelectorAll(".interaction"));
+  }
+
+  /* static isVid() {
+    App.renderHooks.forEach(function (h) {
+      if (h.dataset.type === "video") {
+        App.isVideo = true;
+      }
+    });
+  } */
+
+  static init() {
+    App.addFooter();
+    App.addLongread();
+    App.addComment();
+    App.addRating();
+    App.getId();
+    App.getRenderHooks();
+    App.isTestMode();
+    if (App.testMode === false) {
+      ADL.XAPIWrapper.changeConfig(Xapi.getXapiData());
+    }
+    App.course = new Course(App.id, App.renderHooks);
+  }
+
+  static addRating() {
+    if (document.querySelector('meta[content^="rating"]') &&
+      document
+      .querySelector('meta[content^="rating"]')
+      .getAttribute("content")
+      .split("rating:")[1] === "true"
+    ) {
+      let element = document.querySelector("#finalLongread");
+
+      let rating = document.createElement("div");
+      rating.id = "rating";
+      rating.className = "interaction";
+      rating.dataset.type = "rating";
+      rating.dataset.name = "Оценка курса";
+      rating.dataset.required = "false";
+
+      element.after(rating);
+    }
+  }
+
+  static addComment() {
+    if (document
+      .querySelector('meta[content^="comment"]') && document
+      .querySelector('meta[content^="comment"]')
+      .getAttribute("content")
+      .split("comment:")[1] === "true"
+    ) {
+      let element = document.querySelector("#finalLongread");
+
+      let comment = document.createElement("div");
+      comment.id = "comment";
+      comment.className = "interaction";
+      comment.dataset.type = "comment";
+      comment.dataset.name = "Комментарий";
+      comment.dataset.required = "false";
+
+      element.after(comment);
+    }
+  }
+
+  static addLongread() {
+    let nextBtn = document.querySelector("#nextBtn");
+    let longread = document.createElement("div");
+    longread.id = "finalLongread";
+    longread.className = "interaction";
+    longread.dataset.type = "longread";
+    longread.dataset.name = "Лонгрид";
+    longread.dataset.required = "true";
+
+    nextBtn.before(longread);
+  }
+
+  static addFooter() {
+    let body = document.querySelector("#allrecords");
+
+    let footer = document.createElement("footer");
+    footer.id = "pagefooter";
+
+    let nextBtn = document.createElement("button");
+    nextBtn.id = "nextBtn";
+    nextBtn.className = "btn";
+    nextBtn.innerHTML = "Далее";
+    nextBtn.setAttribute("type", "button");
+    nextBtn.addEventListener("click", App.backToTrack);
+
+    footer.appendChild(nextBtn);
+    body.appendChild(footer);
+  }
+
+  static backToTrack() {
+    console.log("Finishing course ...");
+    App.course.interactions.forEach(function (i) {
+      Xapi.sendStmt(new Statement(i, "exited").finalStatement);
+    });
+    Xapi.sendStmt(new Statement(App.course, "exited").finalStatement);
+    console.log("Redirecting back to track ...");
+    (function () {
+      if (window.top) {
+        return window.top;
+      }
+      return window.parent;
+    })().location = "/back/";
+    return false;
+  }
+
+  static linkDb() {
+    let head = document.querySelector("head");
+    let script = document.createElement("script");
+    script.setAttribute("src", "dist/db.js");
+    head.appendChild(script);
+  }
+
+  static linkVerbs() {
+    let head = document.querySelector("head");
+    let script = document.createElement("script");
+    script.setAttribute("src", "dist/verbs.js");
+    head.appendChild(script);
+  }
+
+  static shuffle(array) {
+    let newArr = array;
+    for (let i = newArr.length - 1; i > 0; i--) {
+      let j = Math.floor(Math.random() * (i + 1));
+      [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+    }
+    return newArr;
+  }
+
+  static isArraysSimilar(arr1, arr2) {
+    if (arr1.length !== arr2.length) {
+      return false;
+    }
+    for (let i = 0; i < arr1.length; i++) {
+      if (arr1[i] !== arr2[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  static multiplyArrays(...values) {
+    let result = values[0]
+      .map(function (v) {
+        let vals = values[1].map(function (i) {
+          return `${v},${i}`;
+        });
+        return vals;
+      })
+      .flat();
+
+    let newValues = values;
+    newValues.shift();
+    newValues.shift();
+
+    if (newValues.length !== 0) {
+      return multiplyArrays(result, ...newValues);
+    }
+
+    return result;
+  }
+
+  static getStructure() {
+    let items = App.course.interactions.map(function (i, index) {
+      let data = {
+        id: i.id,
+        parent: i.parent.id,
+        name: i.name,
+        type: i.interactionData.type,
+        weight: i.required ? 1 : 0,
+        is_leaf: true,
+        type_name: App.getRusName(i),
+        order: index,
+      };
+      return data;
+    });
+
+    let structure = {
+      id: App.course.id,
+      type: "course",
+      version: 1,
+      component: "course",
+      name: App.course.name,
+      items: items,
+    };
+
+    let container = document.createElement("div");
+    document.body.appendChild(container);
+    container.innerText = JSON.stringify(structure);
+
+    return JSON.stringify(structure);
+  }
+
+  static getRusName(i) {
+    if (i instanceof TestInteraction) {
+      return "Тест";
+    } else if (i instanceof DictantInteraction) {
+      return "Диктант";
+    } else if (i instanceof LangExerciseInteraction) {
+      return "Упражнение";
+    } else if (i instanceof VideoInteraction) {
+      return "Видео";
+    } else if (i instanceof LongreadInteraction) {
+      return "Лонгрид";
+    } else if (i instanceof CommentInteraction) {
+      return "Комментарий";
+    } else if (i instanceof RatingInteraction) {
+      return "Рейтинг";
+    } else if (i instanceof SurveyInteraction) {
+      return "Опросник";
+    } else if (i instanceof PointsDistributionInteraction) {
+      return "Задание на распределение баллов";
+    } else if (i instanceof CaseInteraction) {
+      return "Кейс";
+    } else if (i instanceof SoftwareEmulation) {
+      return "Тренажер по ПО";
+    }
+  }
+}
+
+class Course {
+  constructor(id, renderHooks) {
+    this.id = id;
+    this.name = "course";
+    this.renderHooks = renderHooks;
+    Xapi.sendStmt(new Statement(this, "launched").finalStatement);
+    this.interactions = [];
+    this.getInteractions();
+  }
+
+  getInteractions() {
+    let that = this;
+    this.renderHooks.forEach(function (hook, index) {
+      if (hook.dataset.type === "langExercise") {
+        let i = new LangExerciseInteraction(index, hook, that);
+        that.interactions.push(i);
+      } else if (hook.dataset.type === "diсtant") {
+        let i = new DictantInteraction(index, hook, that);
+        that.interactions.push(i);
+      } else if (hook.dataset.type === "longread") {
+        let i = new LongreadInteraction(index, hook, that);
+        that.interactions.push(i);
+      } else if (hook.dataset.type === "video") {
+        let i = new VideoInteraction(index, hook, that);
+        that.interactions.push(i);
+      } else if (hook.dataset.type === "test") {
+        let i = new TestInteraction(index, hook, that);
+        that.interactions.push(i);
+      } else if (hook.dataset.type === "case") {
+        let i = new CaseInteraction(index, hook, that);
+        that.interactions.push(i);
+      } else if (hook.dataset.type === "comment") {
+        let i = new CommentInteraction(index, hook, that);
+        that.interactions.push(i);
+      } else if (hook.dataset.type === "rating") {
+        let i = new RatingInteraction(index, hook, that);
+        that.interactions.push(i);
+      } else if (hook.dataset.type === "survey") {
+        let i = new SurveyInteraction(index, hook, that);
+        that.interactions.push(i);
+      } else if (hook.dataset.type === "points_distribution") {
+        let i = new PointsDistributionInteraction(index, hook, that);
+        that.interactions.push(i);
+      } else if (hook.dataset.type === "software_emulation") {
+        let i = new SoftwareEmulation(index, hook, that);
+        that.interactions.push(i);
+      }
+    });
+  }
+
+  get result() {
+    let overallResult = 0;
+    let requiredResult = 0;
+    this.interactions.forEach(function (i) {
+      if (i.required === true) {
+        requiredResult++;
+        if (i.result) {
+          overallResult++;
+        }
+      }
+    });
+    return overallResult === requiredResult;
+  }
+
+  get score() {
+    let overallResult = 0;
+    this.interactions.forEach(function (i) {
+      if (i.result) {
+        overallResult++;
+      }
+    });
+    return overallResult;
+  }
+
+  get completed() {
+    let completionStatus = this.interactions.map(function (i) {
+      if (i.required === true) {
+        return i.completed;
+      }
+    });
+    return !completionStatus.includes(false);
+  }
+
+  set completed(v) {
+    if (this.completed) {
+      console.log("Course completed");
+      Xapi.sendStmt(new Statement(this, "completed").finalStatement);
+      if (this.result === true) {
+        console.log("Course passed");
+        Xapi.sendStmt(new Statement(this, "passed").finalStatement);
+      } else if (this.result === false) {
+        console.log("Course failed");
+        Xapi.sendStmt(new Statement(this, "failed").finalStatement);
+      }
+    }
+  }
+}
+
 class Interaction {
   constructor(index, renderHook, parent) {
     this.parent = parent;
@@ -208,6 +813,29 @@ class LangExerciseInteraction extends IterableScorableInteraction {
   init() {
     this.createUnit(0);
   }
+}
+
+class SoftwareEmulation extends Interaction {
+  constructor(index, renderHook, parent) {
+    super(index, renderHook, parent);
+    this.init();
+  }
+
+  createUnit(num) {
+    let unit
+    unit = new SoftwareEmulationUnit(
+      num,
+      this,
+      "softwareEmulationUnit",
+      db[this.index]
+    )
+    this.interactionUnits.push(unit);
+  }
+
+  init() {
+    this.createUnit(0);
+  }
+
 }
 
 class PointsDistributionInteraction extends Interaction {
@@ -612,6 +1240,95 @@ class InteractionUnit {
 
   get result() {
     return this.completed;
+  }
+}
+
+class SoftwareEmulationUnit extends InteractionUnit {
+  constructor(index, parent, cssClasses, dbData) {
+    super(index, parent, cssClasses, dbData);
+    this.numberOfScreens = this.dbData.numberOfScreens
+    this.position = this.dbData.position
+    this.instruction = this.dbData.instruction
+    this.instructionPosition = this.dbData.instructionPosition
+    this.counter = 0
+    this.render()
+  }
+
+  render() {
+    let that = this
+    this.unitContainer = this.createUnitContainer(this.cssClasses);
+
+    let startBtn = document.createElement('button')
+    startBtn.className = 'startBtn btn'
+    startBtn.setAttribute('type', 'button')
+    startBtn.innerText = 'Запустить тренажер'
+
+    this.popup = document.createElement('div')
+    this.popup.className = 'popup off'
+
+    let closeBtn = document.createElement('button')
+    closeBtn.setAttribute('type', 'button')
+    closeBtn.className = 'closeBtn'
+    closeBtn.innerText = 'X'
+
+    closeBtn.addEventListener('click', function (e) {
+      document.querySelector('body').classList.remove('blocked')
+      e.target.parentNode.classList.add('off')
+    })
+
+    this.screen = document.createElement('div')
+    this.screen.className = 'screen'
+
+    this.screenshot = document.createElement('img')
+    this.screenshot.setAttribute('src', '')
+    this.screenshot.setAttribute('alt', 'скриншот')
+    this.screenshot.className = 'screenshot'
+
+    this.selector = document.createElement('div')
+    this.selector.className = 'selector'
+
+    this.selector.addEventListener('click', this.changeScreen.bind(this))
+
+    this.instructionElement = document.createElement('div')
+    this.instructionElement.className = 'instruction'
+
+    this.screen.appendChild(this.screenshot)
+    this.screen.appendChild(this.selector)
+    this.screen.appendChild(this.instructionElement)
+
+    this.popup.appendChild(closeBtn)
+    this.popup.appendChild(this.screen)
+
+    this.unitContainer.appendChild(startBtn)
+    this.unitContainer.appendChild(this.popup)
+
+    startBtn.addEventListener('click', this.openPopup.bind(this))
+  }
+
+  openPopup() {
+    this.counter = 0
+    document.querySelector('body').classList.add('blocked')
+    this.popup.classList.remove('off')
+    this.changeScreen()
+  }
+
+  changeScreen() {
+    if (this.counter < this.numberOfScreens) {
+      this.screenshot.setAttribute('src', `./dist/assets/screenshots/${this.counter+1}.png`)
+      this.selector.style.left = `${this.position[this.counter][0]}px`
+      this.selector.style.top = `${this.position[this.counter][1]}px`
+      this.selector.style.width = `${this.position[this.counter][2]}px`
+      this.selector.style.height = `${this.position[this.counter][3]}px`
+      this.instructionElement.innerHTML = this.instruction[this.counter]
+      this.instructionElement.style.setProperty('grid-area', this.instructionPosition[this.counter][0])
+      this.instructionElement.style.setProperty('align-self', this.instructionPosition[this.counter][1])
+
+      this.counter++
+    } else if (this.counter = this.numberOfScreens) {
+      this.instructionElement.innerHTML = '<h2>Вы отлично справились с заданием!<h2>'
+      this.completed = true
+      this.parent.completed = true
+    }
   }
 }
 
@@ -2385,20 +3102,16 @@ class DictantUnit extends FillInDropDownUnit {
     checkBtn.className = "btn check regular disabled";
     checkBtn.innerHTML = "Проверить";
 
-    // creating unit show answers button
     let showAnswersBtn = document.createElement("button");
     showAnswersBtn.setAttribute("type", "button");
     showAnswersBtn.className = "btn showAnswers regular off";
     showAnswersBtn.innerHTML = "Показать правильные ответы";
 
-    // appending children to unit container
     this.unitContainer.appendChild(header);
     this.unitContainer.appendChild(body);
     this.unitContainer.appendChild(fb);
     this.unitContainer.appendChild(checkBtn);
     this.unitContainer.appendChild(showAnswersBtn);
-
-    // setting event listeners
 
     checkBtn.addEventListener("click", this.checkAnswers.bind(this));
 
@@ -2479,624 +3192,7 @@ class DictantUnit extends FillInDropDownUnit {
   }
 }
 
-class Statement {
-  constructor(obj, verb = "experienced") {
-    this.obj = obj;
-    this.verb = verb;
-  }
-
-  get objectObj() {
-    let simpleObject = {
-      object: {
-        id: this.obj.id,
-        definition: {
-          name: {
-            "en-US": this.obj.name ? this.obj.name : this.obj.id,
-          },
-          description: {
-            "en-US": this.obj.description ?
-              this.obj.description : this.obj.name ?
-              this.obj.name : this.obj.id,
-          },
-        },
-      },
-    };
-    if (this.obj instanceof SubUnit || this.obj instanceof TestUnit || this.obj instanceof CaseUnit) {
-      let extraDefinitionProperties = {
-        type: "http://adlnet.gov/expapi/activities/cmi.interaction",
-        // interactionType: "choice",
-        correctResponsesPattern: Xapi.getCorrectResponsesPattern(
-          this.obj.correctResponsesPattern
-        ),
-        choices: Xapi.getChoices(this.obj.choices),
-      };
-
-      if (
-        this.obj._parent instanceof LangExerciseUnit ||
-        this.obj._parent instanceof DictantUnit ||
-        this.obj instanceof TestUnit ||
-        this.obj instanceof CaseUnit
-      ) {
-        Object.assign(extraDefinitionProperties, {
-          interactionType: "choice",
-        });
-      }
-
-      Object.assign(simpleObject.object.definition, extraDefinitionProperties);
-    }
-    return simpleObject;
-  }
-
-  get actorObj() {
-    return {
-      actor: Xapi.data.actor ? Xapi.data.actor : "User",
-    };
-  }
-
-  get verbObj() {
-    return {
-      verb: verbs[this.verb],
-    };
-  }
-
-  get resultObj() {
-    let resultObj = {};
-    if (this.verb === "completed") {
-      resultObj["result"] = {
-        completion: this.obj.completed,
-      };
-    } else if (this.verb === "answered") {
-      resultObj["result"] = {
-        success: this.obj.result,
-        response: Xapi.getResponse(this.obj.response),
-      };
-    } else if (this.verb === "passed" || this.verb === "failed") {
-      resultObj["result"] = {
-        score: {
-          raw: this.obj.score,
-        },
-        success: this.obj.result,
-      };
-    } else if (this.verb === "commented") {
-      resultObj["result"] = {
-        response: '{' + `"title":"${this.obj.title}","text":"${this.obj.text}","tag":"${this.obj.tag}"` + '}'
-      };
-    } else if (this.verb === "rated") {
-      resultObj["result"] = {
-        score: {
-          raw: this.obj.rating,
-        },
-      };
-    }
-    return resultObj;
-  }
-
-  get contextObj() {
-    let contextObj = {};
-    if (this.obj.parent) {
-      contextObj["context"] = {
-        contextActivities: {
-          parent: [{
-            id: this.obj.parent.id,
-            objectType: "Activity",
-          }, ],
-        },
-      };
-      return contextObj;
-    }
-  }
-
-  get finalStatement() {
-    let stmt = Object.assign({},
-      this.actorObj,
-      this.verbObj,
-      this.objectObj,
-      this.contextObj,
-      this.resultObj
-    );
-    return stmt;
-  }
-}
-
-class Course {
-  constructor(id, renderHooks) {
-    this.id = id;
-    this.name = "course";
-    this.renderHooks = renderHooks;
-    Xapi.sendStmt(new Statement(this, "launched").finalStatement);
-    this.interactions = [];
-    this.getInteractions();
-  }
-
-  getInteractions() {
-    let that = this;
-    this.renderHooks.forEach(function (hook, index) {
-      if (hook.dataset.type === "langExercise") {
-        let i = new LangExerciseInteraction(index, hook, that);
-        that.interactions.push(i);
-      } else if (hook.dataset.type === "diсtant") {
-        let i = new DictantInteraction(index, hook, that);
-        that.interactions.push(i);
-      } else if (hook.dataset.type === "longread") {
-        let i = new LongreadInteraction(index, hook, that);
-        that.interactions.push(i);
-      } else if (hook.dataset.type === "video") {
-        let i = new VideoInteraction(index, hook, that);
-        that.interactions.push(i);
-      } else if (hook.dataset.type === "test") {
-        let i = new TestInteraction(index, hook, that);
-        that.interactions.push(i);
-      } else if (hook.dataset.type === "case") {
-        let i = new CaseInteraction(index, hook, that);
-        that.interactions.push(i);
-      } else if (hook.dataset.type === "comment") {
-        let i = new CommentInteraction(index, hook, that);
-        that.interactions.push(i);
-      } else if (hook.dataset.type === "rating") {
-        let i = new RatingInteraction(index, hook, that);
-        that.interactions.push(i);
-      } else if (hook.dataset.type === "survey") {
-        let i = new SurveyInteraction(index, hook, that);
-        that.interactions.push(i);
-      } else if (hook.dataset.type === "points_distribution") {
-        let i = new PointsDistributionInteraction(index, hook, that);
-        that.interactions.push(i);
-      }
-    });
-  }
-
-  get result() {
-    let overallResult = 0;
-    let requiredResult = 0;
-    this.interactions.forEach(function (i) {
-      if (i.required === true) {
-        requiredResult++;
-        if (i.result) {
-          overallResult++;
-        }
-      }
-    });
-    return overallResult === requiredResult;
-  }
-
-  get score() {
-    let overallResult = 0;
-    this.interactions.forEach(function (i) {
-      if (i.result) {
-        overallResult++;
-      }
-    });
-    return overallResult;
-  }
-
-  get completed() {
-    let completionStatus = this.interactions.map(function (i) {
-      if (i.required === true) {
-        return i.completed;
-      }
-    });
-    return !completionStatus.includes(false);
-  }
-
-  set completed(v) {
-    if (this.completed) {
-      console.log("Course completed");
-      Xapi.sendStmt(new Statement(this, "completed").finalStatement);
-      if (this.result === true) {
-        console.log("Course passed");
-        Xapi.sendStmt(new Statement(this, "passed").finalStatement);
-      } else if (this.result === false) {
-        console.log("Course failed");
-        Xapi.sendStmt(new Statement(this, "failed").finalStatement);
-      }
-    }
-  }
-}
-
-class Xapi {
-  // start of old code
-
-  static parseQuery(queryString) {
-    let query = {};
-    let pairs = (queryString[0] === "?" ?
-      queryString.substr(1) :
-      queryString
-    ).split("&");
-    for (let i = 0; i < pairs.length; i++) {
-      let pair = pairs[i].split("=");
-      query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || "");
-    }
-    return query;
-  }
-
-  /* static activityId = "empty";
-  static data = {
-    actor: "user",
-  }; */
-
-  static getXapiData() {
-    let queryParams = Xapi.parseQuery(window.location.search);
-    Xapi.activityId = queryParams.activity_id;
-
-    Xapi.data = {
-      endpoint: queryParams.endpoint,
-      auth: queryParams.auth,
-      actor: JSON.parse(queryParams.actor),
-      grouping: queryParams.grouping,
-      registration: queryParams.registration,
-      context: queryParams.context
-    };
-
-    // SCORM Cloud patch
-    if (Array.isArray(Xapi.data.actor.account)) {
-      Xapi.data.actor.account = Xapi.data.actor.account[0];
-    }
-    if (Array.isArray(Xapi.data.actor.name)) {
-      Xapi.data.actor.name = Xapi.data.actor.name[0];
-    }
-    if (
-      Xapi.data.actor.account &&
-      Xapi.data.actor.account.accountServiceHomePage
-    ) {
-      Xapi.data.actor.account.homePage =
-        Xapi.data.actor.account.accountServiceHomePage;
-      Xapi.data.actor.account.name = Xapi.data.actor.account.accountName;
-      delete Xapi.data.actor.account.accountServiceHomePage;
-      delete Xapi.data.actor.account.accountName;
-    }
-
-    // End SCORM Cloud patch
-
-    return {
-      endpoint: Xapi.data.endpoint,
-      auth: Xapi.data.auth,
-      actor: Xapi.data.actor,
-      grouping: Xapi.data.grouping,
-      registration: Xapi.data.registration,
-      context: Xapi.data.context,
-    };
-  }
-
-  // end of old code
-
-  static sendStmt(stmt) {
-    App.statements.push(stmt);
-    if (App.testMode === false) {
-      console.log(stmt);
-      ADL.XAPIWrapper.sendStatement(stmt, function (resp, obj) {
-        console.log(resp.status + resp.statusText);
-      });
-    } else if (App.testMode === true) {
-      console.log(stmt);
-    }
-  }
-
-  static getChoices(arr) {
-    let newArr = [];
-    if (arr.length === 1) {
-      newArr = arr[0].map(function (option) {
-        return {
-          id: option,
-          description: {
-            "ru-RU": option,
-          },
-        };
-      });
-    } else if (arr.length === 2) {
-      newArr = arr[0].map(function (option, ind) {
-        return {
-          id: option,
-          description: {
-            "ru-RU": arr[1][ind],
-          },
-        };
-      });
-    }
-    return newArr;
-  }
-
-  static getCorrectResponsesPattern(str) {
-    return [str];
-  }
-
-  static getResponse(item) {
-    if (Array.isArray(item)) {
-      return item.join('[,]');
-      // or item.join()
-    } else {
-      return item;
-    }
-  }
-
-  static getPossibleOptions(words, choices, num = 0) {
-    if (!Array.isArray(words)) {
-      words = [words];
-    }
-
-    if (!Array.isArray(choices[0])) {
-      choices = [choices];
-    }
-
-    let newWords = [];
-
-    if (words[words.length - 1].indexOf("_") === -1) {
-      return words;
-    }
-
-    words.forEach(function (str) {
-      choices[num].forEach(function (c) {
-        newWords.push(str.replace("_", c));
-      });
-    });
-
-    return Xapi.getPossibleOptions(newWords, choices, num + 1);
-  }
-
-  static getCorrectOption(word, correctArr) {
-    let thisWord = word;
-    correctArr.forEach(function (letter) {
-      thisWord = thisWord.replace("_", letter);
-    });
-    return thisWord;
-  }
-}
-
-class App {
-  constructor() {}
-  /* static renderHooks = [];
-  static testMode = false;
-  static id = "";
-  static course;
-  static loaded = false;
-  static statements = [];
-  static isVideo = false;
-  static observers = []; */
-
-  static isTestMode() {
-    App.testMode =
-      document
-      .querySelector('meta[content^="testmode"]')
-      .getAttribute("content")
-      .split("testmode:")[1] === "true" ?
-      true :
-      false;
-  }
-
-  static getId() {
-    let prefix = document
-      .querySelector('meta[content^="prefix"]')
-      .getAttribute("content")
-      .split("prefix:")[1];
-    let course = document
-      .querySelector('meta[content^="course"]')
-      .getAttribute("content")
-      .split("course:")[1];
-    App.id = prefix + course;
-  }
-
-  static getRenderHooks() {
-    App.renderHooks = Array.from(document.querySelectorAll(".interaction"));
-  }
-
-  /* static isVid() {
-    App.renderHooks.forEach(function (h) {
-      if (h.dataset.type === "video") {
-        App.isVideo = true;
-      }
-    });
-  } */
-
-  static init() {
-    App.addFooter();
-    App.addLongread();
-    App.addComment();
-    App.addRating();
-    App.getId();
-    App.getRenderHooks();
-    App.isTestMode();
-    if (App.testMode === false) {
-      ADL.XAPIWrapper.changeConfig(Xapi.getXapiData());
-    }
-    App.course = new Course(App.id, App.renderHooks);
-  }
-
-  static addRating() {
-    if (document.querySelector('meta[content^="rating"]') &&
-      document
-      .querySelector('meta[content^="rating"]')
-      .getAttribute("content")
-      .split("rating:")[1] === "true"
-    ) {
-      let element = document.querySelector("#finalLongread");
-
-      let rating = document.createElement("div");
-      rating.id = "rating";
-      rating.className = "interaction";
-      rating.dataset.type = "rating";
-      rating.dataset.name = "Оценка курса";
-      rating.dataset.required = "false";
-
-      element.after(rating);
-    }
-  }
-
-  static addComment() {
-    if (document
-      .querySelector('meta[content^="comment"]') && document
-      .querySelector('meta[content^="comment"]')
-      .getAttribute("content")
-      .split("comment:")[1] === "true"
-    ) {
-      let element = document.querySelector("#finalLongread");
-
-      let comment = document.createElement("div");
-      comment.id = "comment";
-      comment.className = "interaction";
-      comment.dataset.type = "comment";
-      comment.dataset.name = "Комментарий";
-      comment.dataset.required = "false";
-
-      element.after(comment);
-    }
-  }
-
-  static addLongread() {
-    let nextBtn = document.querySelector("#nextBtn");
-    let longread = document.createElement("div");
-    longread.id = "finalLongread";
-    longread.className = "interaction";
-    longread.dataset.type = "longread";
-    longread.dataset.name = "Лонгрид";
-    longread.dataset.required = "true";
-
-    nextBtn.before(longread);
-  }
-
-  static addFooter() {
-    let body = document.querySelector("#allrecords");
-
-    let footer = document.createElement("footer");
-    footer.id = "pagefooter";
-
-    let nextBtn = document.createElement("button");
-    nextBtn.id = "nextBtn";
-    nextBtn.className = "btn";
-    nextBtn.innerHTML = "Далее";
-    nextBtn.setAttribute("type", "button");
-    nextBtn.addEventListener("click", App.backToTrack);
-
-    footer.appendChild(nextBtn);
-    body.appendChild(footer);
-  }
-
-  static backToTrack() {
-    console.log("Finishing course ...");
-    App.course.interactions.forEach(function (i) {
-      Xapi.sendStmt(new Statement(i, "exited").finalStatement);
-    });
-    Xapi.sendStmt(new Statement(App.course, "exited").finalStatement);
-    console.log("Redirecting back to track ...");
-    (function () {
-      if (window.top) {
-        return window.top;
-      }
-      return window.parent;
-    })().location = "/back/";
-    return false;
-  }
-
-  static linkDb() {
-    let head = document.querySelector("head");
-    let script = document.createElement("script");
-    script.setAttribute("src", "dist/db.js");
-    head.appendChild(script);
-  }
-
-  static linkVerbs() {
-    let head = document.querySelector("head");
-    let script = document.createElement("script");
-    script.setAttribute("src", "dist/verbs.js");
-    head.appendChild(script);
-  }
-
-  static shuffle(array) {
-    let newArr = array;
-    for (let i = newArr.length - 1; i > 0; i--) {
-      let j = Math.floor(Math.random() * (i + 1));
-      [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
-    }
-    return newArr;
-  }
-
-  static isArraysSimilar(arr1, arr2) {
-    if (arr1.length !== arr2.length) {
-      return false;
-    }
-    for (let i = 0; i < arr1.length; i++) {
-      if (arr1[i] !== arr2[i]) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  static multiplyArrays(...values) {
-    let result = values[0]
-      .map(function (v) {
-        let vals = values[1].map(function (i) {
-          return `${v},${i}`;
-        });
-        return vals;
-      })
-      .flat();
-
-    let newValues = values;
-    newValues.shift();
-    newValues.shift();
-
-    if (newValues.length !== 0) {
-      return multiplyArrays(result, ...newValues);
-    }
-
-    return result;
-  }
-
-  static getStructure() {
-    let items = App.course.interactions.map(function (i, index) {
-      let data = {
-        id: i.id,
-        parent: i.parent.id,
-        name: i.name,
-        type: i.interactionData.type,
-        weight: i.required ? 1 : 0,
-        is_leaf: true,
-        type_name: App.getRusName(i),
-        order: index,
-      };
-      return data;
-    });
-
-    let structure = {
-      id: App.course.id,
-      type: "course",
-      version: 1,
-      component: "course",
-      name: App.course.name,
-      items: items,
-    };
-
-    let container = document.createElement("div");
-    document.body.appendChild(container);
-    container.innerText = JSON.stringify(structure);
-
-    return JSON.stringify(structure);
-  }
-
-  static getRusName(i) {
-    if (i instanceof TestInteraction) {
-      return "Тест";
-    } else if (i instanceof DictantInteraction) {
-      return "Диктант";
-    } else if (i instanceof LangExerciseInteraction) {
-      return "Упражнение";
-    } else if (i instanceof VideoInteraction) {
-      return "Видео";
-    } else if (i instanceof LongreadInteraction) {
-      return "Лонгрид";
-    } else if (i instanceof CommentInteraction) {
-      return "Комментарий";
-    } else if (i instanceof RatingInteraction) {
-      return "Рейтинг";
-    } else if (i instanceof SurveyInteraction) {
-      return "Опросник";
-    } else if (i instanceof PointsDistributionInteraction) {
-      return "Задание на распределение баллов";
-    } else if (i instanceof CaseInteraction) {
-      return "Кейс";
-    }
-  }
-}
-
+// TO DO: Integrate to this script
 // YT iFrame API
 
 let tag = document.createElement("script");

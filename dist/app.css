@@ -171,6 +171,10 @@ html {
     scroll-behavior: smooth !important;
 }
 
+body.blocked {
+    overflow: hidden !important;
+}
+
 /*Обнуление отступов*/
 #allrecords .interaction * {
     box-sizing: border-box !important;
@@ -355,6 +359,109 @@ html {
 }
 
 /*Частные настройки для элементов*/
+/*Тренажер по ПО*/
+#allrecords .interaction .softwareEmulationUnit {
+    display: flex;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+    justify-items: center;
+    padding: 2rem;
+}
+
+#allrecords .interaction .softwareEmulationUnit .popup {
+    background-color: rgba(0, 0, 0, 0.5);
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+    justify-items: center;
+    z-index: 500;
+}
+
+#allrecords .interaction .softwareEmulationUnit .popup .closeBtn {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    cursor: pointer;
+}
+
+#allrecords .interaction .softwareEmulationUnit .popup .screen {
+    position: relative;
+    width: 1152px;
+    height: 768px;
+    border: 1px solid gray;
+    box-sizing: border-box;
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    grid-template-areas:
+        'tl tm tr'
+        'cl cm cr'
+        'bl bm br';
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+    justify-items: center;
+    z-index: 600;
+}
+
+#allrecords .interaction .softwareEmulationUnit .popup .screen .screenshot {
+    position: absolute;
+    box-sizing: border-box;
+    /* width: 100%; */
+    top: 0;
+    left: 0;
+    z-index: 700;
+}
+
+#allrecords .interaction .softwareEmulationUnit .popup .screen .selector {
+    position: absolute;
+    box-sizing: border-box;
+    /* border: 2px solid red; */
+    background-color: transparent;
+    cursor: pointer;
+    z-index: 900;
+}
+
+#allrecords .interaction .softwareEmulationUnit .popup .screen .instruction {
+    grid-area: cm;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    align-content: center;
+    justify-content: center;
+    padding: 2.5rem;
+    background-color: #2b579a;
+    color: white;
+    border-radius: 3px;
+    opacity: 1;
+    transform: scale(1);
+    transform-origin: center center;
+    transition: opacity 300ms linear, transform 300ms linear;
+    font-size: 1rem;
+    align-self: center;
+    z-index: 800;
+}
+
+#allrecords .interaction .softwareEmulationUnit .popup .screen .instruction h2 {
+    text-align: center;
+}
+
+#allrecords .interaction .softwareEmulationUnit .popup .screen .instruction:empty {
+    opacity: 0;
+    transform: scale(0);
+}
+
 /*Тест*/
 #allrecords .interaction .testUnit .qHelp {
     font-size: var(--font-size);
