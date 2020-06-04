@@ -616,7 +616,7 @@ class Course {
           console.log('Course failed.')
           Xapi.sendStmt(new Statement(this, 'failed').finalStatement)
         }
-        this.stmtSent === true
+        this.stmtSent = true
       } else {
         console.log('All statements have already been sent.')
       }
