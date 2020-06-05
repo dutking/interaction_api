@@ -1292,6 +1292,9 @@ class SoftwareEmulationUnit extends InteractionUnit {
     this.instruction = this.dbData.instruction
     this.instructionPosition = this.dbData.instructionPosition
     this.counter = 0
+    this.singleCount = 0
+    this.timerH = 0
+    this.time = 20000
     this.render()
   }
 
@@ -1329,13 +1332,33 @@ class SoftwareEmulationUnit extends InteractionUnit {
     this.selector.className = 'selector'
 
     this.selector.addEventListener('click', this.changeScreen.bind(this))
+    this.popup.addEventListener('click', this.clickCheck.bind(this))
+
+    this.helpText = document.createElement('div')
+    this.helpText.className = 'helptext'
+
+    this.screpcaCont = document.createElement('div')
+    this.screpcaCont.className = 'screpca'
+    this.screpca = document.createElement('img')
+    this.screpca.setAttribute('src', '')
+    this.screpca.setAttribute('alt', 'скрепка')
 
     this.instructionElement = document.createElement('div')
     this.instructionElement.className = 'instruction'
 
+    this.wrongText = document.createElement('div')
+    this.wrongText.className = 'wrongtext'
+
+    this.helpDiv = document.createElement('div')
+    this.helpDiv.className = 'help'
+
     this.screen.appendChild(this.screenshot)
     this.screen.appendChild(this.selector)
+    this.screen.appendChild(this.helpText)
+    this.screen.appendChild(this.screpcaCont)
     this.screen.appendChild(this.instructionElement)
+    this.screen.appendChild(this.wrongText)
+    this.screen.appendChild(this.helpDiv)
 
     this.popup.appendChild(closeBtn)
     this.popup.appendChild(this.screen)
@@ -1343,7 +1366,9 @@ class SoftwareEmulationUnit extends InteractionUnit {
     this.unitContainer.appendChild(startBtn)
     this.unitContainer.appendChild(this.popup)
 
+    this.screpcaCont.appendChild(this.screpca)
     startBtn.addEventListener('click', this.openPopup.bind(this))
+    this.helpDiv.addEventListener('click', this.showHelp.bind(this))
   }
 
   openPopup() {
@@ -1351,6 +1376,39 @@ class SoftwareEmulationUnit extends InteractionUnit {
     document.querySelector('body').classList.add('blocked')
     this.popup.classList.remove('off')
     this.changeScreen()
+  }
+
+  helpDivFade() {
+    this.helpDiv.style.opacity = '0'
+    this.helpDiv.style.transform = 'scale(0)'
+  }
+
+  wrongTextFade() {
+    this.wrongText.style.opacity = '0'
+    this.wrongText.style.transform = 'scale(0)'
+  }
+
+  wrongTextShow() {
+    this.wrongText.style.opacity = '1'
+    this.wrongText.style.transform = 'scale(1)'
+  }
+  showHelp() {
+    this.selector.style.border = '2px solid red'
+    this.selector.style.backgroundColor = '#e48d8d33'
+
+    this.helpText.style.opacity = '1'
+    this.helpText.style.zIndex = '900'
+    this.helpText.innerHTML = 'Нажмите сюда!'
+    this.helpText.style.left = `${this.position[this.counter - 1][0]}px`
+    this.helpText.style.top = `${this.position[this.counter - 1][1]}px`
+    this.helpText.style.margin = `${
+      this.position[this.counter - 1][3] + 7
+    }px 0px 0px -151px`
+  }
+
+  innerLast() {
+    //анимация последнего сообщения через empty
+    this.instructionElement.innerHTML = this.instruction[this.counter - 1]
   }
 
   changeScreen() {
@@ -1363,22 +1421,117 @@ class SoftwareEmulationUnit extends InteractionUnit {
       this.selector.style.top = `${this.position[this.counter][1]}px`
       this.selector.style.width = `${this.position[this.counter][2]}px`
       this.selector.style.height = `${this.position[this.counter][3]}px`
-      this.instructionElement.innerHTML = this.instruction[this.counter]
-      this.instructionElement.style.setProperty(
-        'grid-area',
-        this.instructionPosition[this.counter][0]
-      )
-      this.instructionElement.style.setProperty(
-        'align-self',
-        this.instructionPosition[this.counter][1]
-      )
+      if (
+        this.instruction[this.counter] != '' &&
+        this.instruction.length != this.counter + 1
+      ) {
+        this.screpca.setAttribute('src', `./dist/assets/yellow_screp.svg`)
+        this.instructionElement.innerHTML = this.instruction[this.counter]
+        this.instructionElement.style.setProperty(
+          'grid-area',
+          this.instructionPosition[this.counter][0]
+        )
+        this.instructionElement.style.setProperty(
+          'align-self',
+          this.instructionPosition[this.counter][1]
+        )
+        this.singleCount = 0
+      }
+
+      if (this.instruction.length == this.counter + 1) {
+        //проверка на последнее сообщение
+        this.instructionElement.innerHTML = ''
+        setTimeout(this.innerLast.bind(this), 300)
+      }
 
       this.counter++
+      this.singleCount++ // количество кликов для выполнения задания (шаг)
+
+      this.helpText.style.opacity = '0'
+      this.helpText.style.zIndex = '500'
+      this.wrongTextFade()
+      this.helpDivFade()
+      this.selector.style.border = 'none'
+      this.selector.style.backgroundColor = 'transparent'
     }
+    if (this.counter === this.numberOfScreens) {
+      this.lastScreen = true
+    } else {
+      this.lastScreen = false
+    }
+    this.helpDiv.style.display = 'block'
+    clearTimeout(this.timerH)
+
+    this.timerH = setTimeout(this.helpTimer.bind(this), this.time)
     if (this.counter === this.numberOfScreens) {
       this.completed = true
       this.parent.completed = true
       this.selector.classList.add('off')
+    }
+  }
+
+  helpTimer() {
+    this.helpDiv.innerHTML = 'Помощь'
+    if (this.lastScreen) {
+      this.helpDivFade()
+    } else {
+      this.helpDiv.style.opacity = '1'
+      this.helpDiv.style.transform = 'scale(1)'
+    }
+  }
+
+  clickCheck(e) {
+    //проверка куда попал клик
+    let target = e.target
+    console.log(this.instruction[this.counter - 1])
+    if (
+      target.className == 'selector' &&
+      this.instruction[this.counter - 1] != ''
+    ) {
+      // Верная скрепка если следующий вопрос не пустой
+
+      this.helpDiv.style.display = 'none'
+      this.screpca.setAttribute('src', `./dist/assets/green_screp.svg`)
+      this.instructionElement.innerHTML = ''
+      this.wrongText.innerHTML =
+        'Верно!' + '<div class="rightbutton">Следующее задание!</div>'
+      this.wrongTextShow()
+    } else if (
+      // Желтая скрепка при пустом вопросе
+      target.className == 'selector' &&
+      this.instruction[this.counter - 1] == ''
+    ) {
+      this.screpca.setAttribute('src', `./dist/assets/yellow_screp.svg`)
+      this.instructionElement.innerHTML = this.instruction[this.counter - 2]
+    } else if (
+      target.className == 'help' ||
+      target.className == 'selector off'
+    ) {
+      // ничего при пустом
+    } else if (target.className == 'rightbutton') {
+      // действия при клике на след задание
+      this.helpDivFade()
+      this.counter--
+      this.wrongTextFade()
+      this.changeScreen()
+    } else if (target.className == 'wrongbutton') {
+      // клик на - заново
+      this.counter = this.counter - this.singleCount
+      this.wrongTextFade()
+      this.changeScreen()
+    } else {
+      // в любом другом случае клик считается не верным
+      if (
+        !this.lastScreen &&
+        this.screpca.getAttribute('src') == './dist/assets/yellow_screp.svg'
+      ) {
+        this.screpca.setAttribute('src', `./dist/assets/red_screp.svg`)
+        this.instructionElement.innerHTML = ''
+        this.wrongText.innerHTML =
+          'Неверно!' + '<div class="wrongbutton">Попробовать еще раз!</div>'
+        this.wrongTextShow()
+        this.helpDiv.style.display = 'none'
+      }
     }
   }
 }

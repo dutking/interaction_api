@@ -561,7 +561,7 @@ const db = [
     ],
   },
   {
-    numberOfScreens: 6,
+    numberOfScreens: 7,
     position: [
       [1020, 0, 35, 25],
       [842, 22, 310, 60],
@@ -581,13 +581,13 @@ const db = [
       '<h2>Вы отлично справились с заданием!<h2>',
     ],
     instructionPosition: [
-      ['cm', 'center'],
-      ['cm', 'center'],
-      ['cm', 'center'],
-      ['cm', 'center'],
-      ['cm', 'center'],
-      ['cm', 'center'],
-      ['cm', 'center'],
+      ['cl / cl / bm / bm', 'center'],
+      ['cl / cl / bm / bm', 'center'],
+      ['cl / cl / bm / bm', 'center'],
+      ['cl / cl / bm / bm', 'center'],
+      ['cl / cl / bm / bm', 'center'],
+      ['cl / cl / bm / bm', 'center'],
+      ['cl / cl / bm / bm', 'center'],
     ],
   },
   // empty for video
