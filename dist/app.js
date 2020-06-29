@@ -2739,6 +2739,14 @@ class FillInDropDownUnit extends CmiInteractionUnit {
 
         let optionArr = optionStr.replace(/[\(\)]/g, '').split(',')
 
+        // заменяем ПУСТО на НИЧЕГО в задачах, где пусто пердполагает отсутствие буквы
+        let isComa = optionArr.indexOf('зпт')
+        optionArr.forEach(function (o, i) {
+          if (isComa === -1 && o === 'пусто') {
+            optionArr[i] = 'ничего'
+          }
+        })
+
         optionArr.forEach(function (opt, index) {
           let option = opt.replace('*', '')
           switch (option) {
@@ -2757,6 +2765,16 @@ class FillInDropDownUnit extends CmiInteractionUnit {
               currentOptions.toReport.push(option)
               currentOptions.toInsert.push('-')
               break
+            case 'двоеточие':
+              currentOptions.toShow.push(':')
+              currentOptions.toReport.push(option)
+              currentOptions.toInsert.push(':')
+              break
+            case 'тире':
+              currentOptions.toShow.push('—')
+              currentOptions.toReport.push(option)
+              currentOptions.toInsert.push('—')
+              break
             case 'зпт':
               currentOptions.toShow.push(',')
               currentOptions.toReport.push('запятая_нужна')
@@ -2764,8 +2782,13 @@ class FillInDropDownUnit extends CmiInteractionUnit {
               break
             case 'пусто':
               currentOptions.toShow.push(' ')
-              currentOptions.toReport.push('запятая_не_нужна')
+              currentOptions.toReport.push('знак_не_нужен')
               currentOptions.toInsert.push(' ')
+              break
+            case 'ничего':
+              currentOptions.toShow.push(' ')
+              currentOptions.toReport.push('ничего')
+              currentOptions.toInsert.push('')
               break
             default:
               currentOptions.toShow.push(option)
@@ -2955,14 +2978,22 @@ class FillInDropDownUnit extends CmiInteractionUnit {
             e.classList.remove('helper')
           }
         }
-        if (that.optionsToShow[wordIndex][spaceIndex].includes('слитно')) {
+        if (
+          that.optionsToReport[wordIndex][spaceIndex].includes('слитно') ||
+          that.optionsToReport[wordIndex][spaceIndex].includes('ничего')
+        ) {
           if (e.innerHTML === '') {
             e.parentNode.classList.add('nospace')
           } else {
             e.parentNode.classList.remove('nospace')
           }
 
-          if (e.innerHTML === '-' || e.innerHTML === ' ') {
+          if (
+            e.innerHTML === '-' ||
+            e.innerHTML === ' ' ||
+            e.innerHTML === 'ъ' ||
+            e.innerHTML === 'ь'
+          ) {
             e.classList.add('box')
             e.classList.remove('tri')
           } else {
@@ -3000,7 +3031,10 @@ class FillInDropDownUnit extends CmiInteractionUnit {
       that.optionsToInsert[wordIndex][spaceIndex][optionIndex]
 
     spaceElement.classList.remove('empty')
-    if (spaceElement.dataset.user_answer === 'слитно') {
+    if (
+      spaceElement.dataset.user_answer === 'слитно' ||
+      spaceElement.dataset.user_answer === 'ничего'
+    ) {
       e.currentTarget.parentNode.parentNode.classList.add('nospace')
       spaceElement.classList.add('tri')
       spaceElement.classList.remove('box')
@@ -3008,7 +3042,11 @@ class FillInDropDownUnit extends CmiInteractionUnit {
       e.currentTarget.parentNode.parentNode.classList.remove('nospace')
       spaceElement.classList.remove('tri')
       spaceElement.classList.add('box')
-      if (spaceElement.dataset.user_answer === 'дефис') {
+      if (
+        spaceElement.dataset.user_answer === 'дефис' ||
+        spaceElement.dataset.user_answer === 'ъ' ||
+        spaceElement.dataset.user_answer === 'ь'
+      ) {
         spaceElement.classList.remove('helper')
       }
     }
