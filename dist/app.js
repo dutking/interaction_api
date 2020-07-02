@@ -1021,7 +1021,9 @@ class LetterBox {
         <h2>${
           this.parent instanceof LangExerciseUnit
             ? 'Вы прошли успешную тренировку!'
-            : 'После диктанта.'
+            : this.parent instanceof DictantUnit
+            ? 'После диктанта.'
+            : 'После теста.'
         }</h2>
         <p>Узнайте еще букв${
           this.letter.lenght === 1 ? 'у' : 'ы'
@@ -1058,7 +1060,10 @@ class LetterBox {
       this.parent.unitContainer
         .querySelector('.continue')
         .before(this.container)
-    } else if (this.parent instanceof DictantUnit) {
+    } else if (
+      this.parent instanceof DictantUnit ||
+      this.parent instanceof TestUnit
+    ) {
       this.parent.unitContainer.appendChild(this.container)
     }
   }
@@ -1117,6 +1122,7 @@ class TestInteraction extends IterableScorableInteraction {
   constructor(index, renderHook, parent) {
     super(index, renderHook, parent)
     this.fb = db[this.index].fb
+    this.insideBox = this.interactionData.inside_box || ''
     this.immediateFeedback =
       this.interactionData.immediate_feedback === 'true' ? true : false
     this.attempt = 0
@@ -2632,6 +2638,12 @@ class TestUnit extends CmiInteractionUnit {
     this.unitContainer.appendChild(finalFbContainer)
     if (this.parent.immediateFeedback === false) {
       finalFbContainer.scrollIntoView()
+    }
+
+    if (this.parent.result === true) {
+      if (this.parent.insideBox !== '') {
+        new LetterBox(this)
+      }
     }
   }
 }
