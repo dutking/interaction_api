@@ -3001,10 +3001,11 @@ class FillInDropDownUnit extends CmiInteractionUnit {
           }
 
           if (
-            e.innerHTML === '-' ||
+            /* e.innerHTML === '-' ||
             e.innerHTML === ' ' ||
             e.innerHTML === 'ъ' ||
-            e.innerHTML === 'ь'
+            e.innerHTML === 'ь' */
+            e.innerHTML !== ''
           ) {
             e.classList.add('box')
             e.classList.remove('tri')
