@@ -2754,8 +2754,8 @@ class FillInDropDownUnit extends CmiInteractionUnit {
         // заменяем ПУСТО на НИЧЕГО в задачах, где пусто пердполагает отсутствие буквы
         let isComa = optionArr.indexOf('зпт')
         optionArr.forEach(function (o, i) {
-          if (isComa === -1 && o === 'пусто') {
-            optionArr[i] = 'ничего'
+          if (isComa === -1 && o.includes('пусто')) {
+            optionArr[i].replace('пусто', 'ничего')
           }
         })
 
