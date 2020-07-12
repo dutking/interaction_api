@@ -280,6 +280,11 @@ class App {
         : false
   }
 
+  static isInViewport(elem) {
+    var bounding = elem.getBoundingClientRect()
+    return bounding.top - 50 <= window.innerHeight
+  }
+
   static getId() {
     let prefix = document
       .querySelector('meta[content^="prefix"]')
@@ -931,8 +936,20 @@ class LongreadInteraction extends Interaction {
     ]
     this.init()
   }
-
   init() {
+    let that = this
+
+    window.addEventListener('scroll', (event) => {
+      if (App.isInViewport(this.renderHook)) {
+        console.log('Longread completed')
+        that.interactionUnits[0].result = true
+        that.interactionUnits[0].completed = true
+        that.completed = true
+      }
+    })
+  }
+
+  /* init() {
     let that = this
 
     let options = {
@@ -953,7 +970,7 @@ class LongreadInteraction extends Interaction {
     }, options)
     this.observer.observe(this.renderHook)
     App.observers.push(this.observer)
-  }
+  } */
 }
 
 class CommentInteraction extends Interaction {
