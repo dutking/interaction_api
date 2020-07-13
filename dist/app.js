@@ -2769,10 +2769,10 @@ class FillInDropDownUnit extends CmiInteractionUnit {
         let optionArr = optionStr.replace(/[\(\)]/g, '').split(',')
 
         // заменяем ПУСТО на НИЧЕГО в задачах, где пусто пердполагает отсутствие буквы
-        let isComa = optionArr.indexOf('зпт')
+        let isComa = optionArr.includes('зпт') || optionArr.includes('зпт*')
         optionArr.forEach(function (o, i) {
-          if (isComa === -1 && o.includes('пусто')) {
-            optionArr[i].replace('пусто', 'ничего')
+          if (!isComa && o.includes('пусто')) {
+            optionArr[i] = optionArr[i].replace('пусто', 'ничего')
           }
         })
 
