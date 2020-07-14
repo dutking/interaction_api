@@ -715,6 +715,60 @@ body.blocked {
   font-weight: bold;
 }
 
+#allrecords .interaction .testUnit .finalFbContainer .fbHead .scoreContainer {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  justify-items: center;
+}
+
+#allrecords
+  .interaction
+  .testUnit
+  .finalFbContainer
+  .fbHead
+  .scoreContainer
+  .scorePic {
+  display: block;
+  width: 100%;
+}
+
+#allrecords
+  .interaction
+  .testUnit
+  .finalFbContainer
+  .fbHead
+  .scoreContainer
+  .scorePic
+  img {
+  width: 100%;
+}
+
+#allrecords
+  .interaction
+  .testUnit
+  .finalFbContainer
+  .fbHead
+  .scoreContainer
+  .scorePic
+  p {
+  font-weight: normal;
+  text-align: center;
+}
+
+#allrecords
+  .interaction
+  .testUnit
+  .finalFbContainer
+  .fbHead
+  .scoreContainer
+  .scoreText
+  p:last-child {
+  font-weight: normal;
+  margin-top: 2rem;
+}
+
 #allrecords .interaction .testUnit .finalFbContainer .fbBody {
   margin: 2rem 0;
 }
@@ -1586,6 +1640,14 @@ body.blocked {
 
   #allrecords .interaction .ratingUnit .starsContainer {
     justify-content: space-around;
+  }
+
+  #allrecords .interaction .testUnit .finalFbContainer .fbHead .scoreContainer {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: center;
+    justify-items: center;
   }
 
   #allrecords .interaction .pointsDistributionUnit .groupHeader {

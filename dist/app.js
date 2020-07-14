@@ -2611,20 +2611,68 @@ class TestUnit extends CmiInteractionUnit {
       testTesult ? 'correct' : 'incorrect'
     }`
 
-    let score = document.createElement('p')
-    score.innerHTML = `Проходной балл: ${this.parent.minScore}. Ваш результат: ${this.parent.score}.`
+    let scoreContainer = document.createElement('div')
+    scoreContainer.className = 'scoreContainer'
+    scoreContainer.classList.add(testTesult ? 'correct' : 'incorrect')
 
-    fbHead.appendChild(score)
+    if (this.parent.fb.scoreDependent) {
+      let scoreRange
+      this.parent.fb.scoreDependent.forEach(function (data, index) {
+        if (
+          that.parent.score >= data.interval[0] &&
+          that.parent.score <= data.interval[1]
+        ) {
+          scoreRange = index
+        }
+      })
+
+      let scorePic = document.createElement('div')
+      scorePic.className = 'scorePic'
+      let pic = document.createElement('img')
+      let caption = document.createElement('p')
+
+      switch (scoreRange) {
+        case 0:
+          pic.setAttribute('src', 'dist/assets/good.png')
+          caption.innerHTML = this.parent.fb.scoreDependent[0].text
+          break
+        case 1:
+          pic.setAttribute('src', 'dist/assets/neutral.png')
+          caption.innerHTML = this.parent.fb.scoreDependent[1].text
+          break
+        case 2:
+          pic.setAttribute('src', 'dist/assets/bag.png')
+          caption.innerHTML = this.parent.fb.scoreDependent[2].text
+          break
+        default:
+          break
+      }
+      scorePic.appendChild(pic)
+      scorePic.appendChild(caption)
+      scoreContainer.appendChild(scorePic)
+    }
+
+    let scoreText = document.createElement('p')
+    scoreText.innerHTML = `
+    <p>Ваш результат: ${this.parent.score}/${this.parent.amountOfUnits}.</p>
+    <p>Проходной балл: ${this.parent.minScore}/${this.parent.amountOfUnits}.</p>`
+
+    scoreContainer.appendChild(scoreText)
+
+    fbHead.appendChild(scoreContainer)
     finalFbContainer.appendChild(fbHead)
 
+    let fbBody = document.createElement('div')
+    fbBody.className = 'fbBody'
+
     if (this.parent.fb.passed || this.parent.fb.failed) {
-      let fbBody = document.createElement('p')
-      fbBody.className = 'fbBody'
-      fbBody.innerHTML = this.parent.result
+      let fb = document.createElement('p')
+      fb.innerHTML = this.parent.result
         ? this.parent.fb.passed
         : this.parent.fb.failed
-      finalFbContainer.appendChild(fbBody)
+      fbBody.appendChild(fb)
     }
+    finalFbContainer.appendChild(fbBody)
 
     let buttonContainer = document.createElement('div')
     buttonContainer.className = 'buttonContainer'
