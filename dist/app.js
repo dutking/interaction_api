@@ -13,6 +13,12 @@ class Xapi {
   }
 
   static getXapiData() {
+    if (window.location.search === '') {
+      console.log('%cTEST MODE ACTIVATED', 'color:red; font-size:1rem;')
+      console.log('%cNo statements will be sent', 'color:red; font-size:1rem;')
+      App.testMode = true
+      return
+    }
     let queryParams = Xapi.parseQuery(window.location.search)
     Xapi.activityId = queryParams.activity_id
 
