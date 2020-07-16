@@ -322,7 +322,6 @@ class App {
     App.addRating()
     App.getId()
     App.getRenderHooks()
-    App.isTestMode()
     if (App.testMode === false) {
       ADL.XAPIWrapper.changeConfig(Xapi.getXapiData())
     }
