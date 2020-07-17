@@ -1,0 +1,124 @@
+:root {
+  /*Палитра проекта*/
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /*Русский язык*/
+  --color-primary-lightgray: #99a4ae;
+  --color-primary-darkgray: #435363;
+  --color-primary-bluegreen: #00adbb;
+  --color-primary-orange: #efab21;
+  --color-primary-red: #b52253;
+  --color-primary-purple: #4a0d66;
+  --color-secondary-lightgreen: #c4da00;
+  --color-secondary-lightorange: #ffcb00;
+  --color-secondary-green: #25ab8d;
+  --color-secondary-yellow: #edd000;
+  --color-secondary-lightpurple: #86278c;
+  --color-secondary-lightblue: #1580b3;
+  --color-secondary-rasp: #972571;
+  --color-secondary-lilac: #5a499b;
+  --color-secondary-ink: #3a2785;
+  --color-secondary-darkblue: #0e6aa9;
+  --color-secondary-indigo: #214495;
+  --color-secondary-darkpurple: #3c1a76;
+
+  /*Вторичные цвета*/
+  --color-main-dark: var(--color-primary-purple);
+  --color-main-light: var(--color-primary-orange);
+  --color-main-highlight: var(--color-primary-orange);
+
+  /*Максимальная ширина блока с интерактивом при окне больше 1200px*/
+  --max-width: 960px;
+
+  /*Шрифт*/
+  --font-family: 'Open Sans', sans-serif;
+  /*Размер шрифта*/
+  --font-size: 1.25rem;
+  /*Цвет шрифта*/
+  --font-color: var(--color-primary-darkgray);
+  /*Цвет шрифта второстепенных элементов*/
+  --font-color-secondary: var(--color-primary-lightgray);
+  /*Межстрочный интервал*/
+  --line-height: 1.5;
+
+  /*Цвета интерактива*/
+  /*Цвет активного элемента (active)*/
+  --color-active: #0066ff;
+  /*Цвет Верно (correct)*/
+  --color-correct: #00ba56;
+  /*Цвет Неверно (incorrect)*/
+  --color-incorrect: #ff0000;
+  /*Цвет Посещено (visited)*/
+  --color-visited: var(--color-primary-lightgray);
+  /*Цвет Выделено (selected)*/
+  --color-selected: var(--color-primary-orange);
+  /*Цвет Неактивно (disabled)*/
+  --color-disabled: var(--color-primary-lightgray);
+
+  /*Рейтинг*/
+  /*Форма (Звезда) (clip-path)*/
+  --rating-unit-form: polygon(
+    50% 0%,
+    61% 35%,
+    98% 35%,
+    68% 57%,
+    79% 91%,
+    50% 70%,
+    21% 91%,
+    32% 57%,
+    2% 35%,
+    39% 35%
+  );
+  /*Исходный цвет*/
+  --rating-unit-color-initial: var(--color-white);
+  /*Выделенный цвет*/
+  --rating-unit-color-selected: var(--color-secondary-lightorange);
+
+  /*Оформление кнопок*/
+  /*Минимальная ширина кнопки*/
+  --btn-min-width: 0;
+  /*Внутренние отступы: верх-право-низ-лево*/
+  --btn-padding: 1rem 1.5rem 1rem 1.5rem;
+  /*Жирность шрифта кнопки*/
+  --btn-font-weight: bold;
+  /*Цвет шрифта кнопки*/
+  --btn-font-color: var(--color-white);
+  /*Цвет фона кнопки*/
+  --btn-bg-color: var(--color-primary-darkgray);
+  /*Цвет шрифта кнопки при наведении*/
+  --btn-hover-font-color: var(--color-white);
+  /*Цвет фона кнопки при наведении*/
+  --btn-hover-bg-color: #556e87;
+  /*Величина скругления углов (360px для полного скругления по бокам)*/
+  --btn-border-radius: 360px;
+  /*Обводка кнопки: толщина-стиль-цвет*/
+  --btn-border-width: 2px;
+  --btn-border-style: solid;
+  --btn-border-color: var(--btn-bg-color);
+  /*Обводка кнопки при наведении: цвет*/
+  --btn-hover-border-color: var(--btn-hover-bg-color);
+
+  /*Оформление неактивной кнопки*/
+  /*Цвет шрифта*/
+  --disabled-font-color: var(--color-white);
+  /*Цвет фона*/
+  --disabled-bg-color: var(--color-disabled);
+  /*Обводка: толщина-стиль-цвет*/
+  --disabled-border-color: var(--color-disabled);
+
+  /*Оформление футера страницы*/
+  /*Фон блока*/
+  /* --footer-bg: var(--color-gravity-blue-dark); */
+  --footer-bg: linear-gradient(to bottom, #f9e6c8, rgb(255, 226, 179));
+  /*Высота кнопки Далее*/
+  --footer-btn-height: 5rem;
+  /*Фон кнопки Далее*/
+  --footer-btn-bg: transparent;
+  /*Цвет шрифта кнопки Далее*/
+  --footer-btn-font-color: var(--font-color);
+  /*Фон кнопки Далее при наведении*/
+  --footer-btn-bg-hover: rgba(255, 255, 255, 0.1);
+  /*Цвет шрифта кнопки Далее при наведении*/
+  --footer-btn-font-color-hover: var(--footer-btn-font-color);
+}
