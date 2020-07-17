@@ -4,3 +4,5 @@ dist/assets/
 /dist/old
 /dist/assets/
 /dist/assets
+/.vscode/
+.prettierrc
