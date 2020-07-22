@@ -86,6 +86,16 @@ const db = [
         ],
       },
     ],
+    fb: {
+      id: '11.01',
+      scoreDependent: [
+        { interval: [3, 3], text: 'А вы отлично усвоили материал!' },
+        { interval: [2, 2], text: 'Может, вы поторопились?' },
+        { interval: [0, 1], text: 'Пожалуй, стоит пройти материал еще раз.' },
+      ],
+    },
+    passed: '',
+    failed: '',
   },
   // empty for longread, rating and comment
   [{}],
