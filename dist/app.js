@@ -2646,7 +2646,7 @@ class TestUnit extends CmiInteractionUnit {
           caption.innerHTML = this.parent.fb.scoreDependent[1].text
           break
         case 2:
-          pic.setAttribute('src', 'dist/assets/bag.png')
+          pic.setAttribute('src', 'dist/assets/bad.png')
           caption.innerHTML = this.parent.fb.scoreDependent[2].text
           break
         default:
