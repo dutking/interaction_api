@@ -2093,7 +2093,7 @@ class SurveyUnit extends InteractionUnit {
             metricResultDescription.className = 'metricResultDescription'
             metricResultDescription.innerText =
               fb.content[m.id][that.getRangeNum(m, resultNum)]
-            fbUnit.appendChild(metricResultDescription)
+            metricInfo.appendChild(metricResultDescription)
           }
         })
       }
