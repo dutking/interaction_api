@@ -1019,8 +1019,11 @@ body.blocked {
 }
 
 #allrecords .interaction .surveyUnit .fbContainer .fbUnit {
-  display: flex;
-  flex-direction: column;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  justify-items: center;
   font-size: var(--font-size);
   color: var(--font-color);
 }

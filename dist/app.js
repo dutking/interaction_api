@@ -2040,12 +2040,12 @@ class SurveyUnit extends InteractionUnit {
       fbUnit.className = 'fbUnit'
 
       let metricInfo = document.createElement('div')
-      metricInfo.className = 'metricInfo leftBorderMarker highlight'
+      metricInfo.className = 'metricInfo' // 'metricInfo leftBorderMarker highlight'
 
-      let metricName = document.createElement('p')
+      /* let metricName = document.createElement('p')
       metricName.className = 'metricName'
       metricName.innerHTML = m.nameRus
-      metricInfo.appendChild(metricName)
+      metricInfo.appendChild(metricName) */
 
       let resultNum =
         that.surveyResults[m.id] < 0 ? 0 : that.surveyResults[m.id]
@@ -2053,6 +2053,13 @@ class SurveyUnit extends InteractionUnit {
       result.className = 'result'
       result.innerHTML = 'Результат: ' + resultNum
       metricInfo.appendChild(result)
+
+      let rangeNum = 0
+      m.ranges.forEach((r, i) => {
+        if (resultNum >= r[0] && resultNum <= r[1]) {
+          rangeNum = i
+        }
+      })
 
       if (that.surveyMetricsRanges.length > 0) {
         let rangeDescription = document.createElement('p')
@@ -2062,11 +2069,25 @@ class SurveyUnit extends InteractionUnit {
         metricInfo.appendChild(rangeDescription)
       }
 
-      fbUnit.appendChild(metricInfo)
+      let pic = document.createElement('img')
 
       if (that.fbs.length > 0) {
         that.fbs.forEach(function (fb) {
           if (fb.type === 'metricsResultsDescription') {
+            pic.setAttribute('alt', 'Result picture')
+            switch (rangeNum) {
+              case 0:
+                pic.setAttribute('scr', 'dist/assets/bad.png')
+                break
+              case 1:
+                pic.setAttribute('scr', 'dist/assets/neutral.png')
+                break
+              case 2:
+                pic.setAttribute('scr', 'dist/assets/good.png')
+                break
+              default:
+                break
+            }
             fbContainer.classList.add('withDescription')
             let metricResultDescription = document.createElement('p')
             metricResultDescription.className = 'metricResultDescription'
@@ -2076,6 +2097,9 @@ class SurveyUnit extends InteractionUnit {
           }
         })
       }
+
+      fbUnit.appendChild(pic)
+      fbUnit.appendChild(metricInfo)
 
       fbContainer.appendChild(fbUnit)
     })
