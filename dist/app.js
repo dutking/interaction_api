@@ -2077,13 +2077,13 @@ class SurveyUnit extends InteractionUnit {
             pic.setAttribute('alt', 'Result picture')
             switch (rangeNum) {
               case 0:
-                pic.setAttribute('scr', 'dist/assets/bad.png')
+                pic.setAttribute('src', 'dist/assets/bad.png')
                 break
               case 1:
-                pic.setAttribute('scr', 'dist/assets/neutral.png')
+                pic.setAttribute('src', 'dist/assets/neutral.png')
                 break
               case 2:
-                pic.setAttribute('scr', 'dist/assets/good.png')
+                pic.setAttribute('src', 'dist/assets/good.png')
                 break
               default:
                 break
