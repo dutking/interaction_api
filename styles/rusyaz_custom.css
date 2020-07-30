@@ -9,6 +9,10 @@
   color: var(--font-color);
 }
 
+#allrecords .interaction .surveyUnit .fbContainer .fbUnit img {
+  width: 100%;
+}
+
 #allrecords .interaction .surveyUnit .fbContainer .fbUnit p {
   padding: 0;
   min-height: initial;
