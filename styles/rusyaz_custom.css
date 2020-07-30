@@ -1,4 +1,29 @@
 /* Changes to common props to be added */
-a {
-  text-decoration: none;
+#allrecords .interaction .surveyUnit .fbContainer .fbUnit {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  justify-items: center;
+  font-size: var(--font-size);
+  color: var(--font-color);
+}
+
+#allrecords .interaction .surveyUnit .fbContainer .fbUnit p {
+  padding: 0;
+  min-height: initial;
+}
+
+#allrecords .interaction .surveyUnit .fbContainer .fbUnit .metricName,
+#allrecords .interaction .surveyUnit .fbContainer .fbUnit .result {
+  font-weight: bold;
+}
+
+#allrecords
+  .interaction
+  .surveyUnit
+  .fbContainer
+  .fbUnit
+  .metricResultDescription {
+  margin-top: 1rem;
 }
