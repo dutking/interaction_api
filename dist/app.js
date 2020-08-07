@@ -771,13 +771,31 @@ class IterableScorableInteraction extends ScorableInteraction {
         this.minScore = this.getMinScore();
     }
 
-    getMinScore() {
+    /* getMinScore() {
         if (this.interactionData.min_score.includes("%")) {
             let multiplier =
                 Number(this.interactionData.min_score.slice(0, -1)) / 100;
             return Math.ceil(this.unitsToComplete * multiplier);
         } else {
             return Number(this.interactionData.min_score);
+        }
+    } */
+
+    getMinScore() {
+        if (this.interactionData.min_score.includes("%")) {
+            let multiplier =
+                Number(this.interactionData.min_score.slice(0, -1)) / 100;
+            return Math.ceil(this.unitsToComplete * multiplier);
+        } else {
+            let percent = Math.round(
+                (100 / this.unitsToComplete) *
+                    Number(this.interactionData.min_score)
+            );
+            if (percent) {
+                return percent;
+            } else {
+                return 0;
+            }
         }
     }
 
@@ -2805,8 +2823,8 @@ class TestUnit extends CmiInteractionUnit {
 
         let scoreText = document.createElement("p");
         scoreText.innerHTML = `
-    <p>Ваш результат: ${this.parent.score}/${this.parent.amountOfUnits}.</p>
-    <p>Проходной балл: ${this.parent.minScore}/${this.parent.amountOfUnits}.</p>`;
+    <p>Ваш результат: ${this.parent.score}%.</p>
+    <p>Проходной балл: ${this.parent.minScore}%.</p>`;
 
         scoreContainer.appendChild(scoreText);
 
